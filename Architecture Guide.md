@@ -1,0 +1,173 @@
+# Architecture Guide
+
+A short manual for developers working on this modular monolith.
+
+## 1) What this solution is
+
+This project is a **modular monolith**:
+- One deployable application (single host).
+- Multiple business modules (for example: Organizations).
+- Each module owns its domain, data access, and features.
+
+Main idea for daily work:
+- Build features inside a module.
+- Keep modules isolated.
+- Communicate across modules through contracts, not direct internal dependencies.
+
+## 2) Core flow you will use every day
+
+For an API action, follow this simple flow:
+1. Endpoint receives request.
+2. Endpoint sends a command/query through `IMediator`.
+3. Handler orchestrates the use case.
+4. Domain entities/behaviors execute business rules.
+5. Handler uses repositories/DbContext to persist changes.
+6. Handler returns response.
+
+Think of this as: **Endpoint -> Mediator -> Handler -> Domain/Data**.
+
+## 3) How to create a new module (minimum setup)
+
+Create two projects:
+- `WorkFit.<ModuleName>`: real module implementation.
+- `WorkFit.<ModuleName>.Contracts`: interfaces + DTOs for other modules.
+
+Inside `WorkFit.<ModuleName>` create this minimum structure:
+- `Domain/Entities`
+- `Domain/Exceptions`
+- `Infrastructure/Data`
+- `Features/<FeatureName>`
+- `DependecyInjection.cs`
+- `ModuleMarker.cs`
+
+Then wire it:
+1. Add module DI extension (`Add<ModuleName>Module(...)`).
+2. Register module in host startup.
+3. Register mediator handlers from module assembly.
+4. Register module DbContext.
+
+## 4) Entity rules (connect to BaseEntity)
+
+All aggregate/domain entities must inherit from `BaseEntity`.
+
+Use this pattern:
+- Inherit from `BaseEntity`.
+- Keep setters private.
+- Use factory methods (`Create(...)`) for validation.
+- Throw domain exceptions when business rules fail.
+
+Why:
+- You automatically get `Id`, `CreatedAt`, and update tracking behavior.
+- You keep consistency with existing modules.
+
+## 5) Vertical slicing (how to organize features)
+
+Use **feature folders**. Each use case should live in one folder.
+
+Example folder:
+- `Features/CreateOrganization/`
+
+Recommended files per slice:
+- `CreateOrganizationRequest.cs` (HTTP request contract for endpoint)
+- `CreateOrganizationEndPoint.cs` (FastEndpoints endpoint)
+- `CreateOrganizationCommand.cs` (mediator request)
+- `CreateOrganizationCommandHandler.cs` (orchestrator only)
+
+Keep this rule:
+- If you add a new use case, create a new feature folder.
+- Do not create one huge service class for all use cases.
+
+## 6) Mediator usage (how to wire and call)
+
+What must exist:
+- `IMediator` registration in infrastructure.
+- Handler scanning per module via `AddMediatorHandlers<ModuleMarker>()`.
+
+How to use in endpoint:
+1. Inject `IMediator` in endpoint constructor.
+2. Map endpoint request to command/query.
+3. Call `await _mediator.Send(...)`.
+4. Return result.
+
+Handler requirements:
+- Implement `IRequestHandler<TRequest>` or `IRequestHandler<TRequest, TResponse>`.
+- Keep handler focused on one use case orchestration.
+- Do not place business rules in handler methods.
+- Put business logic in domain behaviors (entity methods/factory methods/value objects).
+
+## 7) Exceptions (follow Shared Kernel style)
+
+Use Shared Kernel exception hierarchy:
+- `WorkFitException` -> base for all custom app exceptions.
+- `DomainException` -> base for domain/business rule exceptions.
+
+For a new domain exception in a module:
+1. Create exception class in `Domain/Exceptions`.
+2. Inherit from `DomainException`.
+3. Provide:
+   - stable error code (machine-friendly)
+   - technical message
+   - user-friendly message
+
+Naming tip:
+- Exception name should describe the violated rule.
+- Example style: `<Entity><Rule>Exception`.
+
+## 8) Contracts between modules
+
+Use module contracts project for cross-module communication:
+- Put DTOs and service interfaces in `WorkFit.<ModuleName>.Contracts`.
+- Keep contracts clean and implementation-free.
+
+Pattern:
+1. Define interface in contracts project.
+2. Implement interface inside module project.
+3. Register implementation in module DI.
+4. Other modules depend only on contracts project and interface.
+
+Important:
+- Do not expose module internals to other modules.
+- Do not reference another module's domain/entities directly.
+
+## 9) Lean development checklist (copy for every new feature)
+
+1. Create new folder under `Features/<UseCaseName>`.
+2. Add request model.
+3. Add command/query model implementing `IRequest` or `IRequest<TResponse>`.
+4. Add handler implementing `IRequestHandler<...>`.
+5. Add endpoint and call mediator.
+6. Put business rules in domain behaviors, not handlers.
+7. Use/extend module entities (inheriting from `BaseEntity`).
+8. Add domain exception(s) if business rules exist.
+9. If needed by other modules, add/update contracts DTO/interface.
+10. Register any new services in module DI.
+11. Keep changes inside module boundaries.
+
+## 10) Team conventions for this codebase
+
+- Namespace root uses plural module name style (example: `WorkFit.Organizations`).
+- Keep module boundaries strict.
+- Keep each vertical slice small and self-contained.
+- Prefer clear names over generic names.
+- Keep contracts simple and stable.
+
+## 11) Quick do/don't
+
+Do:
+- Build by feature slice.
+- Use mediator from endpoints.
+- Keep handlers as orchestrators.
+- Validate in entity factory methods.
+- Throw domain exceptions for business rules.
+- Communicate through contracts.
+
+Don't:
+- Put all logic in endpoints.
+- Put business logic in handlers.
+- Share module internals directly.
+- Bypass `BaseEntity` for domain entities.
+- Create large cross-feature god classes.
+
+---
+
+If you follow this guide, new modules and features will stay consistent, lean, and easy to maintain.

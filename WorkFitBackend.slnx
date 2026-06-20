@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorkFit.Host/WorkFit.Host.csproj" />
+    <Project Path="src/WorkFit.Infrastructure/WorkFit.Infrastructure.csproj" />
+    <Project Path="src/WorkFit.SharedKernel/WorkFit.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Organization Module/">
+    <Project Path="src/Organization Module/WorkFit.Organizations.Contracts/WorkFit.Organizations.Contracts.csproj" Id="ab0f165a-28ce-43cc-82e6-4f122b91f794" />
+    <Project Path="src/Organization Module/WorkFit.Organizations/WorkFit.Organizations.csproj" />
+  </Folder>
+</Solution>

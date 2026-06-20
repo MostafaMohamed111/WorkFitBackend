@@ -1,0 +1,51 @@
+# .NET / Visual Studio
+
+# Build results
+[Bb]in/
+[Oo]bj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio / VS Code workspace files
+.vs/
+.vscode/
+
+# Rider / ReSharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+!**/packages/build/
+
+# Logs and diagnostics
+*.log
+*.tlog
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# ASP.NET scaffolding
+ScaffoldingReadMe.txt
+
+# Publish output
+publish/
+
+# EF Core migrations bundle artifacts
+*.runtimeconfig.dev.json
+
+# OS files
+.DS_Store
+Thumbs.db
