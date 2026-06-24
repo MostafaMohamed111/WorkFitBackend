@@ -11,8 +11,12 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "Organization");
+
             migrationBuilder.CreateTable(
                 name: "Organizations",
+                schema: "Organization",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -31,7 +35,8 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Organizations");
+                name: "Organizations",
+                schema: "Organization");
         }
     }
 }

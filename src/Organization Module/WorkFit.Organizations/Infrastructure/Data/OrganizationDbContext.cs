@@ -11,5 +11,11 @@ namespace WorkFit.Organizations.Infrastructure.Data
         }
 
         public DbSet<Organization> Organizations { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.HasDefaultSchema("Organization");
+        }
     }
 }

@@ -3,12 +3,12 @@ using WorkFit.SharedKernel.Exceptions;
 
 namespace WorkFit.Organizations.Domain.Exceptions
 {
-    internal class OrganizationNameIsNullOrEmptyException : DomainException
+    public sealed class OrganizationNameIsNullOrEmptyException : DomainException
     {
         public OrganizationNameIsNullOrEmptyException()
-            : base("Organization_Name_Is_Null_Or_Empty",
+            : base("ORGANIZATION_NAME_IS_NULL_OR_EMPTY",
                   "Organization name cannot be null or empty.",
-                  "Organization name is required."
+                  "Please provide a valid organization name."
                   )
         {
         }

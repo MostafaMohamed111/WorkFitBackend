@@ -12,7 +12,7 @@ using WorkFit.Organizations.Infrastructure.Data;
 namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    [Migration("20260620060328_InitialCreate")]
+    [Migration("20260624213052_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,6 +20,7 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("Organization")
                 .HasAnnotation("ProductVersion", "10.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -46,7 +47,7 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", "Organization");
                 });
 #pragma warning restore 612, 618
         }
