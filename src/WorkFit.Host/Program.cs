@@ -1,8 +1,7 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using WorkFit.Identity;
-using WorkFit.Infrastructure;
-using WorkFit.Organizations;
+using System.Reflection;
+
 
 namespace WorkFit.Host
 {
@@ -11,13 +10,14 @@ namespace WorkFit.Host
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            // get all assemblies that start with "WorkFit." in the base directory
+            var assembliesToScan = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "WorkFit.*.dll")
+                .Select(Assembly.LoadFrom)
+                .ToArray();
             // Register Modules Services
-            builder.Services.AddInfrastructure();
-            builder.Services.AddIdentityModule(builder.Configuration);
-            builder.Services.AddOrganizationModule(builder.Configuration);
+            builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
 
-            builder.Services.AddFastEndpoints()
+            builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
                              .SwaggerDocument(o =>
                              {
                                  o.DocumentSettings = s =>

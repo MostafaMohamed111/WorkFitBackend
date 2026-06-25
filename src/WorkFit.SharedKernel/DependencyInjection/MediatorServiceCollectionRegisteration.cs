@@ -20,7 +20,11 @@ public static class MediatorServiceCollectionRegisteration
             .AddClasses(classes => classes.AssignableTo(typeof(IRequestHandler<>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime()
-            );
+            )
+            .Scan(scan => scan.FromAssemblies(assembly)
+            .AddClasses(classes => classes.AssignableTo(typeof(IIntegrationEventHandler<>)))
+            .AsImplementedInterfaces()
+            .WithScopedLifetime());
 
         return services;
     }

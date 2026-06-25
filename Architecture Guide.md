@@ -22,7 +22,8 @@ For an API action, follow this simple flow:
 3. Handler orchestrates the use case.
 4. Domain entities/behaviors execute business rules.
 5. Handler uses repositories/DbContext to persist changes.
-6. Handler returns response.
+6. Handler can publish integration event(s) through `IMediator.Publish(...)`.
+7. Handler returns response.
 
 Think of this as: **Endpoint -> Mediator -> Handler -> Domain/Data**.
 
@@ -37,14 +38,14 @@ Inside `WorkFit.<ModuleName>` create this minimum structure:
 - `Domain/Exceptions`
 - `Infrastructure/Data`
 - `Features/<FeatureName>`
-- `DependecyInjection.cs`
+- `Register<ModuleName>ModuleServices.cs` (implements `IRegisterModuleServices`)
 - `ModuleMarker.cs`
 
 Then wire it:
-1. Add module DI extension (`Add<ModuleName>Module(...)`).
-2. Register module in host startup.
-3. Register mediator handlers from module assembly.
-4. Register module DbContext.
+1. Implement `IRegisterModuleServices` inside the module project.
+2. Register module DbContext/services inside `RegisterServices(...)`.
+3. Register mediator handlers from module assembly using `AddMediatorHandlers<ModuleMarker>()`.
+4. Let host assembly scanning discover and execute all `IRegisterModuleServices` implementations (no per-module edits in `Program.cs`).
 
 ## 4) Entity rules (connect to BaseEntity)
 
@@ -80,14 +81,22 @@ Keep this rule:
 ## 6) Mediator usage (how to wire and call)
 
 What must exist:
-- `IMediator` registration in infrastructure.
+- `IMediator` registration in infrastructure via a class implementing `IRegisterModuleServices`.
 - Handler scanning per module via `AddMediatorHandlers<ModuleMarker>()`.
+- Integration event handler scanning via `IIntegrationEventHandler<TIntegrationEvent>` (registered by `AddMediatorHandlers<ModuleMarker>()`).
 
 How to use in endpoint:
 1. Inject `IMediator` in endpoint constructor.
 2. Map endpoint request to command/query.
 3. Call `await _mediator.Send(...)`.
 4. Return result.
+
+How to raise integration events when something happens:
+1. Define the event in the owning module contracts project (`WorkFit.<ModuleName>.Contracts`) and implement `IIntegrationEvent`.
+2. Create one or more handlers implementing `IIntegrationEventHandler<TEvent>`.
+3. In the owning module handler/use case, call `await _mediator.Publish(new YourEvent(...))` after the important state change.
+4. Interested modules reference that contracts project and implement handlers for the event.
+5. Event ownership stays with the module that raised it; handling is open to any interested module.
 
 Handler requirements:
 - Implement `IRequestHandler<TRequest>` or `IRequestHandler<TRequest, TResponse>`.
@@ -122,8 +131,14 @@ Use module contracts project for cross-module communication:
 Pattern:
 1. Define interface in contracts project.
 2. Implement interface inside module project.
-3. Register implementation in module DI.
+3. Register implementation in the module `IRegisterModuleServices` class.
 4. Other modules depend only on contracts project and interface.
+
+For integration events between modules:
+1. Put event contract types in `WorkFit.<ModuleName>.Contracts` of the owning module.
+2. Raise/publish events from the owning module when its state changes.
+3. Let interested modules reference the contracts project and implement `IIntegrationEventHandler<TEvent>`.
+4. Keep event payloads stable and implementation-free.
 
 Important:
 - Do not expose module internals to other modules.
@@ -140,7 +155,7 @@ Important:
 7. Use/extend module entities (inheriting from `BaseEntity`).
 8. Add domain exception(s) if business rules exist.
 9. If needed by other modules, add/update contracts DTO/interface.
-10. Register any new services in module DI.
+10. Register any new services in module `IRegisterModuleServices` implementation.
 11. Keep changes inside module boundaries.
 
 ## 10) Team conventions for this codebase
@@ -150,6 +165,7 @@ Important:
 - Keep each vertical slice small and self-contained.
 - Prefer clear names over generic names.
 - Keep contracts simple and stable.
+- Avoid direct per-module registration calls in host startup; rely on assembly scanning + `IRegisterModuleServices`.
 
 ## 11) Quick do/don't
 
@@ -157,6 +173,7 @@ Do:
 - Build by feature slice.
 - Use mediator from endpoints.
 - Keep handlers as orchestrators.
+- Publish integration events when a state change should notify interested handlers.
 - Validate in entity factory methods.
 - Throw domain exceptions for business rules.
 - Communicate through contracts.
@@ -165,6 +182,7 @@ Don't:
 - Put all logic in endpoints.
 - Put business logic in handlers.
 - Share module internals directly.
+- Add module-by-module service registration calls in `Program.cs`.
 - Bypass `BaseEntity` for domain entities.
 - Create large cross-feature god classes.
 

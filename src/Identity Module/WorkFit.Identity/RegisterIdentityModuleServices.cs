@@ -4,12 +4,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Infrastructure.Data;
+using WorkFit.SharedKernel.RegisterModuleServices;
 
 namespace WorkFit.Identity;
 
-public static class DependecyInjection
+public sealed class RegisterIdentityModuleServices : IRegisterModuleServices
 {
-    public static IServiceCollection AddIdentityModule(this IServiceCollection services, IConfiguration configuration)
+    public  void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
 
         var connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -21,8 +22,6 @@ public static class DependecyInjection
         services.AddIdentityCore<WorkFitUser>()
                 .AddRoles<WorkFitRole>()
                 .AddEntityFrameworkStores<WorkFitUsersDbContext>();
-
-        return services;
     }
 
 }

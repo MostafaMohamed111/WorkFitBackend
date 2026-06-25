@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.DependencyInjection;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.Infrastructure.MediatorImp;
@@ -10,6 +11,22 @@ internal sealed class Mediator : IMediator
     public Mediator(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+    }
+
+    public async Task Publish(IIntegrationEvent @event, CancellationToken cancellationToken = default)
+    {
+        var @eventType = @event.GetType();
+        var handlerType = typeof(IIntegrationEventHandler<>).MakeGenericType(@eventType);
+        var handlers = _serviceProvider.GetServices(handlerType);
+        foreach (var handler in handlers)
+        {
+            var method = handlerType.GetMethod("Handle");
+            if (method == null)
+            {
+                throw new InvalidOperationException($"Handle method not found in handler for event type {@event.GetType().Name}.");
+            }
+            await (Task)method.Invoke(handler, new object[] { @event, cancellationToken });
+        }
     }
 
     public Task Send(IRequest request, CancellationToken cancellationToken = default)
