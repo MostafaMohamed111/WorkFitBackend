@@ -12,7 +12,7 @@ using WorkFit.Organizations.Infrastructure.Data;
 namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    [Migration("20260624213052_InitialCreate")]
+    [Migration("20260627164255_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
