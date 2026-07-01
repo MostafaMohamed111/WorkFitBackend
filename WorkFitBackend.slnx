@@ -5,6 +5,7 @@
     <Project Path="src/WorkFit.SharedKernel/WorkFit.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/Identity Module/">
+    <Project Path="src/Identity Module/WorkFit.Identity.Contracts/WorkFit.Identity.Contracts.csproj" Id="58ad49e9-de29-4c96-a112-f236d6be9708" />
     <Project Path="src/Identity Module/WorkFit.Identity/WorkFit.Identity.csproj" Id="b3456b36-e314-4dbf-afc7-3166fef27f49" />
   </Folder>
   <Folder Name="/src/Organization Module/">
