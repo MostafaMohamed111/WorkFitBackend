@@ -1,7 +1,7 @@
 ﻿
 namespace WorkFit.Organizations;
 
-public class ModuleMarker
+internal class ModuleMarker
 {
-    // This class is used as a marker for the Organization module to register services and handlers.
+    public static string ModuleName { get; } = "Organization_Module";
 }
