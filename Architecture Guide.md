@@ -24,6 +24,7 @@ For an API action, follow this simple flow:
 5. Handler uses repositories/DbContext to persist changes.
 6. Handler can publish integration event(s) through `IMediator.Publish(...)`.
 7. Handler returns response.
+8. If exceptions happen, host global exception handler converts them to a uniform error payload.
 
 Think of this as: **Endpoint -> Mediator -> Handler -> Domain/Data**.
 
@@ -40,6 +41,9 @@ Inside `WorkFit.<ModuleName>` create this minimum structure:
 - `Features/<FeatureName>`
 - `Register<ModuleName>ModuleServices.cs` (implements `IRegisterModuleServices`)
 - `ModuleMarker.cs`
+
+`ModuleMarker.cs` must expose a static module name (for example `public static string ModuleName { get; } = "Identity_Module";`).
+This value is required by Shared Kernel exceptions to build stable error codes.
 
 Then wire it:
 1. Implement `IRegisterModuleServices` inside the module project.
@@ -104,23 +108,41 @@ Handler requirements:
 - Do not place business rules in handler methods.
 - Put business logic in domain behaviors (entity methods/factory methods/value objects).
 
-## 7) Exceptions (follow Shared Kernel style)
+## 7) Exceptions (updated current approach)
 
-Use Shared Kernel exception hierarchy:
-- `WorkFitException` -> base for all custom app exceptions.
-- `DomainException` -> base for domain/business rule exceptions.
+Use the Shared Kernel hierarchy now implemented in code:
+- `WorkFitException` is the root app exception and stores:
+   - `ModuleName`
+   - `Code` (normalized to `MODULE_CODE`, uppercase)
+   - technical message (`Message`)
+   - `UserFriendlyMessage` (defaults if not provided)
+- `DomainException` is for domain invariants/business rules inside entities/value objects.
+- `FeatureException` is for feature/use-case level failures.
 
-For a new domain exception in a module:
-1. Create exception class in `Domain/Exceptions`.
-2. Inherit from `DomainException`.
-3. Provide:
-   - stable error code (machine-friendly)
-   - technical message
-   - user-friendly message
+Current specialized feature exceptions used across modules:
+- `EntityNotFoundException`
+- `EntityAlreadyExistsException`
 
-Naming tip:
-- Exception name should describe the violated rule.
-- Example style: `<Entity><Rule>Exception`.
+How to choose exception type:
+1. Domain object validation/invariants -> throw `DomainException` (example: `FeildIsNullOrEmptyException` in entity constructors).
+2. Use-case/feature validation and known business flow failures -> throw `FeatureException` (example: password confirmation mismatch, login email not found, duplicate entity).
+3. Technical/misconfiguration/runtime wiring failures -> `InvalidOperationException` is currently used in infrastructure/startup paths (for example missing connection string, mediator handler wiring failures, missing current user id, identity create failures).
+
+HTTP mapping is centralized in host global exception handler:
+1. `EntityNotFoundException` -> `404 Not Found`
+2. `EntityAlreadyExistsException` -> `409 Conflict`
+3. `DomainException` -> `400 Bad Request`
+4. `FeatureException` -> `400 Bad Request`
+5. Any other exception -> `500 Internal Server Error`
+
+Error response shape returned by host:
+- `errorCode`
+- `errorMessage`
+- `userFriendlyMessage`
+
+Module code convention:
+- Always pass module name from module marker (example: `ModuleMarker.ModuleName`) when creating custom exceptions.
+- Keep exception codes stable and machine-friendly (`UPPER_SNAKE_CASE`).
 
 ## 8) Contracts between modules
 
