@@ -4,8 +4,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
+using WorkFit.ProjectManagement.Infrastructure.Seed;
+using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
-
 namespace WorkFit.ProjectManagement;
 
 internal class RegisterProjectManagementServices : IRegisterModuleServices
@@ -18,5 +20,12 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
         services.AddDbContext<WorkFitProjectDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddScoped<IProjectRepository, ProjectRepository>(); // <-- add this
+
+
+        // Registers all IRequestHandler<,> / IRequestHandler<> / IIntegrationEventHandler<>
+        // implementations found in the assembly that contains ModuleMarker
+        // (i.e. this ProjectManagement module), including GetProjectsHandler.
+        services.AddMediatorHandlers<ModuleMarker>();
     }
 }
