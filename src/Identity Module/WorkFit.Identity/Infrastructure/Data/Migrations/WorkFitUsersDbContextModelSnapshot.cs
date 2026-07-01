@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WorkFit.Identity.Infrastructure.Data;
 
 #nullable disable
 
@@ -152,43 +151,6 @@ namespace WorkFit.Identity.Infrastructure.Data.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", "Identity");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("f55053e3-9aff-475c-8abf-12e589a2f516"),
-                            ConcurrencyStamp = "bb518119-ec93-48da-a50a-32a19db49a97",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        },
-                        new
-                        {
-                            Id = new Guid("84c87e92-d677-4606-98a9-b4409199646e"),
-                            ConcurrencyStamp = "5d7e2de9-1d05-4a98-9e65-bb6264eb2bff",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        },
-                        new
-                        {
-                            Id = new Guid("61eccd38-e20e-43f1-a99d-3908cb9ba066"),
-                            ConcurrencyStamp = "b15b24f9-3007-4158-a1af-1e503d9194ad",
-                            Name = "OrganizationOwner",
-                            NormalizedName = "ORGANIZATIONOWNER"
-                        },
-                        new
-                        {
-                            Id = new Guid("1e125a76-2cfe-4155-a6d6-9f9e80c41857"),
-                            ConcurrencyStamp = "4de50b68-ead0-4332-a081-550ddb54e33b",
-                            Name = "Employee",
-                            NormalizedName = "EMPLOYEE"
-                        },
-                        new
-                        {
-                            Id = new Guid("e440b850-05e2-4554-af89-dce3fa6a070b"),
-                            ConcurrencyStamp = "0d13a863-980f-46bb-9f06-2e8fa5601c5d",
-                            Name = "TeamLead",
-                            NormalizedName = "TEAMLEAD"
-                        });
                 });
 
             modelBuilder.Entity("WorkFit.Identity.Domain.Entities.WorkFitUser", b =>

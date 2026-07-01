@@ -2,8 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.Identity.AuthServices.Jwt;
 using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Infrastructure.Data;
+using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 
 namespace WorkFit.Identity;
@@ -22,6 +24,9 @@ public sealed class RegisterIdentityModuleServices : IRegisterModuleServices
         services.AddIdentityCore<WorkFitUser>()
                 .AddRoles<WorkFitRole>()
                 .AddEntityFrameworkStores<WorkFitUsersDbContext>();
+
+        services.AddMediatorHandlers<ModuleMarker>();
+        services.AddScoped<JwtTokenGenerator>();
     }
 
 }

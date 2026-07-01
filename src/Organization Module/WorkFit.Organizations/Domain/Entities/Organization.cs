@@ -1,5 +1,5 @@
 ﻿using WorkFit.SharedKernel.BaseEntity;
-using WorkFit.Organizations.Domain.Exceptions;
+using WorkFit.SharedKernel.Exceptions.DomainExceptions;
 
 namespace WorkFit.Organizations.Domain.Entities;
 

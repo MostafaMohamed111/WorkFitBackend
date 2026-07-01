@@ -2,6 +2,7 @@
 
 namespace WorkFit.Identity;
 
-public sealed class ModuleMarker
+internal class ModuleMarker
 {
+    public static string ModuleName { get; } = "Identity_Module";
 }

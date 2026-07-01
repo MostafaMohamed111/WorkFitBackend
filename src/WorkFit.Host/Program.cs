@@ -1,6 +1,11 @@
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
+using System.Security.Claims;
+using WorkFit.Host.ExtentionMethods;
+using WorkFit.Host.GlobalExceptionHandler;
 
 
 namespace WorkFit.Host
@@ -26,15 +31,43 @@ namespace WorkFit.Host
                                      s.Version = "v1";
                                  };
                              });
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
+
+
+                        RoleClaimType = ClaimTypes.Role
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddProblemDetails();
+            builder.Services.AddExceptionHandler<ExceptionHandler>();
 
             var app = builder.Build();
+
+            app.UseExceptionHandler();
+
 
             // Configure the HTTP request pipeline.
             app.UseHttpsRedirection();
 
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseFastEndpoints()
                .UseSwaggerGen();
-
 
 
             // seed roles
@@ -58,9 +91,6 @@ namespace WorkFit.Host
             }
 
             app.Run();
-
-
-
         }
     }
 }

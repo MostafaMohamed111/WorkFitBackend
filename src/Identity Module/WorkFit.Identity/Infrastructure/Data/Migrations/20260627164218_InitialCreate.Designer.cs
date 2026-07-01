@@ -5,14 +5,13 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WorkFit.Identity.Infrastructure.Data;
 
 #nullable disable
 
 namespace WorkFit.Identity.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(WorkFitUsersDbContext))]
-    [Migration("20260624213316_InitialCreate")]
+    [Migration("20260627164218_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

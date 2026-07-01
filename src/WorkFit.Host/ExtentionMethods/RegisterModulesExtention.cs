@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 
-namespace WorkFit.Host;
+namespace WorkFit.Host.ExtentionMethods;
 
 public static class RegisterModulesExtention 
 {
