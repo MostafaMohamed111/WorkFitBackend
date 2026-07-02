@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.Organizations.Domain.Entities;
 using WorkFit.Organizations.Features.Teams;
 using WorkFit.Organizations.Infrastructure.Data;
@@ -35,6 +36,7 @@ public sealed class CreateTeamEndpoint : Endpoint<CreateTeamRequest, TeamRespons
     {
         Post("/api/departments/{id}/teams");
         AllowAnonymous();
+        Options(x => x.WithTags("Organization"));
     }
 
     public override async Task HandleAsync(CreateTeamRequest req, CancellationToken ct)

@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using WorkFit.Organizations.Domain.Exceptions;
 using WorkFit.Organizations.Infrastructure.Data;
@@ -37,6 +38,7 @@ public sealed class UpdateTeamEndpoint : Endpoint<UpdateTeamRequest, TeamRespons
     {
         Put("/api/teams/{id}");
         AllowAnonymous();
+        Options(x => x.WithTags("Organization"));
     }
 
     public override async Task HandleAsync(UpdateTeamRequest req, CancellationToken ct)

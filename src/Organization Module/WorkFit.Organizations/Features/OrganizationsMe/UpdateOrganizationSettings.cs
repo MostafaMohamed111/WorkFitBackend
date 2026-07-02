@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using WorkFit.Organizations.Domain.Exceptions;
 using WorkFit.Organizations.Infrastructure.Data;
@@ -42,6 +43,7 @@ public sealed class UpdateOrganizationSettingsEndpoint : Endpoint<UpdateOrganiza
     {
         Put("/api/organizations/me/settings");
         AllowAnonymous();
+        Options(x => x.WithTags("Organization"));
     }
 
     public override async Task HandleAsync(UpdateOrganizationSettingsRequest req, CancellationToken ct)

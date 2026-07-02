@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.SharedKernel.MediatorContract;
@@ -34,6 +35,7 @@ public sealed class ListDepartmentsEndpoint : Endpoint<ListDepartmentsRequest, I
     {
         Get("/api/departments");
         AllowAnonymous();
+        Options(x => x.WithTags("Organization"));
     }
 
     public override async Task HandleAsync(ListDepartmentsRequest req, CancellationToken ct)

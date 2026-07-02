@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using WorkFit.Organizations.Domain.Exceptions;
 using WorkFit.Organizations.Infrastructure.Data;
@@ -35,6 +36,7 @@ public sealed class GetDepartmentEndpoint : Endpoint<GetDepartmentRequest, Depar
     {
         Get("/api/departments/{id}");
         AllowAnonymous();
+        Options(x => x.WithTags("Organization"));
     }
 
     public override async Task HandleAsync(GetDepartmentRequest req, CancellationToken ct)
