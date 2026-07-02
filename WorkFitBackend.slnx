@@ -16,4 +16,8 @@
     <Project Path="src/Project_Management Module/WorkFit.ProjectManagement.Contracts/WorkFit.ProjectManagement.Contracts.csproj" Id="647c50f2-1ac1-4993-8783-c7e28337cc41" />
     <Project Path="src/Project_Management Module/WorkFit.ProjectManagement/WorkFit.ProjectManagement.csproj" Id="ca9cc2e8-1bd6-42da-845a-7c55e7b9154e" />
   </Folder>
+  <Folder Name="/src/Talent_Management Module/">
+    <Project Path="src/Talent_Management Module/WorkFit.TalentManagement.Contracts/WorkFit.TalentManagement.Contracts.csproj" />
+    <Project Path="src/Talent_Management Module/WorkFit.TalentManagement/WorkFit.TalentManagement.csproj" />
+  </Folder>
 </Solution>
