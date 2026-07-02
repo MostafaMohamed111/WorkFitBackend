@@ -26,6 +26,7 @@
     <ProjectReference Include="..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
     <ProjectReference Include="..\Project_Management Module\WorkFit.ProjectManagement\WorkFit.ProjectManagement.csproj" />
     <ProjectReference Include="..\WorkFit.Infrastructure\WorkFit.Infrastructure.csproj" />
+    <ProjectReference Include="..\Talent_Management Module\WorkFit.TalentManagement\WorkFit.TalentManagement.csproj" />
   </ItemGroup>
 
 </Project>
