@@ -20,7 +20,31 @@ public class ProjectActivityLog : BaseEntity
 
     public string? AfterState { get; private set; }
 
-    public DateTimeOffset CreatedAt { get; private set; }
+    public new DateTimeOffset CreatedAt { get; private set; }
 
     public Project Project { get; private set; }
+
+    private ProjectActivityLog() { }
+
+    public static ProjectActivityLog Create(
+        Guid projectId,
+        Guid actorId,
+        string action,
+        ActivityEntityType entityType,
+        Guid? entityId = null,
+        string? beforeState = null,
+        string? afterState = null)
+    {
+        return new ProjectActivityLog
+        {
+            ProjectId = projectId,
+            ActorId = actorId,
+            Action = action,
+            EntityType = entityType,
+            EntityId = entityId,
+            BeforeState = beforeState,
+            AfterState = afterState,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+    }
 }
