@@ -1,4 +1,5 @@
-﻿using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.Organizations.Domain.Exceptions;
+using WorkFit.SharedKernel.BaseEntity;
 using WorkFit.SharedKernel.Exceptions.DomainExceptions;
 
 namespace WorkFit.Organizations.Domain.Entities;
@@ -21,7 +22,7 @@ public sealed class Organization : BaseEntity
 
     public static Organization Create(string name, Guid userId)
     {
-        if(string.IsNullOrEmpty(name)) throw new OrganizationNameIsNullOrEmptyException();
+        if (string.IsNullOrEmpty(name)) throw new OrganizationNameIsNullOrEmptyException();
         return new Organization(name, userId, "{}", "{}");
     }
 

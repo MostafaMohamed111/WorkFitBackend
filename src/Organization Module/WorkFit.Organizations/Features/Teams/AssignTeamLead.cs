@@ -4,6 +4,7 @@ using WorkFit.Organizations.Domain.Exceptions;
 using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.SharedKernel.MediatorContract;
 
+
 namespace WorkFit.Organizations.Features.Teams;
 
 public sealed record AssignTeamLeadRequest(Guid Id, Guid? LeadUserId);
@@ -37,6 +38,7 @@ public sealed class AssignTeamLeadEndpoint : Endpoint<AssignTeamLeadRequest, Tea
     {
         Put("/api/teams/{id}/lead");
         AllowAnonymous();
+       
     }
 
     public override async Task HandleAsync(AssignTeamLeadRequest req, CancellationToken ct)

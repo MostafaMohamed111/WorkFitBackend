@@ -1,4 +1,4 @@
-using WorkFit.SharedKernel.Exceptions;
+using WorkFit.SharedKernel.Exceptions.DomainExceptions;
 
 namespace WorkFit.Organizations.Domain.Exceptions;
 
