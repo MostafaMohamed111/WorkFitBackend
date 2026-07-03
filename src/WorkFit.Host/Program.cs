@@ -21,6 +21,13 @@ namespace WorkFit.Host
                 .ToArray();
             // Register Modules Services
             builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
+            builder.Services.AddMediatR(cfg =>
+            {
+                foreach (var assembly in assembliesToScan)
+                {
+                    cfg.RegisterServicesFromAssembly(assembly);
+                }
+            });
 
             builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
                              .SwaggerDocument(o =>
