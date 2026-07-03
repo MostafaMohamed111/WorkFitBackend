@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using WorkFit.ProjectManagement.Domain.Entities;
+﻿using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Features.Project.GetProjects;
+namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 
-namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories; 
+
+
 public interface IProjectRepository
 {
     Task<IReadOnlyList<ProjectListItemDto>> GetProjectsAsync(

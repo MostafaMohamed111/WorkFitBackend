@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.RemoveAssignment;
@@ -16,6 +17,7 @@ public sealed class RemoveAssignmentEndPoint : EndpointWithoutRequest
     {
         Delete("/api/projects/{id}/assignments/{asgId}");
         AllowAnonymous();
+        Options(x => x.WithTags("Project Management"));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

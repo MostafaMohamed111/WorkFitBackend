@@ -3,7 +3,7 @@ using WorkFit.ProjectManagement.Domain.Entities;
 
 
 
-namespace WorkFit.ProjectManagement;
+namespace WorkFit.ProjectManagement.Infrastructure;
 public class WorkFitProjectDbContext : DbContext
 {
     public WorkFitProjectDbContext(DbContextOptions<WorkFitProjectDbContext> options) : base(options)

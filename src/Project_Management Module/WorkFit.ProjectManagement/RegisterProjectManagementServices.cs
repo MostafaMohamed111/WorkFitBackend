@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.ProjectManagement.Infrastructure;
+using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 
@@ -16,6 +18,7 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
         services.AddDbContext<WorkFitProjectDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddMediatorHandlers<ModuleMarker>();
     }
 }

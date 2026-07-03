@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.ProjectManagement.Features.Project.GetProjects;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -20,6 +21,7 @@ public sealed class GetProjectsEndpoint
         AllowAnonymous();
         // Roles(...);
         // Policies(...);
+        Options(x => x.WithTags("Project Management"));
     }
 
     public override async Task HandleAsync(

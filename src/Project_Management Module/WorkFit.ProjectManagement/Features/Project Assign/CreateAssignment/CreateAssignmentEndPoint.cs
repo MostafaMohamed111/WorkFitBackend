@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.CreateAssignment;
@@ -16,6 +17,7 @@ public sealed class CreateAssignmentEndPoint : Endpoint<CreateAssignmentRequest,
     {
         Post("/api/projects/{id}/assignments");
         AllowAnonymous();
+        Options(x => x.WithTags("Project Management"));
     }
 
     public override async Task HandleAsync(CreateAssignmentRequest req, CancellationToken ct)

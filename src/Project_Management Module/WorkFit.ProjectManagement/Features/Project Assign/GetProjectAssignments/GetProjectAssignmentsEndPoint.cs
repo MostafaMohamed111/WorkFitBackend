@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.GetProjectAssignments;
@@ -16,6 +17,7 @@ public sealed class GetProjectAssignmentsEndPoint : Endpoint<GetProjectAssignmen
     {
         Get("/api/projects/{id}/assignments");
         AllowAnonymous();
+        Options(x => x.WithTags("Project Management"));
     }
 
     public override async Task HandleAsync(GetProjectAssignmentsRequest req, CancellationToken ct)

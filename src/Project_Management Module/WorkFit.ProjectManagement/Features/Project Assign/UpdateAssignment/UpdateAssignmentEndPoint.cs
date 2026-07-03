@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.UpdateAssignment;
@@ -16,6 +17,7 @@ public sealed class UpdateAssignmentEndPoint : Endpoint<UpdateAssignmentRequest>
     {
         Put("/api/projects/{id}/assignments/{asgId}");
         AllowAnonymous();
+        Options(x => x.WithTags("Project Management"));
     }
 
     public override async Task HandleAsync(UpdateAssignmentRequest req, CancellationToken ct)

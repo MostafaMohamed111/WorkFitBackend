@@ -6,13 +6,13 @@ using System.Reflection;
 using System.Security.Claims;
 using WorkFit.Host.ExtentionMethods;
 using WorkFit.Host.GlobalExceptionHandler;
-using WorkFit.ProjectManagement.Infrastructure.Data.Seed;
+
 
 namespace WorkFit.Host
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             // get all assemblies that start with "WorkFit." in the base directory
@@ -76,7 +76,6 @@ namespace WorkFit.Host
             app.UseFastEndpoints()
                .UseSwaggerGen();
 
-            await app.Services.SeedProjectManagementAsync();
 
             // seed roles
             using (var scope = app.Services.CreateScope())
