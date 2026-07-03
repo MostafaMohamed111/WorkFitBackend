@@ -1,4 +1,5 @@
-﻿using WorkFit.ProjectManagement.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -24,6 +25,21 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         var project = await _context.Projects.FindAsync(new object[] { command.ProjectId }, ct);
         if (project is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", command.ProjectId);
+
+        if (command.AssigneeId.HasValue)
+        {
+            var isMemberOfProject = await _context.ProjectAssignments.AnyAsync(
+                a => a.ProjectId == command.ProjectId &&
+                     a.EmployeeId == command.AssigneeId.Value &&
+                     a.IsActive, ct);
+
+            if (!isMemberOfProject)
+                throw new FeatureException(
+                    ModuleMarker.ModuleName,
+                    "EMPLOYEE_NOT_ASSIGNED_TO_PROJECT",
+                    $"Employee '{command.AssigneeId}' is not an active member of project '{command.ProjectId}'.",
+                    "You can only assign a task to an employee who is a member of this project.");
+        }
 
         var actorId = _currentUser.GetUserId(ct);
 

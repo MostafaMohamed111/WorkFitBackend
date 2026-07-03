@@ -12,7 +12,6 @@ public sealed class CreateTaskEndPoint : Endpoint<CreateTaskRequest, CreateTaskR
     public override void Configure()
     {
         Post("/api/projects/{id}/tasks");
-        AllowAnonymous();
         Options(x => x.WithTags("Project Management"));
     }
 
