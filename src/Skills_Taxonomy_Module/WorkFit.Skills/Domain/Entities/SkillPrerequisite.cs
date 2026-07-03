@@ -29,12 +29,9 @@ public sealed class SkillPrerequisite : BaseEntity
 
         return new SkillPrerequisite
         {
-            Id = Guid.NewGuid(),
             SkillId = skillId,
             PrerequisiteSkillId = prerequisiteSkillId,
             IsRequired = isRequired,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 }

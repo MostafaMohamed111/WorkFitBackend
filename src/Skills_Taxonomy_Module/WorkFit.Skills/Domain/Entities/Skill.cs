@@ -33,10 +33,8 @@ public sealed class Skill : BaseEntity
     public ICollection<SkillRelation> RelatedSkills { get; private set; } = new List<SkillRelation>();
     public ICollection<SkillRelation> RelatedFrom { get; private set; } = new List<SkillRelation>();
 
-    // === Private Constructor (EF Core) ===
     private Skill() { }
 
-    // === Factory Method ===
     public static Skill Create(
         string name,
         string? description,
@@ -49,9 +47,9 @@ public sealed class Skill : BaseEntity
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new FeildIsNullOrEmptyException(
-                ModuleMarker.ModuleName,  
-                nameof(Skill),           
-                nameof(name)              
+                ModuleMarker.ModuleName,
+                nameof(Skill),
+                nameof(name)
             );
 
         if (origin == SkillOrigin.Custom && !organizationId.HasValue)
@@ -61,25 +59,26 @@ public sealed class Skill : BaseEntity
                 nameof(organizationId)
             );
 
-        return new Skill
-        {
-            Id = Guid.NewGuid(),
-            Name = name.Trim(),
-            NormalizedName = name.Trim().ToUpperInvariant(),
-            Description = description?.Trim(),
-            Origin = origin,
-            OrganizationId = organizationId,
-            CategoryId = categoryId,
-            GroupId = groupId,
-            ParentSkillId = parentSkillId,
-            EstimatedTimeToLearn = estimatedTimeToLearn,
-            IsDeleted = false,
-            ConfidenceConfigJson = "{}",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var skill = new Skill();
+
+        skill.Name = name.Trim();
+        skill.NormalizedName = name.Trim().ToUpperInvariant();
+        skill.Description = description?.Trim();
+        skill.Origin = origin;
+        skill.OrganizationId = organizationId;
+        skill.CategoryId = categoryId;
+        skill.GroupId = groupId;
+        skill.ParentSkillId = parentSkillId;
+        skill.EstimatedTimeToLearn = estimatedTimeToLearn;
+        skill.IsDeleted = false;
+        skill.ConfidenceConfigJson = "{}";
+
+ 
+
+        return skill;
     }
 
+    // === Domain Methods ===
     public void Update(
         string name,
         string? description,
@@ -103,7 +102,7 @@ public sealed class Skill : BaseEntity
         CategoryId = categoryId;
         GroupId = groupId;
         EstimatedTimeToLearn = estimatedTimeToLearn;
-        MarkUpdated();
+        MarkUpdated(); 
     }
 
     public void SoftDelete()

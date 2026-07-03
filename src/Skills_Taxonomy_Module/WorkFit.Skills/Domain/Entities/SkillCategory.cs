@@ -36,15 +36,12 @@ public sealed class SkillCategory : BaseEntity
 
         return new SkillCategory
         {
-            Id = Guid.NewGuid(),
             Name = name.Trim(),
             NormalizedName = name.Trim().ToUpperInvariant(),
             Description = description?.Trim(),
             Icon = icon,
             DisplayOrder = displayOrder,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 

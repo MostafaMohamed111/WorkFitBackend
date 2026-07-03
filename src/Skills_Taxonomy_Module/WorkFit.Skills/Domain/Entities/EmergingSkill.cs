@@ -52,7 +52,6 @@ public sealed class EmergingSkill : BaseEntity
 
         return new EmergingSkill
         {
-            Id = Guid.NewGuid(),
             Name = name.Trim(),
             NormalizedName = name.Trim().ToUpperInvariant(),
             SuggestedCategory = suggestedCategory,
@@ -61,8 +60,6 @@ public sealed class EmergingSkill : BaseEntity
             OccurrenceCount = occurrenceCount,
             Status = EmergingSkillStatus.Pending,
             SuggestedBy = suggestedBy,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 

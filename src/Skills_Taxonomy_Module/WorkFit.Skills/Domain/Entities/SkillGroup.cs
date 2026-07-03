@@ -37,15 +37,12 @@ public sealed class SkillGroup : BaseEntity
 
         return new SkillGroup
         {
-            Id = Guid.NewGuid(),
             Name = name.Trim(),
             NormalizedName = name.Trim().ToUpperInvariant(),
             Description = description?.Trim(),
             CategoryId = categoryId,
             DisplayOrder = displayOrder,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 
