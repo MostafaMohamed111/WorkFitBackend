@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\Exceptions\" />
     <Folder Include="Features\Domains_Logs\" />
-    <Folder Include="Features\Tasks\" />
   </ItemGroup>
 
   <ItemGroup>

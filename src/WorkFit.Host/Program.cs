@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using WorkFit.Host.ExtentionMethods;
 using WorkFit.Host.GlobalExceptionHandler;
 
@@ -60,6 +61,10 @@ namespace WorkFit.Host
 
             builder.Services.AddProblemDetails();
             builder.Services.AddExceptionHandler<ExceptionHandler>();
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             var app = builder.Build();
 
