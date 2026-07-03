@@ -33,13 +33,10 @@ public sealed class SkillSynonym : BaseEntity
 
         return new SkillSynonym
         {
-            Id = Guid.NewGuid(),
             SkillId = skillId,
             Text = text.Trim(),
             NormalizedText = text.Trim().ToUpperInvariant(),
             IsSystem = isSystem,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 }

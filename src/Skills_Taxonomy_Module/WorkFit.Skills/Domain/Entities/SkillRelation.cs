@@ -35,12 +35,9 @@ public sealed class SkillRelation : BaseEntity
 
         return new SkillRelation
         {
-            Id = Guid.NewGuid(),
             SkillId = skillId,
             RelatedSkillId = relatedSkillId,
             Type = type,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
         };
     }
 }
