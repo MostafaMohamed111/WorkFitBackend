@@ -7,7 +7,10 @@ namespace WorkFit.ProjectManagement.Features.Project_Tasks.AssignTask;
 public sealed class AssignTaskEndPoint : Endpoint<AssignTaskRequest, AssignTaskResponse>
 {
     private readonly IMediator _mediator;
-    public AssignTaskEndPoint(IMediator mediator) => _mediator = mediator;
+    public AssignTaskEndPoint(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
 
     public override void Configure()
     {
