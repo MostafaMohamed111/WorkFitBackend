@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.Skills.Domain.Enums;
 
 namespace WorkFit.Skills.Features.Skills.CreateSkill;

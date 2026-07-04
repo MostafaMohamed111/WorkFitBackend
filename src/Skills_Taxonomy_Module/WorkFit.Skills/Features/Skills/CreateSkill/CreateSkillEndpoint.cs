@@ -1,25 +1,24 @@
 ﻿using FastEndpoints;
-using MediatR;
 using Microsoft.AspNetCore.Http;
-using WorkFit.SharedKernel.ICurrentUser;
+using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.Skills.Features.Skills.CreateSkill;
 
 public sealed class CreateSkillEndpoint : Endpoint<CreateSkillRequest, SkillDto>
 {
     private readonly IMediator _mediator;
-    private readonly ICurrentUserContext _currentUser;
 
-    public CreateSkillEndpoint(IMediator mediator, ICurrentUserContext currentUser)
+    public CreateSkillEndpoint(IMediator mediator)
     {
         _mediator = mediator;
-        _currentUser = currentUser;
     }
 
     public override void Configure()
     {
         Post("/api/skills");
-        AllowAnonymous(); 
+        AllowAnonymous();
+        Options(x => x.WithTags("Skills"));
+
         Summary(s =>
         {
             s.Summary = "Create a new skill";
@@ -44,6 +43,7 @@ public sealed class CreateSkillEndpoint : Endpoint<CreateSkillRequest, SkillDto>
 
         var result = await _mediator.Send(command, ct);
 
-        await SendAsync(result, StatusCodes.Status201Created, ct);
+        await Send.OkAsync(result, ct);
+        HttpContext.Response.StatusCode = StatusCodes.Status201Created;
     }
 }
