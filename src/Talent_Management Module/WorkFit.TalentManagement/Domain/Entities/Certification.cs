@@ -3,8 +3,7 @@
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class Certification : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeId { get; private set; }
     public string Name { get; private set; } = default!;
     public string IssuingOrganization { get; private set; } = default!;

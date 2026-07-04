@@ -3,9 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
-using WorkFit.TalentManagement.Application.Abstractions;
 using WorkFit.TalentManagement.Infrastructure.Data;
-using WorkFit.TalentManagement.Infrastructure.Repositories;
 
 namespace WorkFit.TalentManagement;
 
@@ -18,8 +16,6 @@ public sealed class RegisterTalentModuleServices : IRegisterModuleServices
 
         services.AddDbContext<TalentDbContext>(options =>
             options.UseSqlServer(connectionString));
-
-        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 
         services.AddMediatorHandlers<ModuleMarker>();
     }

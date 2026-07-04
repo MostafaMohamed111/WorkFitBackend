@@ -4,8 +4,7 @@ using WorkFit.TalentManagement.Domain.Enums;
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class EmployeeSkill : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeId { get; private set; }
     public Guid SkillId { get; private set; } // reference to Module 4
 
@@ -13,8 +12,6 @@ public class EmployeeSkill : BaseEntity
     public string SkillName { get; private set; } = default!;
     public ProficiencyLevel Proficiency { get; private set; }
     public string Source { get; private set; } = "Manual"; // Manual / GitHub / Jira
-    public DateTime AddedAt { get; private set; } = DateTime.UtcNow;
-
     public Employee Employee { get; private set; } = default!;
     public ICollection<SkillEvidence> Evidences { get; private set; } = [];
 

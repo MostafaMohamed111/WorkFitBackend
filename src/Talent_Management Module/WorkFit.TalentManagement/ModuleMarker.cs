@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace WorkFit.TalentManagement;
 
-namespace WorkFit.TalentManagement
+public  class ModuleMarker
 {
-    public class ModuleMarker
-    {
-    }
+    public const string ModuleName = "TalentManagement";
 }
