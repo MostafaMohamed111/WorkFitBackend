@@ -3,8 +3,7 @@
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class TalentProfile : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeId { get; private set; }
     public string? Bio { get; private set; }
     public string? LinkedInUrl { get; private set; }

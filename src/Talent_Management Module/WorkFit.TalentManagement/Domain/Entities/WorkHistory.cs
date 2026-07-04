@@ -3,8 +3,7 @@
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class WorkHistory : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeId { get; private set; }
     public Guid ProjectId { get; private set; } // reference to Module 5
     public string ProjectName { get; private set; } = default!; // cached
