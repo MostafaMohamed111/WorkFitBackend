@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using WorkFit.Identity.Contracts.IntegrationEvents.OrganizationRegistered;
 using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Features.RegisterOrganization.Exceptions;
@@ -38,6 +39,9 @@ public sealed class RegisterOrganizationCommandHandler : IRequestHandler<Registe
             var errors = string.Join(", ", createdUser.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Failed to create user: {errors}");
         }
+
+        var roleClaim = new Claim(ClaimTypes.Role, "OrganizationOwner");
+        await _userManager.AddClaimAsync(user, roleClaim);
 
         await _mediator.Publish(new OrganizationRegisteredIntegrationEvent(user.Id, command.Email), cancellationToken);
     }

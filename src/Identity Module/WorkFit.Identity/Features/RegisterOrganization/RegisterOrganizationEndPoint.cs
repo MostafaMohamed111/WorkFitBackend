@@ -1,5 +1,6 @@
 ﻿
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.Identity.Features.RegisterOrganization;
@@ -16,6 +17,7 @@ public sealed class RegisterOrganizationEndPoint :Endpoint<RegisterOrganizationR
     public override void Configure()
     {
         Post("/api/identity/register-organization");
+        Options(x => x.WithTags("Identity"));
         AllowAnonymous();
     }
 
