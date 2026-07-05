@@ -8,7 +8,6 @@ public class WorkFitSkillsDbContextFactory : IDesignTimeDbContextFactory<WorkFit
 {
     public WorkFitSkillsDbContext CreateDbContext(string[] args)
     {
-        // Navigate from WorkFit.Skills up to src, then into WorkFit.Host
         var hostPath = Path.Combine(
             Directory.GetCurrentDirectory(),
             "..", "..", "WorkFit.Host"

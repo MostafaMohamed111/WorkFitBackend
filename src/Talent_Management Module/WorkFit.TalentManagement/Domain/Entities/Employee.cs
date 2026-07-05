@@ -7,8 +7,7 @@ namespace WorkFit.TalentManagement.Domain.Entities
 {
     public class Employee : BaseEntity
     {
-        public Guid Id { get; private set; } = Guid.NewGuid();
-
+       
         // Cross-module references (IDs only)
         public Guid OrganizationId { get; private set; }
         public Guid DepartmentId { get; private set; }

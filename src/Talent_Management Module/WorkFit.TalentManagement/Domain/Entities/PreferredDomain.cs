@@ -3,8 +3,7 @@
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class PreferredDomain : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeId { get; private set; }
     public string DomainName { get; private set; } = default!;
     public int Order { get; private set; } // 1 = أعلى أولوية

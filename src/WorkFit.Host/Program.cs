@@ -16,20 +16,10 @@ namespace WorkFit.Host
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            // get all assemblies that start with "WorkFit." in the base directory
             var assembliesToScan = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "WorkFit.*.dll")
                 .Select(Assembly.LoadFrom)
                 .ToArray();
-            // Register Modules Services
             builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
-            builder.Services.AddMediatR(cfg =>
-            {
-                foreach (var assembly in assembliesToScan)
-                {
-                    cfg.RegisterServicesFromAssembly(assembly);
-                }
-            });
-
             builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
                              .SwaggerDocument(o =>
                              {

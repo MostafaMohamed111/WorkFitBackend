@@ -3,8 +3,7 @@
 namespace WorkFit.TalentManagement.Domain.Entities;
 
 public class SkillEvidence : BaseEntity
-{
-    public Guid Id { get; private set; } = Guid.NewGuid();
+{ 
     public Guid EmployeeSkillId { get; private set; }
     public string Source { get; private set; } = default!; // GitHub / Jira / Manual
     public string Details { get; private set; } = default!; // commit URL, ticket link...
