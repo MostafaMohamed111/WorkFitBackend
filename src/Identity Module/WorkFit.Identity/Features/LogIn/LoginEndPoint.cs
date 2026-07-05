@@ -1,6 +1,7 @@
 ﻿
 
 using FastEndpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -18,6 +19,7 @@ public sealed class LoginEndPoint : Endpoint<LoginRequest, string>
     public override void Configure()
     {
         Post("/api/identity/login");
+        Options(x => x.WithTags("Identity"));
         AllowAnonymous();
     }
 

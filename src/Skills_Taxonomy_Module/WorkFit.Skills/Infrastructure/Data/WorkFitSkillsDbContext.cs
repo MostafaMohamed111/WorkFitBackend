@@ -45,7 +45,6 @@ public class WorkFitSkillsDbContext : DbContext
             .OnDelete(DeleteBehavior.SetNull);
 
         // === SkillPrerequisite: Skill -> Prerequisites ===
-        // This side: "this skill depends on PrerequisiteSkill"
         modelBuilder.Entity<SkillPrerequisite>()
             .HasOne(sp => sp.Skill)
             .WithMany(s => s.Prerequisites)
@@ -53,7 +52,6 @@ public class WorkFitSkillsDbContext : DbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         // === SkillPrerequisite: Skill -> RequiredFor ===
-        // Reverse side: "PrerequisiteSkill is required for this skill"
         modelBuilder.Entity<SkillPrerequisite>()
             .HasOne(sp => sp.PrerequisiteSkill)
             .WithMany(s => s.RequiredFor)

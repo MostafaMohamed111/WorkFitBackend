@@ -1,6 +1,6 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
+using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.Skills.Domain.Entities;
 using WorkFit.Skills.Domain.Exceptions;
 using WorkFit.Skills.Infrastructure.Data;
@@ -9,88 +9,81 @@ namespace WorkFit.Skills.Features.Skills.CreateSkill;
 
 public sealed class CreateSkillCommandHandler : IRequestHandler<CreateSkillCommand, SkillDto>
 {
-    private readonly WorkFitSkillsDbContext _db;
+    private readonly WorkFitSkillsDbContext _context;
 
-    public CreateSkillCommandHandler(WorkFitSkillsDbContext db)
+    public CreateSkillCommandHandler(WorkFitSkillsDbContext context)
     {
-        _db = db;
+        _context = context;
     }
 
-    public async Task<SkillDto> Handle(CreateSkillCommand request, CancellationToken cancellationToken)
+    public async Task<SkillDto> Handle(CreateSkillCommand command, CancellationToken cancellationToken = default)
     {
-        // 1. Check for duplicate skill name (same organization scope)
-        var exists = await _db.Skills
+        var exists = await _context.Skills
             .AnyAsync(s =>
-                s.NormalizedName == request.Name.ToUpperInvariant() &&
-                s.OrganizationId == request.OrganizationId &&
+                s.NormalizedName == command.Name.ToUpperInvariant() &&
+                s.OrganizationId == command.OrganizationId &&
                 !s.IsDeleted,
                 cancellationToken);
 
         if (exists)
-            throw new DuplicateSkillException(request.Name);
+            throw new DuplicateSkillException(command.Name);
 
-        // 2. Validate Category exists (if provided)
-        if (request.CategoryId.HasValue)
+        if (command.CategoryId.HasValue)
         {
-            var categoryExists = await _db.SkillCategories
-                .AnyAsync(c => c.Id == request.CategoryId && c.IsActive, cancellationToken);
+            var categoryExists = await _context.SkillCategories
+                .AnyAsync(c => c.Id == command.CategoryId && c.IsActive, cancellationToken);
 
             if (!categoryExists)
                 throw new FeatureException(
                     ModuleMarker.ModuleName,
                     "CATEGORY_NOT_FOUND",
-                    $"Category with ID '{request.CategoryId}' not found or inactive.",
+                    $"Category with ID '{command.CategoryId}' not found or inactive.",
                     "The specified category does not exist."
                 );
         }
 
-        // 3. Validate Group exists (if provided)
-        if (request.GroupId.HasValue)
+        if (command.GroupId.HasValue)
         {
-            var groupExists = await _db.SkillGroups
-                .AnyAsync(g => g.Id == request.GroupId && g.IsActive, cancellationToken);
+            var groupExists = await _context.SkillGroups
+                .AnyAsync(g => g.Id == command.GroupId && g.IsActive, cancellationToken);
 
             if (!groupExists)
                 throw new FeatureException(
                     ModuleMarker.ModuleName,
                     "GROUP_NOT_FOUND",
-                    $"Group with ID '{request.GroupId}' not found or inactive.",
+                    $"Group with ID '{command.GroupId}' not found or inactive.",
                     "The specified group does not exist."
                 );
         }
 
-        // 4. Validate Parent Skill exists (if provided)
-        if (request.ParentSkillId.HasValue)
+        if (command.ParentSkillId.HasValue)
         {
-            var parentExists = await _db.Skills
-                .AnyAsync(s => s.Id == request.ParentSkillId && !s.IsDeleted, cancellationToken);
+            var parentExists = await _context.Skills
+                .AnyAsync(s => s.Id == command.ParentSkillId && !s.IsDeleted, cancellationToken);
 
             if (!parentExists)
                 throw new FeatureException(
                     ModuleMarker.ModuleName,
                     "PARENT_SKILL_NOT_FOUND",
-                    $"Parent skill with ID '{request.ParentSkillId}' not found.",
+                    $"Parent skill with ID '{command.ParentSkillId}' not found.",
                     "The specified parent skill does not exist."
                 );
         }
 
-        // 5. Create the skill using the factory method
         var skill = Skill.Create(
-            request.Name,
-            request.Description,
-            request.Origin,
-            request.OrganizationId,
-            request.CategoryId,
-            request.GroupId,
-            request.ParentSkillId,
-            request.EstimatedTimeToLearn
+            command.Name,
+            command.Description,
+            command.Origin,
+            command.OrganizationId,
+            command.CategoryId,
+            command.GroupId,
+            command.ParentSkillId,
+            command.EstimatedTimeToLearn
         );
 
-        // 6. Save to database
-        await _db.Skills.AddAsync(skill, cancellationToken);
-        await _db.SaveChangesAsync(cancellationToken);
+        _context.Skills.Add(skill);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        // 7. Return the DTO
         return new SkillDto(
             skill.Id,
             skill.Name,
