@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using WorkFit.Identity.Contracts.IntegrationEvents.OrganizationRegistered;
+using WorkFit.Identity.Contracts.IdentityServices;
+using WorkFit.Identity.CrossModule.RegisterOrganization.Exceptions;
 using WorkFit.Identity.Domain.Entities;
-using WorkFit.Identity.Features.RegisterOrganization.Exceptions;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Identity.Features.RegisterOrganization;
+namespace WorkFit.Identity.CrossModule.RegisterOrganization;
 
-public sealed class RegisterOrganizationCommandHandler : IRequestHandler<RegisterOrganizationCommand>
+public sealed class RegisterOrganizationCommandHandler  : ICreateOrganizationUserService
 {
     private readonly UserManager<WorkFitUser> _userManager;
     private readonly IMediator _mediator;
@@ -21,18 +21,18 @@ public sealed class RegisterOrganizationCommandHandler : IRequestHandler<Registe
         _userManager = userManager;
         _mediator = mediator;
     }
-    public async Task Handle(RegisterOrganizationCommand command, CancellationToken cancellationToken = default)
+    public async Task<Guid> RegisterAsync(string email, string password, string confirmPassword, string organizationName, CancellationToken cancellationToken = default)
     {
-        if (command.Password != command.ConfirmPassword)
+        if (password != confirmPassword)
             throw new PasswordConfirmationMissMatchException();
 
-        var existingUser = await _userManager.FindByEmailAsync(command.Email);
+        var existingUser = await _userManager.FindByEmailAsync(email);
         if (existingUser != null) throw new EntityAlreadyExistsException(ModuleMarker.ModuleName, "WorkFitUser", existingUser.Id);
             
 
-        var user = new WorkFitUser(command.OrganizationName, command.Email, command.OrganizationName);
+        var user = new WorkFitUser(organizationName, email, organizationName);
 
-        var createdUser = await _userManager.CreateAsync(user, command.Password);
+        var createdUser = await _userManager.CreateAsync(user, password);
 
         if (!createdUser.Succeeded)
         {
@@ -43,6 +43,6 @@ public sealed class RegisterOrganizationCommandHandler : IRequestHandler<Registe
         var roleClaim = new Claim(ClaimTypes.Role, "OrganizationOwner");
         await _userManager.AddClaimAsync(user, roleClaim);
 
-        await _mediator.Publish(new OrganizationRegisteredIntegrationEvent(user.Id, command.Email), cancellationToken);
+        return user.Id;
     }
 }

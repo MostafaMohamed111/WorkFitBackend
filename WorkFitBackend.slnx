@@ -19,9 +19,12 @@
   <Folder Name="/src/Skills_Taxonomy_Module/">
     <Project Path="src/Skills_Taxonomy_Module/WorkFit.Skills.Contracts/WorkFit.Skills.Contracts.csproj" />
     <Project Path="src/Skills_Taxonomy_Module/WorkFit.Skills/WorkFit.Skills.csproj" />
- </Folder>
+  </Folder>
   <Folder Name="/src/Talent_Management Module/">
     <Project Path="src/Talent_Management Module/WorkFit.TalentManagement.Contracts/WorkFit.TalentManagement.Contracts.csproj" />
     <Project Path="src/Talent_Management Module/WorkFit.TalentManagement/WorkFit.TalentManagement.csproj" />
+  </Folder>
+  <Folder Name="/src/WorfFlow Module/">
+    <Project Path="src/WorkFlow Module/WorkFit.WorkFlow/WorkFit.WorkFlow.csproj" Id="4501f0d0-efd5-4e05-838a-20b9b7603554" />
   </Folder>
 </Solution>

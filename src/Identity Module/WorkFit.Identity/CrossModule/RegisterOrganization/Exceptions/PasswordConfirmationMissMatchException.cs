@@ -1,8 +1,6 @@
-﻿
+﻿using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 
-using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
-
-namespace WorkFit.Identity.Features.RegisterOrganization.Exceptions;
+namespace WorkFit.Identity.CrossModule.RegisterOrganization.Exceptions;
 
 internal sealed class PasswordConfirmationMissMatchException : FeatureException
 {
