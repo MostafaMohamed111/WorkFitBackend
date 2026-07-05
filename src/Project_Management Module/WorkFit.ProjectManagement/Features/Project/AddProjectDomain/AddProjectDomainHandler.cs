@@ -1,6 +1,5 @@
 ﻿using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
-using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
@@ -48,7 +47,7 @@ public sealed class AddProjectDomainHandler : IRequestHandler<AddProjectDomainCo
 
         var log = ProjectActivityLog.Create(
             projectId: request.ProjectId,
-            UserId: _currentUser.GetUserId(cancellationToken),
+            _UserId: _currentUser.GetUserId(cancellationToken),
             action: ActivityActions.ProjectDomainAdded,
             entityType: ActivityEntityType.Domain,
             entityId: request.DomainId);

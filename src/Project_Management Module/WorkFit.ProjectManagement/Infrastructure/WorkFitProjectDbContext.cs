@@ -21,6 +21,8 @@ public class WorkFitProjectDbContext : DbContext
 
     public DbSet<ProjectRequiredSkill> ProjectRequiredSkills { get; set; }
 
+    public DbSet<OrgDomain> OrgDomains { get; set;  }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
