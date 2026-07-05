@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.Organizations.Contracts.OrganizationServices;
+using WorkFit.Organizations.CrossModule.CreateOrganization;
 using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
@@ -17,5 +19,6 @@ public sealed class RegisterOrganizationModuleServices : IRegisterModuleServices
 
         // Register Mediator handlers for the Organization module
         services.AddMediatorHandlers<ModuleMarker>();
+        services.AddScoped<ICreateOrganizationService, CreateOrganizationCommandHandler>();
     }
 }

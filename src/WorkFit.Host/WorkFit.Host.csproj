@@ -30,6 +30,7 @@
     <ProjectReference Include="..\WorkFit.Infrastructure\WorkFit.Infrastructure.csproj" />
 	  <ProjectReference Include="..\Skills_Taxonomy_Module\WorkFit.Skills\WorkFit.Skills.csproj" />
 	  <ProjectReference Include="..\Talent_Management Module\WorkFit.TalentManagement\WorkFit.TalentManagement.csproj" />
+	  <ProjectReference Include="..\WorkFlow Module\WorkFit.WorkFlow\WorkFit.WorkFlow.csproj" />
   </ItemGroup>
 
 </Project>
