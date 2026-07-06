@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
 using WorkFit.Identity.Contracts.IdentityServices;
 using WorkFit.Identity.CrossModule.RegisterOrganization.Exceptions;
 using WorkFit.Identity.Domain.Entities;
@@ -11,15 +10,12 @@ namespace WorkFit.Identity.CrossModule.RegisterOrganization;
 public sealed class RegisterOrganizationCommandHandler  : ICreateOrganizationUserService
 {
     private readonly UserManager<WorkFitUser> _userManager;
-    private readonly IMediator _mediator;
 
     public RegisterOrganizationCommandHandler(
-        UserManager<WorkFitUser> userManager,
-        IMediator mediator
+        UserManager<WorkFitUser> userManager
         )
     {
         _userManager = userManager;
-        _mediator = mediator;
     }
     public async Task<Guid> RegisterAsync(string email, string password, string confirmPassword, string organizationName, CancellationToken cancellationToken = default)
     {
@@ -30,7 +26,7 @@ public sealed class RegisterOrganizationCommandHandler  : ICreateOrganizationUse
         if (existingUser != null) throw new EntityAlreadyExistsException(ModuleMarker.ModuleName, "WorkFitUser", existingUser.Id);
             
 
-        var user = new WorkFitUser(organizationName, email, organizationName);
+        var user = new WorkFitUser(email, organizationName);
 
         var createdUser = await _userManager.CreateAsync(user, password);
 
@@ -40,8 +36,7 @@ public sealed class RegisterOrganizationCommandHandler  : ICreateOrganizationUse
             throw new InvalidOperationException($"Failed to create user: {errors}");
         }
 
-        var roleClaim = new Claim(ClaimTypes.Role, "OrganizationOwner");
-        await _userManager.AddClaimAsync(user, roleClaim);
+        await _userManager.AddToRoleAsync(user, "OrganizationOwner");
 
         return user.Id;
     }
