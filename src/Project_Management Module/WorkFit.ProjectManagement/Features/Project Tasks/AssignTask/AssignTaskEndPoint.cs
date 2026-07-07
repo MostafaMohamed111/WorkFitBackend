@@ -16,6 +16,7 @@ public sealed class AssignTaskEndPoint : Endpoint<AssignTaskRequest, AssignTaskR
     {
         Put("/api/tasks/{id}/assign");
         Options(x => x.WithTags("Project Management"));
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(AssignTaskRequest req, CancellationToken ct)

@@ -1,21 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WorkFit.ProjectManagement.Domain.Entities;
-using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
-using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
 public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskDetailDto>
 {
     private readonly WorkFitProjectDbContext _context;
-    private readonly ICurrentUserContext _currentUser;
 
-    public UpdateTaskCommandHandler(WorkFitProjectDbContext context, ICurrentUserContext currentUser)
+    public UpdateTaskCommandHandler(WorkFitProjectDbContext context)
     {
         _context = context;
-        _currentUser = currentUser;
     }
 
     public async Task<TaskDetailDto> Handle(UpdateTaskCommand command, CancellationToken ct)
@@ -28,10 +23,6 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
 
         if (command.Status.HasValue)
             task.ChangeStatus(command.Status.Value);
-
-        var actorId = _currentUser.GetUserId(ct);
-        _context.ProjectActivityLogs.Add(ProjectActivityLog.Create(
-            task.ProjectId, actorId, ActivityActions.TaskUpdated, ActivityEntityType.Task, entityId: task.Id));
 
         await _context.SaveChangesAsync(ct);
 
