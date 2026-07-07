@@ -23,9 +23,9 @@ public sealed class OnboardEmployeeEndpoint
         var userId = Guid.Parse(User.FindFirst("sub")!.Value);
 
         var command = new OnboardEmployeeCommand(
-            req.OrganizationId, req.DepartmentId, userId,
-            req.FirstName, req.LastName, req.Email,
-            req.JobTitle, req.HireDate);
+            req.OrganizationId, userId,
+            req.Email, 
+            req.JobTitle, req.HireDate, req.Name);
 
         var result = await _mediator.Send(command, ct);
 

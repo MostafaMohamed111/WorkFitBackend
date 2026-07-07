@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
 #nullable disable
 
-namespace WorkFit.TalentManagement.Migrations
+namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(TalentDbContext))]
-    partial class TalentDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260707151725_RefactoredDomainModel")]
+    partial class RefactoredDomainModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,17 +32,20 @@ namespace WorkFit.TalentManagement.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("CertificateUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EmployeeId")
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EmployeeProfileId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("datetime2");
@@ -59,138 +65,12 @@ namespace WorkFit.TalentManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmployeeId");
+                    b.HasIndex("EmployeeProfileId");
 
                     b.ToTable("Certifications", "talent");
                 });
 
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.Employee", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("HireDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("JobTitle")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("OrganizationId");
-
-                    b.ToTable("Employees", "talent");
-                });
-
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Proficiency")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("SkillId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SkillName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId", "SkillId")
-                        .IsUnique();
-
-                    b.ToTable("EmployeeSkills", "talent");
-                });
-
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.PreferredDomain", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DomainName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId", "Order");
-
-                    b.ToTable("PreferredDomains", "talent");
-                });
-
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.SkillEvidence", b =>
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.ConfidenceEvidence", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -203,11 +83,14 @@ namespace WorkFit.TalentManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("EmployeeSkillId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("EvidenceDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("SkillConfidenceChangeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -218,19 +101,16 @@ namespace WorkFit.TalentManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmployeeSkillId");
+                    b.HasIndex("SkillConfidenceChangeId");
 
                     b.ToTable("SkillEvidences", "talent");
                 });
 
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.TalentProfile", b =>
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeProfile", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AvailabilityPercentage")
-                        .HasColumnType("int");
 
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
@@ -238,24 +118,123 @@ namespace WorkFit.TalentManagement.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("CurrentAllocationPercentage")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateOnly?>("HireDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("LinkedInUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("MobilityReady")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("EmployeeProfiles", "talent");
+                });
+
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ConfidenceScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<Guid>("SkillId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SkillName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmployeeId")
+                    b.HasIndex("EmployeeProfileId", "SkillId")
                         .IsUnique();
 
-                    b.ToTable("TalentProfiles", "talent");
+                    b.ToTable("EmployeeSkills", "talent");
+                });
+
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.SkillConfidenceChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AssessmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeSkillId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("NewScore")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OldScore")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeSkillId");
+
+                    b.ToTable("SkillConfidenceChanges", "talent");
                 });
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.WorkHistory", b =>
@@ -272,6 +251,9 @@ namespace WorkFit.TalentManagement.Migrations
 
                     b.Property<DateTime>("From")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
@@ -301,63 +283,48 @@ namespace WorkFit.TalentManagement.Migrations
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.Certification", b =>
                 {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.Employee", "Employee")
+                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.EmployeeProfile", "Employee")
                         .WithMany("Certifications")
-                        .HasForeignKey("EmployeeId")
+                        .HasForeignKey("EmployeeProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.ConfidenceEvidence", b =>
+                {
+                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.SkillConfidenceChange", null)
+                        .WithMany("ConfidenceEvidences")
+                        .HasForeignKey("SkillConfidenceChangeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", b =>
                 {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("Skills")
-                        .HasForeignKey("EmployeeId")
+                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.EmployeeProfile", "Employee")
+                        .WithMany("EmployeeSkills")
+                        .HasForeignKey("EmployeeProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.PreferredDomain", b =>
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.SkillConfidenceChange", b =>
                 {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("PreferredDomains")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.SkillEvidence", b =>
-                {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", "EmployeeSkill")
-                        .WithMany("Evidences")
+                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", null)
+                        .WithMany("ConfidenceChanges")
                         .HasForeignKey("EmployeeSkillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("EmployeeSkill");
-                });
-
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.TalentProfile", b =>
-                {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.Employee", "Employee")
-                        .WithOne("Profile")
-                        .HasForeignKey("WorkFit.TalentManagement.Domain.Entities.TalentProfile", "EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.WorkHistory", b =>
                 {
-                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.Employee", "Employee")
-                        .WithMany("WorkHistory")
+                    b.HasOne("WorkFit.TalentManagement.Domain.Entities.EmployeeProfile", "Employee")
+                        .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -365,23 +332,21 @@ namespace WorkFit.TalentManagement.Migrations
                     b.Navigation("Employee");
                 });
 
-            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.Employee", b =>
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeProfile", b =>
                 {
                     b.Navigation("Certifications");
 
-                    b.Navigation("PreferredDomains");
-
-                    b.Navigation("Profile")
-                        .IsRequired();
-
-                    b.Navigation("Skills");
-
-                    b.Navigation("WorkHistory");
+                    b.Navigation("EmployeeSkills");
                 });
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.EmployeeSkill", b =>
                 {
-                    b.Navigation("Evidences");
+                    b.Navigation("ConfidenceChanges");
+                });
+
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.SkillConfidenceChange", b =>
+                {
+                    b.Navigation("ConfidenceEvidences");
                 });
 #pragma warning restore 612, 618
         }
