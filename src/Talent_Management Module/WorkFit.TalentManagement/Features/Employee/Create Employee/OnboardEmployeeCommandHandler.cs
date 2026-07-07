@@ -12,15 +12,12 @@ public sealed class OnboardEmployeeCommandHandler
 
     public async Task<OnboardEmployeeResponse> Handle(OnboardEmployeeCommand command, CancellationToken ct)
     {
-        var employee = Domain.Entities.Employee.Create(
-            command.OrganizationId, command.DepartmentId, command.UserId,
-            command.FirstName, command.LastName, command.Email,
+        var employee = Domain.Entities.EmployeeProfile.Create(
+            command.OrganizationId, command.UserId, command.Email,
+            command.Name,
             command.JobTitle, command.HireDate);
 
-        _context.Employees.Add(employee);
-
-        var profile = Domain.Entities.TalentProfile.Create(employee.Id);
-        _context.TalentProfiles.Add(profile);
+        _context.EmployeeProfiles.Add(employee);
 
         await _context.SaveChangesAsync(ct);
 

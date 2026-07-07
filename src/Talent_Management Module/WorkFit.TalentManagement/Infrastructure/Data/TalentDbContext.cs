@@ -8,13 +8,11 @@ public class TalentDbContext : DbContext
     public TalentDbContext(DbContextOptions<TalentDbContext> options)
         : base(options) { }
 
-    public DbSet<Employee> Employees => Set<Employee>();
-    public DbSet<TalentProfile> TalentProfiles => Set<TalentProfile>();
-    public DbSet<EmployeeSkill> EmployeeSkills => Set<EmployeeSkill>();
-    public DbSet<SkillEvidence> SkillEvidences => Set<SkillEvidence>();
-    public DbSet<Certification> Certifications => Set<Certification>();
-    public DbSet<PreferredDomain> PreferredDomains => Set<PreferredDomain>();
-    public DbSet<WorkHistory> WorkHistories => Set<WorkHistory>();
+    internal DbSet<EmployeeProfile> EmployeeProfiles => Set<EmployeeProfile>();
+    internal DbSet<EmployeeSkill> EmployeeSkills => Set<EmployeeSkill>();
+    internal DbSet<ConfidenceEvidence> SkillEvidences => Set<ConfidenceEvidence>();
+    internal DbSet<Certification> Certifications => Set<Certification>();
+    internal DbSet<SkillConfidenceChange> SkillConfidenceChanges => Set<SkillConfidenceChange>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

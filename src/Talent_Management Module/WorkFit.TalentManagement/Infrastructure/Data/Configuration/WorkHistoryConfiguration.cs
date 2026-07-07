@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WorkFit.TalentManagement.Domain.Entities;
 
-namespace WorkFit.TalentManagement.Infrastructure.Configuration;
+namespace WorkFit.TalentManagement.Infrastructure.Data.Configuration;
 
-public class WorkHistoryConfiguration : IEntityTypeConfiguration<WorkHistory>
+internal class WorkHistoryConfiguration : IEntityTypeConfiguration<WorkHistory>
 {
     public void Configure(EntityTypeBuilder<WorkHistory> builder)
     {

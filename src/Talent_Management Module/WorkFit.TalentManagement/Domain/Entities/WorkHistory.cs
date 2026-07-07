@@ -2,7 +2,7 @@
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-public class WorkHistory : BaseEntity
+internal sealed class WorkHistory : BaseEntity
 { 
     public Guid EmployeeId { get; private set; }
     public Guid ProjectId { get; private set; } // reference to Module 5
@@ -11,7 +11,7 @@ public class WorkHistory : BaseEntity
     public DateTime From { get; private set; }
     public DateTime? To { get; private set; } // null = لسه شغال
 
-    public Employee Employee { get; private set; } = default!;
+    public EmployeeProfile Employee { get; private set; } = default!;
 
     public static WorkHistory Create(Guid empId, Guid projectId,
         string projectName, string role, DateTime from) => new()

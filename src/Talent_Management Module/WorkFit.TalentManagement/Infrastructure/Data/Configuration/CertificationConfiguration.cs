@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WorkFit.TalentManagement.Domain.Entities;
 
-namespace WorkFit.TalentManagement.Infrastructure.Configuration;
+namespace WorkFit.TalentManagement.Infrastructure.Data.Configuration;
 
-public class CertificationConfiguration : IEntityTypeConfiguration<Certification>
+internal class CertificationConfiguration : IEntityTypeConfiguration<Certification>
 {
     public void Configure(EntityTypeBuilder<Certification> builder)
     {

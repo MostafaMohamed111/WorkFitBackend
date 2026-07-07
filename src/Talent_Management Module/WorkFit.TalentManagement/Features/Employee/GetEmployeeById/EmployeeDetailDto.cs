@@ -2,12 +2,10 @@
 
 public sealed record EmployeeDetailDto(
     Guid Id,
-    string FirstName,
-    string LastName,
+    string Name,
     string Email,
     string JobTitle,
-    DateTime HireDate,
     bool IsActive,
-    int AvailabilityPercentage,
-    bool MobilityReady,
+    int CurrentAllocationPercentage,
+    DateOnly? HireDate,
     string? Bio);

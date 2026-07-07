@@ -13,13 +13,11 @@ public sealed class GetEmployeesHandler
 
     public async Task<List<EmployeeListItemDto>> Handle(GetEmployeesQuery query, CancellationToken ct)
     {
-        return await _context.Employees
-            .Include(e => e.Profile)
-            .Where(e => e.OrganizationId == query.OrgId && e.IsActive)
-            .OrderBy(e => e.LastName)
+        return await _context.EmployeeProfiles
+            .Where(e => e.OrganizationId == query.OrgId && !e.IsDeleted)
             .Select(e => new EmployeeListItemDto(
-                e.Id, e.FirstName, e.LastName, e.Email, e.JobTitle,
-                e.IsActive, e.Profile.AvailabilityPercentage))
+                e.Id, e.Name, e.Email, e.JobTitle,
+                e.IsActive(), e.CurrentAllocationPercentage))
             .ToListAsync(ct);
     }
 }

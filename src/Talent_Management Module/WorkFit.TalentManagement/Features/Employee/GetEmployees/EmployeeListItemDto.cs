@@ -2,9 +2,8 @@
 
 public sealed record EmployeeListItemDto(
     Guid Id,
-    string FirstName,
-    string LastName,
+    string Name,
     string Email,
     string JobTitle,
     bool IsActive,
-    int AvailabilityPercentage);
+    int CurrentAllocationPercentage);

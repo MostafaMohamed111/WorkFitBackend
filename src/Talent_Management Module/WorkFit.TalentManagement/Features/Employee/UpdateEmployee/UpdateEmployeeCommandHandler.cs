@@ -12,7 +12,7 @@ public sealed class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmploye
 
     public async Task Handle(UpdateEmployeeCommand command, CancellationToken ct)
     {
-        var employee = await _context.Employees.FindAsync(new object[] { command.EmployeeId }, ct);
+        var employee = await _context.EmployeeProfiles.FindAsync(new object[] { command.EmployeeId }, ct);
 
         if (employee is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Employee", command.EmployeeId);

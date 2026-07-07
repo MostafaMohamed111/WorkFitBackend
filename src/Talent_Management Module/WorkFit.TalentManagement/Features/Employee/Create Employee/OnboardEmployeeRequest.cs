@@ -3,10 +3,8 @@
 public sealed class OnboardEmployeeRequest
 {
     public Guid OrganizationId { get; set; }
-    public Guid DepartmentId { get; set; }
-    public string FirstName { get; set; } = default!;
-    public string LastName { get; set; } = default!;
     public string Email { get; set; } = default!;
     public string JobTitle { get; set; } = default!;
-    public DateTime HireDate { get; set; }
+    public DateOnly? HireDate { get; set; }
+    public string Name { get; set; } = default!;
 }

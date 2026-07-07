@@ -12,15 +12,15 @@ public sealed class DeactivateEmployeeCommandHandler : IRequestHandler<Deactivat
 
     public async Task Handle(DeactivateEmployeeCommand command, CancellationToken ct)
     {
-        var employee = await _context.Employees.FindAsync(new object[] { command.EmployeeId }, ct);
+        var employee = await _context.EmployeeProfiles.FindAsync(new object[] { command.EmployeeId }, ct);
 
         if (employee is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Employee", command.EmployeeId);
 
-        if (!employee.IsActive)
+        if (employee.IsDeleted)
             throw new FeatureException(ModuleMarker.ModuleName, "EMPLOYEE_ALREADY_INACTIVE", "Employee is already inactive.");
 
-        employee.Deactivate();
+        employee.DeactivateEmployee();
 
         await _context.SaveChangesAsync(ct);
     }
