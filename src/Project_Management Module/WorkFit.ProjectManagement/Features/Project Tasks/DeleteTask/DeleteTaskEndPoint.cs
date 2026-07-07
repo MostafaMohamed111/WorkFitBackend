@@ -17,6 +17,7 @@ public sealed class DeleteTaskEndPoint : EndpointWithoutRequest<DeleteTaskRespon
     {
         Delete("/api/tasks/{id}");
         Options(x => x.WithTags("Project Management"));
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

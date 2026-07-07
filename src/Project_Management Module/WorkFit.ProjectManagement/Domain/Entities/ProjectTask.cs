@@ -21,6 +21,8 @@ public class ProjectTask : BaseEntity
     public string? SourceSystem { get; private set; }
     public string? SourceReferenceId { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
 
     public Project Project { get; private set; } = default!;
 
@@ -104,6 +106,19 @@ public class ProjectTask : BaseEntity
 
         Status = TaskStatus.Done;
         CompletedAt = DateTimeOffset.UtcNow;
+        MarkUpdated();
+    }
+
+    public void Delete()
+    {
+        if (Status == TaskStatus.Done)
+            throw new CannotDeleteCompletedTaskException(Id);
+
+        if (IsDeleted)
+            throw new TaskAlreadyDeletedException(Id);
+
+        IsDeleted = true;
+        DeletedAt = DateTimeOffset.UtcNow;
         MarkUpdated();
     }
 }

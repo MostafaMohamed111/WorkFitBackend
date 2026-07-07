@@ -12,6 +12,7 @@ public sealed class CompleteTaskEndPoint : EndpointWithoutRequest<CompleteTaskRe
     {
         Put("/api/tasks/{id}/complete");
         Options(x => x.WithTags("Project Management"));
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

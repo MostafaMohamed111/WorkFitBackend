@@ -26,6 +26,8 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         if (project is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", command.ProjectId);
 
+        var actorId = _currentUser.GetUserId(ct);
+
         if (command.AssigneeId.HasValue)
         {
             var isMemberOfProject = await _context.ProjectAssignments.AnyAsync(
@@ -34,14 +36,19 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
                      a.IsActive, ct);
 
             if (!isMemberOfProject)
-                throw new FeatureException(
-                    ModuleMarker.ModuleName,
-                    "EMPLOYEE_NOT_ASSIGNED_TO_PROJECT",
-                    $"Employee '{command.AssigneeId}' is not an active member of project '{command.ProjectId}'.",
-                    "You can only assign a task to an employee who is a member of this project.");
-        }
+            {
+                var newAssignment = ProjectAssignment.Create(
+                    projectId: command.ProjectId,
+                    employeeId: command.AssigneeId.Value,
+                    roleOnProject: null,
+                    allocationPercentage: 0,
+                    startDate: DateOnly.FromDateTime(DateTime.UtcNow),
+                    endDate: null);
 
-        var actorId = _currentUser.GetUserId(ct);
+                _context.ProjectAssignments.Add(newAssignment);
+
+            }
+        }
 
         var task = ProjectTask.Create(
             command.ProjectId,
@@ -56,14 +63,6 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
 
         _context.ProjectTasks.Add(task);
 
-        var activityLog = ProjectActivityLog.Create(
-            command.ProjectId,
-            actorId,
-            ActivityActions.TaskCreated,
-            ActivityEntityType.Task,
-            entityId: task.Id);
-
-        _context.ProjectActivityLogs.Add(activityLog);
         await _context.SaveChangesAsync(ct);
 
         return new CreateTaskResponse(task.Id, task.Title, task.Status.ToString(), DateTimeOffset.UtcNow);

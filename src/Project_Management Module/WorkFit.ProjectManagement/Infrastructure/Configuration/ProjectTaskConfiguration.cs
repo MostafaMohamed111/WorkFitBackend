@@ -32,5 +32,7 @@ public class ProjectTaskConfiguration
 
         builder.Property(x => x.SourceReferenceId)
                .HasMaxLength(255);
+
+        builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }
