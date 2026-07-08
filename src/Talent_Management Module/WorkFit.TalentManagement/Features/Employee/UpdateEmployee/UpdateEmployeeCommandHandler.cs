@@ -17,7 +17,7 @@ public sealed class UpdateEmployeeCommandHandler : IRequestHandler<UpdateEmploye
         if (employee is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Employee", command.EmployeeId);
 
-        employee.UpdateDetails(command.FirstName, command.LastName, command.JobTitle);
+        employee.UpdateEmployeePersonalData(command.FirstName, command.LastName, command.JobTitle);
 
         await _context.SaveChangesAsync(ct);
     }
