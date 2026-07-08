@@ -13,27 +13,18 @@ internal sealed class SkillLookUpService : ISkillLookUpService
         _db = db;
     }
 
-    public async Task<SkillLookUpDto?> GetSkillByIdAsync(Guid skillId)
+    Task<bool> ISkillLookUpService.ExistsAsync(Guid skillId)
     {
-        return await _db.Skills
-            .Where(s => s.Id == skillId && !s.IsDeleted)
-            .Select(s => new SkillLookUpDto(s.Id, s.Name, s.CategoryId, s.GroupId))
-            .FirstOrDefaultAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task<IReadOnlyCollection<SkillLookUpDto>> GetSkillsByIdsAsync(IEnumerable<Guid> skillIds)
+    Task<SkillLookUpDto?> ISkillLookUpService.GetSkillByIdAsync(Guid skillId)
     {
-        var ids = skillIds.Distinct().ToList();
-        if (!ids.Any()) return Array.Empty<SkillLookUpDto>();
-
-        return await _db.Skills
-            .Where(s => ids.Contains(s.Id) && !s.IsDeleted)
-            .Select(s => new SkillLookUpDto(s.Id, s.Name, s.CategoryId, s.GroupId))
-            .ToListAsync();
+        throw new NotImplementedException();
     }
 
-    public async Task<bool> ExistsAsync(Guid skillId)
+    Task<IReadOnlyCollection<SkillLookUpDto>> ISkillLookUpService.GetSkillsByIdsAsync(IEnumerable<Guid> skillIds)
     {
-        return await _db.Skills.AnyAsync(s => s.Id == skillId && !s.IsDeleted);
+        throw new NotImplementedException();
     }
 }
