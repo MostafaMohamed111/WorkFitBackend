@@ -35,6 +35,7 @@ internal sealed class EmployeeProfile : BaseEntity
         // Validation here
         return new EmployeeProfile()
         {
+
             Name = name,
             OrganizationId = orgId,
             UserId = userId,
@@ -67,28 +68,18 @@ internal sealed class EmployeeProfile : BaseEntity
 
 
     // aggregate root controls childeren entities
-    // adding a skill for the first time based on an assessment
-    public void AddEmployeeSkill( Guid skillId, Guid assessmentId,
+    public void AddOrUpdateEmployeeSkill( Guid skillId, Guid assessmentId,
         string skillName, int confidenceScore, string details, string source)
     {
         var existingSkill = _employeeSkills.FirstOrDefault(s => s.SkillId == skillId);
-        if (existingSkill != null)
-            throw new DuplicateEmployeeSkillInsertionDomainException();
-        // validation within the childeren entity factory method
-        var skill = EmployeeSkill.Create(Id, skillId, assessmentId, skillName, confidenceScore, details, source);
-        _employeeSkills.Add(skill);
-        MarkUpdated();
-    }
+        if (existingSkill == null)
+        {
+            var skill = EmployeeSkill.Create(Id, skillId, assessmentId, skillName, confidenceScore, details, source);
+            _employeeSkills.Add(skill);
+        }
+        else
+            existingSkill.ApplyAssessedChange(assessmentId, confidenceScore, details, source);
 
-
-    // aggregate root controls childeren entities
-    // updating an existing skill's confidence score based on an assessment
-    public void UpdateEmployeeSkillConfidenceScore(Guid skillId, Guid assessmentId, int newConfidenceScore, string details, string source)
-    {
-        var skill = _employeeSkills.FirstOrDefault(s => s.Id == skillId)
-            ?? throw new EmployeeSkillWasNotFoundException();
-
-        skill.ApplyAssessedChange(assessmentId, newConfidenceScore, details, source);
         MarkUpdated();
     }
 

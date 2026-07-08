@@ -24,6 +24,7 @@ internal sealed class Certification : BaseEntity
         string details,
         DateOnly? expiry) 
         {
+        //  validation here
             return new Certification()
             {
                 DocumentId = documentId,
@@ -35,17 +36,6 @@ internal sealed class Certification : BaseEntity
                 Details = details
             };
         }
-
-    public void Update(Guid newDocumentId,string name, string issuer,
-        DateOnly issueDate, DateOnly? expiry, string? url)
-    {
-        DocumentId = newDocumentId;
-        Name = name;
-        IssuingOrganization = issuer;
-        IssueDate = issueDate;
-        ExpiryDate = expiry;
-        MarkUpdated();
-    }
 
     public void DeleteCertificate() => MarkDeleted();
 
