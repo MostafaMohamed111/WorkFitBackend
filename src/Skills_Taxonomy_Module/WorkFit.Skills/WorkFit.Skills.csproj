@@ -26,8 +26,4 @@
     <ProjectReference Include="..\WorkFit.Skills.Contracts\WorkFit.Skills.Contracts.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Infrastructure\Data\Configurations\" />
-  </ItemGroup>
-
 </Project>

@@ -4,28 +4,24 @@ using Microsoft.Extensions.Configuration;
 
 namespace WorkFit.Skills.Infrastructure.Data;
 
-public class WorkFitSkillsDbContextFactory : IDesignTimeDbContextFactory<WorkFitSkillsDbContext>
+public sealed class WorkFitSkillsDbContextFactory
+    : IDesignTimeDbContextFactory<WorkFitSkillsDbContext>
 {
     public WorkFitSkillsDbContext CreateDbContext(string[] args)
     {
-        var hostPath = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "..", "..", "WorkFit.Host"
-        );
-
-        var config = new ConfigurationBuilder()
-            .SetBasePath(Path.GetFullPath(hostPath))
-            .AddJsonFile("appsettings.json", optional: false)
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
             .AddJsonFile("appsettings.Development.json", optional: true)
             .Build();
 
-        var connectionString = config.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException(
-                $"Connection string 'DefaultConnection' not found. Looked in: {Path.GetFullPath(hostPath)}");
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("DefaultConnection not found.");
 
-        var optionsBuilder = new DbContextOptionsBuilder<WorkFitSkillsDbContext>();
-        optionsBuilder.UseSqlServer(connectionString);
+        var options = new DbContextOptionsBuilder<WorkFitSkillsDbContext>();
 
-        return new WorkFitSkillsDbContext(optionsBuilder.Options);
+        options.UseSqlServer(connectionString);
+
+        return new WorkFitSkillsDbContext(options.Options);
     }
 }
