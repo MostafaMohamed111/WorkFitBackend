@@ -8,37 +8,35 @@ internal sealed class Certification : BaseEntity
     public Guid EmployeeProfileId { get; private set; }
     public string Name { get; private set; } = default!;
     public string IssuingOrganization { get; private set; } = default!;
-    public DateTime IssueDate { get; private set; }
-    public DateTime? ExpiryDate { get; private set; }
+    public DateOnly IssueDate { get; private set; }
+    public DateOnly? ExpiryDate { get; private set; }
+    public string Details { get; private set; } = default!;
 
 
     // Computed — مش متخزن في الداتابيز، دايماً محدث
     public bool IsExpired =>
-        ExpiryDate.HasValue && ExpiryDate.Value < DateTime.UtcNow;
+        ExpiryDate.HasValue && ExpiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow);
 
     public EmployeeProfile Employee { get; private set; } = default!;
 
-    public static Certification Create(Guid documentId, Guid empId, string name,
-        string issuer, DateTime issueDate,
-        DateTime? expiry) => new()
+    public static Certification Create(Guid empId, Guid documentId, string name,
+        string issuer, DateOnly issueDate,
+        string details,
+        DateOnly? expiry) 
         {
-            DocumentId = documentId,
-            EmployeeProfileId = empId,
-            Name = name,
-            IssuingOrganization = issuer,
-            IssueDate = issueDate,
-            ExpiryDate = expiry,
-        };
+        //  validation here
+            return new Certification()
+            {
+                DocumentId = documentId,
+                EmployeeProfileId = empId,
+                Name = name,
+                IssuingOrganization = issuer,
+                IssueDate = issueDate,
+                ExpiryDate = expiry,
+                Details = details
+            };
+        }
 
-    public void Update(Guid newDocumentId,string name, string issuer,
-        DateTime issueDate, DateTime? expiry, string? url)
-    {
-        DocumentId = newDocumentId;
-        Name = name;
-        IssuingOrganization = issuer;
-        IssueDate = issueDate;
-        ExpiryDate = expiry;
-        MarkUpdated();
-    }
+    public void DeleteCertificate() => MarkDeleted();
 
 }
