@@ -1,4 +1,4 @@
-﻿using WorkFit.ProjectManagement.Domain.Enums;
+using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Domain.Exceptions;
 using WorkFit.SharedKernel.BaseEntity;
 using WorkFit.SharedKernel.Exceptions.DomainExceptions;
@@ -42,8 +42,6 @@ public class ProjectTask : BaseEntity
         if (string.IsNullOrWhiteSpace(title) || title.Length < 3 || title.Length > 100)
             throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "Title");
 
-        if (dueDate.HasValue && dueDate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
-            throw new ArgumentException("Due date cannot be in the past.", nameof(dueDate));
 
         return new ProjectTask
         {
@@ -76,8 +74,6 @@ public class ProjectTask : BaseEntity
 
         if (dueDate.HasValue)
         {
-            if (dueDate.Value < DateOnly.FromDateTime(DateTime.UtcNow))
-                throw new ArgumentException("Due date cannot be in the past.", nameof(dueDate));
             DueDate = dueDate.Value;
         }
 
@@ -119,6 +115,17 @@ public class ProjectTask : BaseEntity
 
         IsDeleted = true;
         DeletedAt = DateTimeOffset.UtcNow;
+        MarkUpdated();
+    }
+
+    /// <summary>
+    /// Records the external system and reference identifier this task was synced from.
+    /// Used by the Integration layer to enable idempotent re-sync.
+    /// </summary>
+    public void SetSource(string sourceSystem, string sourceReferenceId)
+    {
+        SourceSystem      = sourceSystem;
+        SourceReferenceId = sourceReferenceId;
         MarkUpdated();
     }
 }

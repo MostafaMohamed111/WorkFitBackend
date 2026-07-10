@@ -1,4 +1,4 @@
-﻿
+
 using WorkFit.SharedKernel.BaseEntity;
 using WorkFit.TalentManagement.Domain.Enums;
 using WorkFit.TalentManagement.Domain.Exceptions;
@@ -13,7 +13,7 @@ internal sealed class EmployeeProfile : BaseEntity
     public Guid UserId { get; private set; }
     public EmployeeProfileStatus Status { get; private set; } 
     public string Name { get; private set; } = default!;
-    public string Email { get; private set; } = default!;
+    public string? Email { get; private set; }
     public string? Bio { get; private set; }
     public string? LinkedInUrl { get; private set; }
     public string JobTitle { get; private set; } = default!;
@@ -25,11 +25,14 @@ internal sealed class EmployeeProfile : BaseEntity
     private readonly List<EmployeeSkill> _employeeSkills = new List<EmployeeSkill>();
     public IReadOnlyCollection<EmployeeSkill> EmployeeSkills => _employeeSkills;
 
+    private readonly List<DeveloperIdentityMapping> _identityMappings = new List<DeveloperIdentityMapping>();
+    public IReadOnlyCollection<DeveloperIdentityMapping> IdentityMappings => _identityMappings;
+
     private readonly List<Certification> _certifications = new List<Certification>();
     public IReadOnlyCollection<Certification> Certifications => _certifications;
 
     public static EmployeeProfile Create(
-        Guid orgId, Guid userId, string email, string name,
+        Guid orgId, Guid userId, string? email, string name,
          string jobTitle, DateOnly? hireDate = null)
     {
         // Validation here
@@ -114,5 +117,13 @@ internal sealed class EmployeeProfile : BaseEntity
 
     // if an update certificate is needed would be implemented as an entry here as in the aggregate root
 
-
+    public void AddExternalIdentity(string sourceSystem, string externalAccountId, string externalDisplayName)
+    {
+        var existing = _identityMappings.FirstOrDefault(m => m.SourceSystem == sourceSystem && m.ExternalAccountId == externalAccountId);
+        if (existing == null)
+        {
+            _identityMappings.Add(DeveloperIdentityMapping.Create(Id, sourceSystem, externalAccountId, externalDisplayName));
+            MarkUpdated();
+        }
+    }
 }
