@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.TalentManagement.Domain.Entities;
 
 namespace WorkFit.TalentManagement.Infrastructure.Data;
@@ -13,6 +13,7 @@ public class TalentDbContext : DbContext
     internal DbSet<ConfidenceEvidence> SkillEvidences => Set<ConfidenceEvidence>();
     internal DbSet<Certification> Certifications => Set<Certification>();
     internal DbSet<SkillConfidenceChange> SkillConfidenceChanges => Set<SkillConfidenceChange>();
+    internal DbSet<DeveloperIdentityMapping> IdentityMappings => Set<DeveloperIdentityMapping>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

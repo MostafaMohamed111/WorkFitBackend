@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.SharedKernel.DependencyInjection;
@@ -24,6 +24,7 @@ public sealed class RegisterTalentModuleServices : IRegisterModuleServices
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<IEmployeeLookUpService, EmployeeLookUpService>();
         services.AddScoped<ICreateEmployeeService, CreateEmployeeService>();
+        services.AddScoped<IGetOrCreateExternalEmployeeService, GetOrCreateExternalEmployeeService>();
         services.AddScoped<ICreateOrUpdateEmployeeSkillsAfterAssessmentService, CreateOrUpdateEmployeeSkillsAfterAssessmentService>();
     }
 }

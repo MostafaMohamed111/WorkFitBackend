@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using WorkFit.TalentManagement.Domain.Entities;
 
@@ -10,12 +10,16 @@ internal class EmployeeConfiguration : IEntityTypeConfiguration<EmployeeProfile>
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Email).IsRequired().HasMaxLength(256);
+        builder.Property(x => x.Email).IsRequired(false).HasMaxLength(256);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         builder.Property(x => x.JobTitle).IsRequired().HasMaxLength(200);
 
-        builder.HasIndex(x => x.Email).IsUnique();
         builder.HasIndex(x => x.OrganizationId);
+
+        builder.HasMany(x => x.IdentityMappings)
+            .WithOne(x => x.Employee)
+            .HasForeignKey(x => x.EmployeeProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 
         builder.HasMany(x => x.EmployeeSkills)
