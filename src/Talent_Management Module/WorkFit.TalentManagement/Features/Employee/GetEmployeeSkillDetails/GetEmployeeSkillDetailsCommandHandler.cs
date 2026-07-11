@@ -5,7 +5,7 @@ using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Domain.Entities;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
-namespace WorkFit.TalentManagement.Features.GetEmployeeSkillDetails;
+namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
 public sealed class GetEmployeeSkillDetailsCommandHandler
     : IRequestHandler<GetEmployeeSkillDetailsCommand, EmployeeSkillDetailsDto>

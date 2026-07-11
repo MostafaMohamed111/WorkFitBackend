@@ -1,4 +1,4 @@
-﻿namespace WorkFit.TalentManagement.Features.GetEmployeeSkillDetails;
+﻿namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
 public sealed class GetEmployeeSkillDetailsRequest
 {

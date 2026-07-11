@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Contracts.Dtos;
 
-namespace WorkFit.TalentManagement.Features.GetEmployeeSkillDetails;
+namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
 public sealed class GetEmployeeSkillDetailsEndPoint : Endpoint<GetEmployeeSkillDetailsRequest, EmployeeSkillDetailsDto>
 {
