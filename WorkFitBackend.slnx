@@ -31,4 +31,8 @@
     <Project Path="src/WorkFit_Integration Module/WorkFit.Integration.Contracts/WorkFit.Integration.Contracts.csproj" />
     <Project Path="src/WorkFit_Integration Module/WorkFit.Integration/WorkFit.Integration.csproj" />
   </Folder>
+  <Folder Name="/src/AuditLog Module/">
+    <Project Path="src/AuditLog Module/WorkFit.AuditLog.Contracts/WorkFit.AuditLog.Contracts.csproj" />
+    <Project Path="src/AuditLog Module/WorkFit.AuditLog/WorkFit.AuditLog.csproj" />
+  </Folder>
 </Solution>
