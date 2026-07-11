@@ -41,4 +41,10 @@ public sealed class CurrentUserContext : ICurrentUserContext
             throw new InvalidOperationException("User ID not found.");
         return Guid.Parse(userId);
     }
+    public string GetUserDisplayName(CancellationToken cancellationToken = default)
+    {
+        return _httpContextAccessor.HttpContext?.User?
+            .FindFirst(ClaimTypes.Name)?.Value
+            ?? "Unknown";
+    }
 }
