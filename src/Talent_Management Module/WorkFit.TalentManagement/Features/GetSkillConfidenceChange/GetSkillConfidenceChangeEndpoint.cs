@@ -19,11 +19,7 @@ public sealed class GetSkillConfidenceChangeEndpoint
         Get("/api/talent-management/skill-confidence-changes/{id}");
         AllowAnonymous();
         Options(x => x.WithTags("Talent Management"));
-        Summary(s =>
-        {
-            s.Summary = "Get a skill confidence change by ID";
-            s.Description = "Returns detailed information about a specific skill confidence change including evidence";
-        });
+      
     }
 
     public override async Task HandleAsync(GetSkillConfidenceChangeRequest req, CancellationToken ct)
