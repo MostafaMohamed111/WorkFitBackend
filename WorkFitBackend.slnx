@@ -27,4 +27,8 @@
   <Folder Name="/src/WorfFlow Module/">
     <Project Path="src/WorkFlow Module/WorkFit.WorkFlow/WorkFit.WorkFlow.csproj" Id="4501f0d0-efd5-4e05-838a-20b9b7603554" />
   </Folder>
+  <Folder Name="/src/WorkFit_Integration Module/">
+    <Project Path="src/WorkFit_Integration Module/WorkFit.Integration.Contracts/WorkFit.Integration.Contracts.csproj" />
+    <Project Path="src/WorkFit_Integration Module/WorkFit.Integration/WorkFit.Integration.csproj" />
+  </Folder>
 </Solution>
