@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.Identity.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using WorkFit.Identity.Infrastructure.Data;
 namespace WorkFit.Identity.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(WorkFitUsersDbContext))]
-    partial class WorkFitUsersDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260711064627_AddOrganizationIdToWorkFitUser")]
+    partial class AddOrganizationIdToWorkFitUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
