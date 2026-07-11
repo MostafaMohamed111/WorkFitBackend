@@ -4,24 +4,27 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 
-public sealed class GetEmployeeByIdEndpoint
-    : Endpoint<GetEmployeeByIdRequest, EmployeeDetailDto>
+public sealed class GetEmployeeByIdEndPoint : Endpoint<GetEmployeeByIdRequest, EmployeeDetailsDto>
 {
     private readonly IMediator _mediator;
 
-    public GetEmployeeByIdEndpoint(IMediator mediator) => _mediator = mediator;
+    public GetEmployeeByIdEndPoint(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
 
     public override void Configure()
     {
-        Get("/api/employees/{Id}");
-        Roles("Admin", "HR", "Manager");
+        Get("/api/talent-management/employees/{id}");
+        Roles("TeamLeader", "OrganizationOwner", "SuperAdmin", "Employee");
         Options(x => x.WithTags("Talent Management"));
     }
 
     public override async Task HandleAsync(GetEmployeeByIdRequest req, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetEmployeeByIdQuery(req.Id), ct);
-        //await SendAsync(result, statusCode: 200, cancellation: ct);
-        await Send.OkAsync(result, ct);
+        var query = new GetEmployeeByIdCommand(req.Id);
+        var result = await _mediator.Send(query, ct);
+
+        await Send.OkAsync(result, cancellation: ct);
     }
 }
