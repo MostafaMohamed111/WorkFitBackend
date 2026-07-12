@@ -63,6 +63,9 @@ public sealed class IntegrationSyncService : IIntegrationSyncService
             "Integration sync started. Provider={Provider}, Org={OrgId}, Dept={DeptId}",
             _provider.ProviderName, organizationId, departmentId);
 
+        // ── 0. Load organization-specific provider settings from the DB ───────
+        await _provider.InitializeForOrganizationAsync(organizationId, ct);
+
         int projectsSynced  = 0;
         int tasksSynced     = 0;
         int developersSynced = 0;
