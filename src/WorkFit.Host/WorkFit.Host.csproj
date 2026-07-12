@@ -6,6 +6,7 @@
 		<EnableMicrosoftOpenApiXmlComment>false</EnableMicrosoftOpenApiXmlComment>
 		<OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>ffe7342f-b0a5-4bc2-9a99-a9559e55f81e</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>

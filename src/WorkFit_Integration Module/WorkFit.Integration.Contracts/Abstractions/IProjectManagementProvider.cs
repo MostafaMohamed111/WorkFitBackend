@@ -16,6 +16,12 @@ public interface IProjectManagementProvider
     string ProviderName { get; }
 
     /// <summary>
+    /// Loads configuration for the given organization from the database.
+    /// Must be called before any Fetch* method.
+    /// </summary>
+    Task InitializeForOrganizationAsync(Guid organizationId, CancellationToken ct = default);
+
+    /// <summary>
     /// Fetches all top-level projects from the external system.
     /// </summary>
     Task<IReadOnlyList<ExternalProjectDto>> FetchProjectsAsync(CancellationToken ct = default);

@@ -2,13 +2,15 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace WorkFit.Integration.Providers.Jira;
 
 /// <summary>
 /// Low-level Jira REST API v3 client.
 /// Handles HTTP, Basic Auth, pagination, and ADF→plain-text conversion.
+///
+/// Call <see cref="Configure"/> with organization-specific settings
+/// before invoking any API methods.
 /// </summary>
 public sealed class JiraApiClient
 {
@@ -24,17 +26,25 @@ public sealed class JiraApiClient
     ];
 
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly JiraSettings _settings;
     private readonly ILogger<JiraApiClient> _logger;
+
+    private JiraSettings? _settings;
 
     public JiraApiClient(
         IHttpClientFactory httpClientFactory,
-        IOptions<JiraSettings> settings,
         ILogger<JiraApiClient> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _settings = settings.Value;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Configures this client with organization-specific Jira credentials.
+    /// Must be called before any API operation.
+    /// </summary>
+    public void Configure(JiraSettings settings)
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -47,10 +57,12 @@ public sealed class JiraApiClient
     /// </summary>
     public async Task<IReadOnlyList<JsonElement>> FetchAllIssuesAsync(CancellationToken ct = default)
     {
+        EnsureConfigured();
+
         var issues = new List<JsonElement>();
         string? nextPageToken = null;
 
-        _logger.LogInformation("Jira: starting issue fetch for project {ProjectKey}", _settings.ProjectKey);
+        _logger.LogInformation("Jira: starting issue fetch for project {ProjectKey}", _settings!.ProjectKey);
 
         do
         {
@@ -185,13 +197,20 @@ public sealed class JiraApiClient
     // Private helpers
     // ─────────────────────────────────────────────────────────────────────────
 
+    private void EnsureConfigured()
+    {
+        if (_settings is null)
+            throw new InvalidOperationException(
+                "JiraApiClient has not been configured. Call Configure(settings) before invoking API methods.");
+    }
+
     private async Task<string> SendAsync(HttpMethod method, string url, CancellationToken ct)
     {
         using var client = _httpClientFactory.CreateClient("Jira");
         using var request = new HttpRequestMessage(method, url);
 
         var credentials = Convert.ToBase64String(
-            Encoding.UTF8.GetBytes($"{_settings.Email}:{_settings.ApiToken}"));
+            Encoding.UTF8.GetBytes($"{_settings!.Email}:{_settings.ApiToken}"));
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -202,7 +221,7 @@ public sealed class JiraApiClient
 
     private string BuildUrl(string path, Dictionary<string, string> queryParams)
     {
-        var sb = new StringBuilder(_settings.BaseUrl.TrimEnd('/'));
+        var sb = new StringBuilder(_settings!.BaseUrl.TrimEnd('/'));
         sb.Append(path);
         sb.Append('?');
         foreach (var (k, v) in queryParams)

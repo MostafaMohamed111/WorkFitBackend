@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Integration.Contracts.Abstractions;
+using WorkFit.Integration.Infrastructure.Data;
 using WorkFit.Integration.Providers.Jira;
 using WorkFit.Integration.Services;
 using WorkFit.SharedKernel.RegisterModuleServices;
@@ -20,16 +22,14 @@ public sealed class RegisterIntegrationServices : IRegisterModuleServices
 {
     public void RegisterServices(IServiceCollection services, IConfiguration configuration)
     {
-        // ── Jira settings ─────────────────────────────────────────────────────
-        services.Configure<JiraSettings>(configuration.GetSection("Jira"));
+        // ── Integration DbContext ─────────────────────────────────────────────
+        services.AddDbContext<IntegrationDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         // ── Named HTTP client for Jira ────────────────────────────────────────
         services.AddHttpClient("Jira", client =>
         {
-            var baseUrl = configuration["Jira:BaseUrl"]?.TrimEnd('/') ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(baseUrl))
-                client.BaseAddress = new Uri(baseUrl);
-
+            // BaseUrl is no longer static — it's set per-request from org settings.
             client.Timeout = TimeSpan.FromSeconds(60);
         });
 
