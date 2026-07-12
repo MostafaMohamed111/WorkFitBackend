@@ -24,7 +24,13 @@ internal sealed class CreateEmployeeService : ICreateEmployeeService
             return existing.Id;
         }
 
-        var employee = EmployeeProfile.Create(details.organizationId, details.userId, details.email, details.name, details.jobTitle);
+        var employee = EmployeeProfile.Create(
+            details.organizationId,
+            details.userId,
+            details.email,
+            details.name,
+            details.jobTitle,
+            details.hireDate);
         _db.EmployeeProfiles.Add(employee);
         await _db.SaveChangesAsync(cancellationToken);
         
