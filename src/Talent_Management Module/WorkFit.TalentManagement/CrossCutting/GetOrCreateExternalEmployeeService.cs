@@ -32,7 +32,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
             return existingMapping.EmployeeProfileId;
         }
 
-        // We also check if this userId exists in EmployeeProfile to avoid EF unique constraint violations on UserId.
+        
         var existingEmployee = await _db.EmployeeProfiles
             .Include(e => e.IdentityMappings)
             .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
@@ -44,7 +44,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
             return existingEmployee.Id;
         }
 
-        // Create new employee
+        
         var employee = EmployeeProfile.Create(organizationId, userId, email, externalDisplayName, jobTitle);
         employee.AddExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
         
