@@ -17,7 +17,6 @@ public sealed class GetSkillConfidenceChangeEndpoint
     public override void Configure()
     {
         Get("/api/talent-management/skill-confidence-changes/{id}");
-        AllowAnonymous();
         Options(x => x.WithTags("Talent Management"));
       
     }
