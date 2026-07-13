@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WorkFit.TalentManagement.Contracts.LookUpServices;
-using WorkFit.TalentManagement.CrossCutting.Dtos;
+using WorkFit.TalentManagement.Contracts.Dtos;
 using WorkFit.TalentManagement.Domain.Entities;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
@@ -15,7 +15,7 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
         _db = db;
     }
 
-    public async Task<EmployeeAiDto?> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<EmployeeDetailsDto?> GetEmployeeByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var employee = await LoadEmployeesQuery()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
@@ -23,7 +23,7 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
         return employee is null ? null : Map(employee);
     }
 
-    public async Task<List<EmployeeAiDto>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<EmployeeDetailsDto>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
     {
         var employees = await LoadEmployeesQuery()
             .ToListAsync(cancellationToken);
@@ -43,9 +43,9 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
             .Where(e => !e.IsDeleted);
     }
 
-    private static EmployeeAiDto Map(EmployeeProfile employee)
+    private static EmployeeDetailsDto Map(EmployeeProfile employee)
     {
-        return new EmployeeAiDto(
+        return new EmployeeDetailsDto(
             employee.Id,
             employee.OrganizationId,
             employee.UserId,
@@ -60,20 +60,14 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
             employee.HireDate,
             employee.CreatedAt,
             employee.UpdatedAt,
-            employee.EmployeeSkills
-                .Select(MapSkill)
-                .ToList(),
-            employee.IdentityMappings
-                .Select(MapIdentityMapping)
-                .ToList(),
-            employee.Certifications
-                .Select(MapCertification)
-                .ToList());
+            employee.EmployeeSkills.Select(MapSkill).ToList(),
+            employee.IdentityMappings.Select(MapIdentityMapping).ToList(),
+            employee.Certifications.Select(MapCertification).ToList());
     }
 
-    private static EmployeeSkillAiDto MapSkill(EmployeeSkill skill)
+    private static EmployeeSkillLookUpDto MapSkill(EmployeeSkill skill)
     {
-        return new EmployeeSkillAiDto(
+        return new EmployeeSkillLookUpDto(
             skill.Id,
             skill.SkillId,
             skill.SkillName,
@@ -84,9 +78,9 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
                 .ToList());
     }
 
-    private static SkillConfidenceChangeAiDto MapConfidenceChange(SkillConfidenceChange change)
+    private static SkillConfidenceChangeDetailsDto MapConfidenceChange(SkillConfidenceChange change)
     {
-        return new SkillConfidenceChangeAiDto(
+        return new SkillConfidenceChangeDetailsDto(
             change.Id,
             change.AssessmentId,
             change.OldScore,
@@ -98,9 +92,9 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
                 .ToList());
     }
 
-    private static ConfidenceEvidenceAiDto MapEvidence(ConfidenceEvidence evidence)
+    private static ConfidenceEvidenceDetailsDto MapEvidence(ConfidenceEvidence evidence)
     {
-        return new ConfidenceEvidenceAiDto(
+        return new ConfidenceEvidenceDetailsDto(
             evidence.Id,
             evidence.Source,
             evidence.Details,
@@ -109,9 +103,9 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
             evidence.UpdatedAt);
     }
 
-    private static EmployeeIdentityMappingAiDto MapIdentityMapping(DeveloperIdentityMapping mapping)
+    private static EmployeeIdentityMappingDetailsDto MapIdentityMapping(DeveloperIdentityMapping mapping)
     {
-        return new EmployeeIdentityMappingAiDto(
+        return new EmployeeIdentityMappingDetailsDto(
             mapping.Id,
             mapping.SourceSystem,
             mapping.ExternalAccountId,
@@ -120,9 +114,9 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
             mapping.UpdatedAt);
     }
 
-    private static EmployeeCertificationAiDto MapCertification(Certification certification)
+    private static EmployeeCertificationDetailsDto MapCertification(Certification certification)
     {
-        return new EmployeeCertificationAiDto(
+        return new EmployeeCertificationDetailsDto(
             certification.Id,
             certification.DocumentId,
             certification.Name,

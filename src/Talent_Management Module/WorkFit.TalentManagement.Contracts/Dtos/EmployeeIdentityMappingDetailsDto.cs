@@ -1,6 +1,6 @@
-namespace WorkFit.TalentManagement.CrossCutting.Dtos;
+namespace WorkFit.TalentManagement.Contracts.Dtos;
 
-public sealed record EmployeeIdentityMappingAiDto(
+public sealed record EmployeeIdentityMappingDetailsDto(
     Guid Id,
     string SourceSystem,
     string ExternalAccountId,

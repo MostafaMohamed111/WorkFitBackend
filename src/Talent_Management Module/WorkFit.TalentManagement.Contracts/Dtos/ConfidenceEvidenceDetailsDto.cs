@@ -1,6 +1,6 @@
-namespace WorkFit.TalentManagement.CrossCutting.Dtos;
+namespace WorkFit.TalentManagement.Contracts.Dtos;
 
-public sealed record ConfidenceEvidenceAiDto(
+public sealed record ConfidenceEvidenceDetailsDto(
     Guid Id,
     string Source,
     string Details,
