@@ -1,6 +1,6 @@
-namespace WorkFit.TalentManagement.CrossCutting.Dtos;
+namespace WorkFit.TalentManagement.Contracts.Dtos;
 
-public sealed record EmployeeCertificationAiDto(
+public sealed record EmployeeCertificationDetailsDto(
     Guid Id,
     Guid DocumentId,
     string Name,

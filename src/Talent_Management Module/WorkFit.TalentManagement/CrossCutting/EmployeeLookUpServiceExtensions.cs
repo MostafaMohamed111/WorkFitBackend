@@ -1,11 +1,11 @@
 using WorkFit.TalentManagement.Contracts.LookUpServices;
-using WorkFit.TalentManagement.CrossCutting.Dtos;
+using WorkFit.TalentManagement.Contracts.Dtos;
 
 namespace WorkFit.TalentManagement.Contracts.LookUpServices;
 
 public static class EmployeeLookUpServiceExtensions
 {
-    public static Task<EmployeeAiDto?> GetEmployeeByIdAsync(
+    public static Task<EmployeeDetailsDto?> GetEmployeeByIdAsync(
         this IEmployeeLookUpService service,
         Guid id,
         CancellationToken cancellationToken = default)
@@ -15,7 +15,7 @@ public static class EmployeeLookUpServiceExtensions
             : throw new NotSupportedException("The configured employee lookup service does not support lookup operations.");
     }
 
-    public static Task<List<EmployeeAiDto>> GetAllEmployeesAsync(
+    public static Task<List<EmployeeDetailsDto>> GetAllEmployeesAsync(
         this IEmployeeLookUpService service,
         CancellationToken cancellationToken = default)
     {

@@ -1,6 +1,6 @@
-namespace WorkFit.TalentManagement.CrossCutting.Dtos;
+namespace WorkFit.TalentManagement.Contracts.Dtos;
 
-public sealed record EmployeeAiDto(
+public sealed record EmployeeDetailsDto(
     Guid Id,
     Guid OrganizationId,
     Guid UserId,
@@ -15,6 +15,6 @@ public sealed record EmployeeAiDto(
     DateOnly? HireDate,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    IReadOnlyList<EmployeeSkillAiDto> Skills,
-    IReadOnlyList<EmployeeIdentityMappingAiDto> IdentityMappings,
-    IReadOnlyList<EmployeeCertificationAiDto> Certifications);
+    IReadOnlyList<EmployeeSkillLookUpDto> Skills,
+    IReadOnlyList<EmployeeIdentityMappingDetailsDto> IdentityMappings,
+    IReadOnlyList<EmployeeCertificationDetailsDto> Certifications);
