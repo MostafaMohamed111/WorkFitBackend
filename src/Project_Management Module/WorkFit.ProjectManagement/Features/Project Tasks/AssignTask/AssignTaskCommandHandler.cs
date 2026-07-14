@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
 using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -10,9 +11,14 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
 {
     private readonly WorkFitProjectDbContext _context;
 
-    public AssignTaskCommandHandler(WorkFitProjectDbContext context)
+    private readonly IMediator _mediator;
+
+    public AssignTaskCommandHandler(WorkFitProjectDbContext context,
+            IMediator mediator
+        )
     {
         _context = context;
+        _mediator = mediator;
     }
 
     public async Task<AssignTaskResponse> Handle(AssignTaskCommand command, CancellationToken ct)
@@ -44,6 +50,8 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
         task.Assign(command.AssigneeId);
 
         await _context.SaveChangesAsync(ct);
+
+        await _mediator.Publish(new TaskAssignedIntegrationEvent(task.Id, command.AssigneeId), ct);
 
         return new AssignTaskResponse(task.Id, task.AssigneeId!.Value);
     }
