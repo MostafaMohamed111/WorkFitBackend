@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.ProjectManagement.Infrastructure;
 
@@ -11,9 +12,11 @@ using WorkFit.ProjectManagement.Infrastructure;
 namespace WorkFit.ProjectManagement.Migrations
 {
     [DbContext(typeof(WorkFitProjectDbContext))]
-    partial class WorkFitProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260714230211_AddIsActiveToTask")]
+    partial class AddIsActiveToTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -1,0 +1,2 @@
+﻿namespace WorkFit.ProjectManagement.Features.Project_Tasks.SetTaskAllocation;
+public sealed record SetTaskAllocationRequest(int AllocationPercentage);

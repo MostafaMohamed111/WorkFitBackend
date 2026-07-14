@@ -2,4 +2,4 @@
 
 namespace WorkFit.ProjectManagement.Contracts.IntegrationEvents;
 
-public sealed record TaskAssignedIntegrationEvent(Guid TaskId, Guid EmployeeProfileId) : IIntegrationEvent; 
+public sealed record TaskAssignedIntegrationEvent(Guid TaskId, Guid EmployeeProfileId, int AllocationPercentage) : IIntegrationEvent; 
