@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.ProjectManagement.Contracts.LookUpServices.TaskLookUp;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.DependencyInjection;
@@ -20,5 +22,6 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
 
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddMediatorHandlers<ModuleMarker>();
+        services.AddScoped<ITaskLookUpService, TaskLookUpService>();
     }
 }

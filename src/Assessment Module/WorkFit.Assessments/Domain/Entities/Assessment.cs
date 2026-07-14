@@ -2,6 +2,7 @@
 using WorkFit.Assessments.Domain.Enums;
 using WorkFit.Assessments.Domain.Exceptions;
 using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.SharedKernel.Exceptions.DomainExceptions;
 
 namespace WorkFit.Assessments.Domain.Entities;
 
@@ -21,18 +22,27 @@ internal sealed class Assessment : BaseEntity
 
     private Assessment() { } // EF
 
-    private Assessment(Guid employeeProfileId, string description, AssessmentType type)
+    private Assessment(Guid employeeProfileId, string description, AssessmentType type, Guid? taskId)
     {
         EmployeeProfileId = employeeProfileId;
         Description = description;
         Type = type;
         Status = AssessmentStatus.Pending;
+        TaskId = TaskId;
     }
 
-    public static Assessment Create(Guid employeeProfileId, string description, AssessmentType type, List<(Guid skillId, string skillName, int oldScore, int proposedScore, string evidenceDesc)> skillChanges)
+    public static Assessment Create(Guid employeeProfileId, string description, AssessmentType type, List<(Guid skillId, string skillName, int oldScore, int proposedScore, string evidenceDesc)> skillChanges, Guid? taskId)
     {
         // validation 
-        var assessment = new Assessment(employeeProfileId, description, type);
+        // task assessment must have a task id
+        if (type == AssessmentType.TeamLeadAssessment && taskId is null)
+            throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), nameof(taskId));
+
+        // self profile assessment should not have a task id
+        if (type == AssessmentType.EmployeeProfileSelfAssessment && taskId is not null)
+            throw new InvalidEmployeeProfileSelfAssessmentTaskIdMustBeNullException();
+
+        var assessment = new Assessment(employeeProfileId, description, type, taskId);
 
         foreach (var skillChange in skillChanges)
         {
@@ -53,6 +63,7 @@ internal sealed class Assessment : BaseEntity
     {
         if (Status != AssessmentStatus.Pending)
             throw new InvalidAssessmentStatusTransitionDomainException(Status, AssessmentStatus.Approved);
+
         ProcessedById = processedById;
         Status = AssessmentStatus.Approved;
         ProcessorNote = teamLeadNote;
