@@ -31,6 +31,10 @@
     <Project Path="src/WorkFit_Integration Module/WorkFit.Integration.Contracts/WorkFit.Integration.Contracts.csproj" />
     <Project Path="src/WorkFit_Integration Module/WorkFit.Integration/WorkFit.Integration.csproj" />
   </Folder>
+  <Folder Name="/src/Assessment Module/">
+    <Project Path="src/Assessment Module/WorkFit.Assessments.Contracts/WorkFit.Assessments.Contracts.csproj" Id="41d9df5c-e848-4e54-87fd-aa7f0966b4dc" />
+    <Project Path="src/Assessment Module/WorkFit.Assessments/WorkFit.Assessments.csproj" Id="8b8bf6bc-1a76-41d2-99bf-2c9e5b15ccf6" />
+  </Folder>
   <Folder Name="/src/AuditLog Module/">
     <Project Path="src/AuditLog Module/WorkFit.AuditLog.Contracts/WorkFit.AuditLog.Contracts.csproj" />
     <Project Path="src/AuditLog Module/WorkFit.AuditLog/WorkFit.AuditLog.csproj" />
