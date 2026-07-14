@@ -49,9 +49,17 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
 
         task.Assign(command.AssigneeId);
 
+        if (command.AllocationPercentage.HasValue)
+            task.SetAllocationPercentage(command.AllocationPercentage.Value);
+
+
         await _context.SaveChangesAsync(ct);
 
-        await _mediator.Publish(new TaskAssignedIntegrationEvent(task.Id, command.AssigneeId), ct);
+        if (task.IsActive)
+        {
+            await _mediator.Publish(new TaskAssignedIntegrationEvent(
+                task.Id, task.AssigneeId!.Value, task.AllocationPercentage), ct);
+        }
 
         return new AssignTaskResponse(task.Id, task.AssigneeId!.Value);
     }

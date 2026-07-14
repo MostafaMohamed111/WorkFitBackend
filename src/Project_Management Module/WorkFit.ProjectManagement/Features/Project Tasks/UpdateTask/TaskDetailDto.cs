@@ -14,6 +14,7 @@ public sealed record TaskDetailDto(
     Guid? AssigneeId,
     Guid CreatedById,
     int? StoryPoints,
+    int? AllocationPercentage,
     DateOnly? DueDate,
     string? SourceSystem,
     string? SourceReferenceId,

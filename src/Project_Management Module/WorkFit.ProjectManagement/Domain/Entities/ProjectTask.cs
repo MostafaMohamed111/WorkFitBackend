@@ -17,12 +17,14 @@ public class ProjectTask : BaseEntity
     public Guid? AssigneeId { get; private set; }
     public Guid CreatedById { get; private set; }
     public int? StoryPoints { get; private set; }
+    public int AllocationPercentage { get; private set; }
     public DateOnly? DueDate { get; private set; }
     public string? SourceSystem { get; private set; }
     public string? SourceReferenceId { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
-    public bool IsDeleted { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
+    public bool IsActive => Status != TaskStatus.Done && AllocationPercentage > 0;
+
 
     public Project Project { get; private set; } = default!;
 
@@ -37,11 +39,16 @@ public class ProjectTask : BaseEntity
         Guid createdById,
         Guid? assigneeId,
         int? storyPoints,
-        DateOnly? dueDate)
+        DateOnly? dueDate,
+        int allocationPercentage = 0)
     {
         if (string.IsNullOrWhiteSpace(title) || title.Length < 3 || title.Length > 100)
             throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "Title");
 
+        if (allocationPercentage < 0 || allocationPercentage > 100)
+            throw new ArgumentOutOfRangeException(nameof(allocationPercentage),
+                "Allocation percentage must be between 0 and 100.");
+        
 
         return new ProjectTask
         {
@@ -54,8 +61,22 @@ public class ProjectTask : BaseEntity
             CreatedById = createdById,
             AssigneeId = assigneeId,
             StoryPoints = storyPoints,
+            AllocationPercentage = allocationPercentage,
             DueDate = dueDate
         };
+    }
+
+    public void SetAllocationPercentage(int allocationPercentage)
+    {
+        if (Status == TaskStatus.Done)
+            return;
+
+        if (allocationPercentage < 0 || allocationPercentage > 100)
+            throw new ArgumentOutOfRangeException(nameof(allocationPercentage),
+                "Allocation percentage must be between 0 and 100.");
+
+        AllocationPercentage = allocationPercentage;
+        MarkUpdated();
     }
 
     public void UpdateDetails(string? title, string? description, TaskPriority? priority,
@@ -91,6 +112,9 @@ public class ProjectTask : BaseEntity
 
     public void Assign(Guid assigneeId)
     {
+        if (assigneeId == Guid.Empty)
+            throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "AssigneeId");
+
         AssigneeId = assigneeId;
         MarkUpdated();
     }
@@ -113,7 +137,7 @@ public class ProjectTask : BaseEntity
         if (IsDeleted)
             throw new TaskAlreadyDeletedException(Id);
 
-        IsDeleted = true;
+        MarkDeleted();
         DeletedAt = DateTimeOffset.UtcNow;
         MarkUpdated();
     }

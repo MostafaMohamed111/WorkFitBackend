@@ -22,7 +22,7 @@ public sealed class AssignTaskEndPoint : Endpoint<AssignTaskRequest, AssignTaskR
     public override async Task HandleAsync(AssignTaskRequest req, CancellationToken ct)
     {
         var taskId = Route<Guid>("id");
-        var result = await _mediator.Send(new AssignTaskCommand(taskId, req.AssigneeId), ct);
+        var result = await _mediator.Send(new AssignTaskCommand(taskId, req.AssigneeId,req.AllocationPercentage), ct);
         await Send.OkAsync(result, ct);
     }
 }
