@@ -16,8 +16,8 @@ public class Project : BaseEntity
     public DateOnly? StartDate { get; private set; }
 
     public DateOnly? EndDate { get; private set; }
-
-    public string? SourceSystem { get; private set; }
+    public Guid? TeamLeaderId { get; private set; }
+    public SourceSystem? SourceSystem { get; private set; }
 
     public string? SourceReferenceId { get; private set; }
 
@@ -39,8 +39,9 @@ public class Project : BaseEntity
         string? description,
         DateOnly? startDate,
         DateOnly? endDate,
+        Guid? teamLeaderId,
         ProjectStatus status = ProjectStatus.Planning,
-        string? sourceSystem = null,
+        SourceSystem sourceSystem = Enums.SourceSystem.Internal,
         string? sourceReferenceId = null)
     {
         if (string.IsNullOrWhiteSpace(name) || name.Length < 3 || name.Length > 100)
@@ -51,6 +52,13 @@ public class Project : BaseEntity
 
         if (startDate.HasValue && endDate.HasValue && endDate <= startDate)
             throw new ArgumentException("End date must be after start date.");
+        if (sourceSystem == Enums.SourceSystem.Internal &&
+                (teamLeaderId is null || teamLeaderId == Guid.Empty))
+        {
+            throw new ArgumentException(
+                "Team leader is required for internal projects.",
+                nameof(teamLeaderId));
+        }
 
         return new Project
         {
@@ -59,6 +67,7 @@ public class Project : BaseEntity
             Description = description,
             StartDate = startDate,
             EndDate = endDate,
+            TeamLeaderId = teamLeaderId,
             Status = status,
             SourceSystem = sourceSystem,
             SourceReferenceId = sourceReferenceId

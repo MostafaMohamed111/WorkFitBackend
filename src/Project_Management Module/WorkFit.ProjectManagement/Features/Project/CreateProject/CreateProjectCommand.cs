@@ -7,6 +7,7 @@ public sealed record CreateProjectCommand(
     string Name,
     string? Description,
     Guid DepartmentId,
+    Guid TeamLeaderId,
     DateOnly StartDate,
     DateOnly EndDate,
     string? Status,

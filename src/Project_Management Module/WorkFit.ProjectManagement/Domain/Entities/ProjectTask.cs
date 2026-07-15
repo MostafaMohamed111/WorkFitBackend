@@ -23,10 +23,12 @@ public class ProjectTask : BaseEntity
     public string? SourceReferenceId { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
+
+    public Project Project { get; private set; } = default!;
+
     public bool IsActive => Status != TaskStatus.Done && AllocationPercentage > 0;
 
 
-    public Project Project { get; private set; } = default!;
 
     private ProjectTask() { }
 

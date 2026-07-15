@@ -30,6 +30,7 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
             request.Description,
             request.StartDate,
             request.EndDate,
+            request.TeamLeaderId,
             status);
 
         if (request.RequiredSkills is { Count: > 0 })
@@ -54,6 +55,6 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
 
         await _projectRepository.SaveChangesAsync(cancellationToken);
 
-        return new ProjectCreatedDto(project.Id, project.Name, project.Status.ToApiString(), project.CreatedAt);
+        return new ProjectCreatedDto(project.Id, project.Name, project.Status.ToApiString(), project.TeamLeaderId!.Value,project.CreatedAt);
     }
 }

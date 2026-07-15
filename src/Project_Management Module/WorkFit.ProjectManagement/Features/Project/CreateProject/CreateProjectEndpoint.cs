@@ -31,6 +31,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
             req.Name,
             req.Description,
             req.DepartmentId,
+            req.TeamLeaderId,
             req.StartDate,
             req.EndDate,
             req.Status,

@@ -152,6 +152,7 @@ public sealed class ProjectRepository : IProjectRepository
             project.Description,
             project.DepartmentId,
             project.Status.ToApiString(),
+            project.TeamLeaderId,
             project.StartDate,
             project.EndDate,
             requiredSkillDtos,

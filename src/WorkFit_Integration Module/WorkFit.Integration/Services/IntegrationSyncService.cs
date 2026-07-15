@@ -202,27 +202,39 @@ public sealed class IntegrationSyncService : IIntegrationSyncService
         Guid departmentId,
         CancellationToken ct)
     {
+
+        if (!Enum.TryParse<SourceSystem>(
+            _provider.ProviderName,
+            ignoreCase: true,
+            out var sourceSystem))
+        {
+            throw new InvalidOperationException(
+                $"Unsupported source system '{_provider.ProviderName}'.");
+        }
+
         // Check if already synced (match by SourceSystem + SourceReferenceId)
         var existing = _projectDb.Projects
-            .FirstOrDefault(p =>
-                p.SourceSystem == _provider.ProviderName &&
-                p.SourceReferenceId == ext.SourceKey);
+                .FirstOrDefault(p =>
+                    p.SourceSystem == sourceSystem &&
+                    p.SourceReferenceId == ext.SourceKey);
 
         if (existing is not null)
         {
             _logger.LogDebug("Project '{Key}' already exists (Id={Id}), skipping.", ext.SourceKey, existing.Id);
             return existing.Id;
         }
+        
 
         var status = MapProjectStatus(ext.Status);
         var project = Project.Create(
-            departmentId:      departmentId,
-            name:              Truncate(ext.Name, 100),
-            description:       Truncate(ext.Description, 500),
-            startDate:         ext.StartDate,
-            endDate:           ext.EndDate,
-            status:            status,
-            sourceSystem:      _provider.ProviderName,
+            departmentId: departmentId,
+            name: Truncate(ext.Name, 100)!,
+            description: Truncate(ext.Description, 500),
+            startDate: ext.StartDate,
+            endDate: ext.EndDate,
+            teamLeaderId: null,
+            status: status,
+            sourceSystem: sourceSystem,
             sourceReferenceId: ext.SourceKey);
 
         await _projectDb.Projects.AddAsync(project, ct);

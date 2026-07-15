@@ -4,6 +4,7 @@ public sealed record ProjectCreatedDto(
     Guid Id,
     string Name,
     string Status,
+    Guid TeamLeaderId,
     DateTimeOffset CreatedAt);
 
 public sealed record RequiredSkillInputDto(
