@@ -42,7 +42,7 @@ internal sealed class ApproveAssessmentCommandHandler : IRequestHandler<ApproveA
         if(assessment.Type == AssessmentType.TeamLeadAssessment)
         {
             // task id will never be null enforced by domain factory method
-            var task = await _taskLookUpService.GetTaskByIdAsync((Guid)assessment.TaskId!);
+            var task = await _taskLookUpService.GetTaskByIdAsync((Guid)assessment.TaskId!, cancellationToken);
             teamleadId = task.TeamLeadId;
         }
 
@@ -50,7 +50,7 @@ internal sealed class ApproveAssessmentCommandHandler : IRequestHandler<ApproveA
 
         assessment.Approve(_currentUserContext.GetUserId(), command.Note);
 
-        await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
         // this should be processed in the domain as domain events
         await _mediator.Publish(new AssessmentApprovedIntegrationEvent(
