@@ -1,13 +1,14 @@
 ﻿using WorkFit.Assessments.Domain.DomainServices;
 using WorkFit.Assessments.Domain.Entities;
 using WorkFit.Assessments.Domain.Enums;
+using WorkFit.Assessments.Features.Queries.Dtos;
 using WorkFit.Assessments.Infrastructure.Data;
 using WorkFit.ProjectManagement.Contracts.LookUpServices.TaskLookUp;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.GetAssessmentById;
+namespace WorkFit.Assessments.Features.Queries.GetAssessmentById;
 
 internal sealed class GetAssessmentByIdQueryHandler : IRequestHandler<GetAssessmentByIdQuery, AssessmentDto>
 {

@@ -1,4 +1,4 @@
-﻿namespace WorkFit.Assessments.Features.GetAssessmentById;
+﻿namespace WorkFit.Assessments.Features.Queries.Dtos;
 
 internal sealed record SkillChangeDto(
         Guid skillId,

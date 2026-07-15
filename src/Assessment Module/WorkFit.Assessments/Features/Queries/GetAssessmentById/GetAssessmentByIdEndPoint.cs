@@ -2,9 +2,10 @@
 
 using FastEndpoints;
 using Microsoft.AspNetCore.Http;
+using WorkFit.Assessments.Features.Queries.Dtos;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.GetAssessmentById;
+namespace WorkFit.Assessments.Features.Queries.GetAssessmentById;
 
 internal class GetAssessmentByIdEndPoint : EndpointWithoutRequest<AssessmentDto>
 {
