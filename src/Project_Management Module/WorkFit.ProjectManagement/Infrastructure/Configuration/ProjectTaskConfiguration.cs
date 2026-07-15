@@ -28,7 +28,7 @@ public class ProjectTaskConfiguration
                .HasConversion<string>();
 
         builder.Property(x => x.SourceSystem)
-               .HasMaxLength(50);
+               .HasConversion<string>();
 
         builder.Property(x => x.SourceReferenceId)
                .HasMaxLength(255);

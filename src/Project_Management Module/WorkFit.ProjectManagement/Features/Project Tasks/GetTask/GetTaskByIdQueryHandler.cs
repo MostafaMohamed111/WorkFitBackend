@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
@@ -23,6 +22,6 @@ public sealed class GetTaskByIdQueryHandler : IRequestHandler<GetTaskByIdQuery, 
 
         return new TaskDetailDto(task.Id, task.ProjectId, task.Title, task.Description, task.TaskType,
             task.Status, task.Priority, task.AssigneeId, task.CreatedById, task.StoryPoints, task.AllocationPercentage,task.DueDate,
-            task.SourceSystem, task.SourceReferenceId, task.CompletedAt, task.CreatedAt);
+            task.SourceSystem, task.SourceReferenceId, task.CompletedAt, task.CreatedAt,task.IsActive);
     }
 }
