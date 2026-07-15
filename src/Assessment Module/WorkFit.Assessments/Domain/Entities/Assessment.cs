@@ -28,7 +28,7 @@ internal sealed class Assessment : BaseEntity
         Description = description;
         Type = type;
         Status = AssessmentStatus.Pending;
-        TaskId = TaskId;
+        TaskId = taskId;
     }
 
     public static Assessment Create(Guid employeeProfileId, string description, AssessmentType type, List<(Guid skillId, string skillName, int oldScore, int proposedScore, string evidenceDesc)> skillChanges, Guid? taskId)
@@ -99,5 +99,4 @@ internal sealed class Assessment : BaseEntity
         Status = AssessmentStatus.Altered;
         MarkUpdated();
     }
-
 }
