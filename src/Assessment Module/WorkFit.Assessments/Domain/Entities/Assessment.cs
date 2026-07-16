@@ -85,7 +85,7 @@ internal sealed class Assessment : BaseEntity
         MarkUpdated();
     }
 
-    public void Reject(Guid processedById, string? teamLeadNote = null)
+    public void Reject(Guid processedById, string? note = null)
     {
         if (Status != AssessmentStatus.Pending)
             throw new InvalidAssessmentStatusTransitionDomainException(Status, AssessmentStatus.Rejected);
@@ -94,11 +94,11 @@ internal sealed class Assessment : BaseEntity
 
         ProcessedById = processedById;
         Status = AssessmentStatus.Rejected;
-        ProcessorNote = teamLeadNote;
+        ProcessorNote = note;
         MarkUpdated();
     }
 
-    public void Alter(Guid processedById, List<(Guid skillChangeId, int newScore, string note)> skillChangesUpdates , string? teamLeadNote = null)
+    public void Alter(Guid processedById, List<(Guid skillChangeId, int newScore, string? note)> skillChangesUpdates , string? teamLeadNote = null)
     {
         // validation
         if (Status != AssessmentStatus.Pending)
