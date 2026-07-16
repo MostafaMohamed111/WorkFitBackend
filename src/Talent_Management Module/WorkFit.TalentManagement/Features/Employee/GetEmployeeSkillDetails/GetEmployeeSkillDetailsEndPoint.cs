@@ -17,14 +17,15 @@ public sealed class GetEmployeeSkillDetailsEndPoint : Endpoint<GetEmployeeSkillD
 
     public override void Configure()
     {
-        Get("/api/talent-management/employee-skills/{id}");
+        Get("/api/talent-management/employee-skills/{skillId:guid}");
         Roles("TeamLeader");
         Options(x => x.WithTags("Talent Management"));
     }
 
     public override async Task HandleAsync(GetEmployeeSkillDetailsRequest req, CancellationToken ct)
     {
-        var query = new GetEmployeeSkillDetailsCommand(req.Id);
+        var skillId = Route<Guid>("Skillid");
+        var query = new GetEmployeeSkillDetailsQuery(req.EmployeeId, skillId);
         var result = await _mediator.Send(query, ct);
 
         await Send.OkAsync(result, cancellation: ct);

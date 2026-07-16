@@ -1,6 +1,3 @@
 ﻿namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
-public sealed class GetEmployeeSkillDetailsRequest
-{
-    public Guid Id { get; set; }
-}
+public sealed record GetEmployeeSkillDetailsRequest(Guid EmployeeId);

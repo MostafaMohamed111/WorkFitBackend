@@ -12,12 +12,8 @@ public sealed class WorkFitUser : IdentityUser<Guid>
     {
         
     }
-    public Guid? OrganizationId { get; private set; }
 
-    public void SetOrganizationId(Guid organizationId)
-    {
-        OrganizationId = organizationId;
-    }
+
     public WorkFitUser(string email, string displayName)
     {
         if(string.IsNullOrEmpty(displayName)) throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "WorkFitUser", "DisplayName");
