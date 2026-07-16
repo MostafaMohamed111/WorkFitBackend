@@ -12,10 +12,10 @@ internal sealed class CreateAssessmentService : ICreateAssessmentService
     {
         _context = context;
     }
-    public async Task<Guid> CreateAsync(Guid employeeProfileId, string description, AssessmentType type, List<(Guid skillId, string skillName, int oldScore, int proposedScore, string evidenceDesc)> skillChanges, Guid? taskId)
+    public async Task<Guid> CreateAsync(Guid employeeProfileId, Guid employeeUserId, string description, AssessmentType type, List<(Guid skillId, string skillName, int oldScore, int proposedScore, string evidenceDesc)> skillChanges, Guid? taskId = null, Guid? teamLeadId = null)
     {
         var assessmentType = (Domain.Enums.AssessmentType)type;
-        var assessment = Assessment.Create(employeeProfileId, description, assessmentType, skillChanges, taskId);
+        var assessment = Assessment.Create(employeeProfileId, employeeUserId, description, assessmentType, skillChanges, taskId, teamLeadId);
 
         _context.Assessments.Add(assessment);
         await _context.SaveChangesAsync();
