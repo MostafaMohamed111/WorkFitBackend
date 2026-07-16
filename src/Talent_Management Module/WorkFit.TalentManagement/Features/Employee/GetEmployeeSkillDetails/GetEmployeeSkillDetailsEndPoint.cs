@@ -24,7 +24,7 @@ public sealed class GetEmployeeSkillDetailsEndPoint : Endpoint<GetEmployeeSkillD
 
     public override async Task HandleAsync(GetEmployeeSkillDetailsRequest req, CancellationToken ct)
     {
-        var skillId = Route<Guid>("Skillid");
+        var skillId = Route<Guid>("skillId");
         var query = new GetEmployeeSkillDetailsQuery(req.EmployeeId, skillId);
         var result = await _mediator.Send(query, ct);
 
