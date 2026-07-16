@@ -2,7 +2,7 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.AlterAssessment;
+namespace WorkFit.Assessments.Features.Commands.AlterAssessment;
 
 internal sealed class AlterAssessmentEndPoint : Endpoint<AlterAssessmentRequest, Guid>
 {

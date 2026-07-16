@@ -5,7 +5,7 @@ using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.AlterAssessment;
+namespace WorkFit.Assessments.Features.Commands.AlterAssessment;
 
 internal sealed class AlterAssessmentCommandHandler : IRequestHandler<AlterAssessmentCommand, Guid>
 {

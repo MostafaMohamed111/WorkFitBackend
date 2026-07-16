@@ -1,12 +1,11 @@
-﻿
-using WorkFit.Assessments.Contracts.IntegrationEvents;
+﻿using WorkFit.Assessments.Contracts.IntegrationEvents;
 using WorkFit.Assessments.Domain.Entities;
 using WorkFit.Assessments.Infrastructure.Data;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.ApproveAssessment;
+namespace WorkFit.Assessments.Features.Commands.ApproveAssessment;
 
 internal sealed class ApproveAssessmentCommandHandler : IRequestHandler<ApproveAssessmentCommand, Guid>
 {
