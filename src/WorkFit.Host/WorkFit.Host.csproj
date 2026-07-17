@@ -29,6 +29,7 @@
     <ProjectReference Include="..\Identity Module\WorkFit.Identity\WorkFit.Identity.csproj" />
     <ProjectReference Include="..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
     <ProjectReference Include="..\Project_Management Module\WorkFit.ProjectManagement\WorkFit.ProjectManagement.csproj" />
+    <ProjectReference Include="..\Recommendation Module\WorkFit.Recommendations\WorkFit.Recommendations.csproj" />
     <ProjectReference Include="..\WorkFit.Infrastructure\WorkFit.Infrastructure.csproj" />
 	  <ProjectReference Include="..\Skills_Taxonomy_Module\WorkFit.Skills\WorkFit.Skills.csproj" />
 	  <ProjectReference Include="..\Talent_Management Module\WorkFit.TalentManagement\WorkFit.TalentManagement.csproj" />
