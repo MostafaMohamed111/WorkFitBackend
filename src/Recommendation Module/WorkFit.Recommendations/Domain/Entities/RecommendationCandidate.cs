@@ -11,6 +11,7 @@ public sealed class RecommendationCandidate : BaseEntity
     public decimal MatchScore { get; private set; }
     public string MatchReasoning { get; private set; } = default!;
     public int Rank { get; private set; }
+    public string AdditionalSkills { get; private set; } = "[]";
     
     public CandidateStatus Status { get; private set; } = CandidateStatus.Pending;
     public DateTimeOffset? ReviewedAt { get; private set; }
@@ -22,7 +23,8 @@ public sealed class RecommendationCandidate : BaseEntity
         Guid employeeId,
         decimal score,
         string matchReasoning,
-        int rank)
+        int rank,
+        string additionalSkills)
         => new()
         {
             RecommendationId = recommendationId,
@@ -30,6 +32,7 @@ public sealed class RecommendationCandidate : BaseEntity
             MatchScore = score,
             MatchReasoning = matchReasoning,
             Rank = rank,
+            AdditionalSkills = additionalSkills,
             Status = CandidateStatus.Pending
         };
 

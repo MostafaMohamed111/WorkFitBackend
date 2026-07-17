@@ -1,3 +1,4 @@
+using System.Text.Json;
 using WorkFit.Recommendations.Domain.Entities;
 using WorkFit.Recommendations.Domain.Services;
 using WorkFit.Recommendations.Infrastructure.Data;
@@ -33,18 +34,27 @@ public sealed class GenerateRecommendationCommandHandler
     {
         var allEmployees = await _employeeLookUpService.GetAllEmployeesAsync(ct);
 
-        var candidateInputs = new List<(Guid EmployeeId, decimal MatchScore, string MatchReasoning)>();
+        var candidateInputs = new List<(Guid EmployeeId, decimal MatchScore, string MatchReasoning, string AdditionalSkills)>();
 
         foreach (var employee in allEmployees.Where(e => e.IsActive))
         {
             var (score, reasoning) = _scoringService.CalculateScore(employee.Skills, command.RequiredSkillIds);
             
-            // Only consider candidates with a score greater than 0
             if (score > 0)
             {
-                candidateInputs.Add((employee.Id, score, reasoning));
+                var additionalSkills = employee.Skills
+                    .Where(s => !command.RequiredSkillIds.Contains(s.SkillId))
+                    .OrderByDescending(s => s.ConfidenceScore)
+                    .Take(5)
+                    .Select(s => new AdditionalSkillDto(s.SkillId, s.SkillName, s.ConfidenceScore))
+                    .ToList();
+                
+                var additionalSkillsJson = JsonSerializer.Serialize(additionalSkills);
+
+                candidateInputs.Add((employee.Id, score, reasoning, additionalSkillsJson));
             }
         }
+
         var userId = _currentUserContext.GetUserId(ct);
         var recommendation = Recommendation.Create(
             command.TaskId,
@@ -60,7 +70,8 @@ public sealed class GenerateRecommendationCommandHandler
             .OrderBy(c => c.Rank)
             .Select(c => new GenerateRecommendationCandidateDto(
                 c.EmployeeId, c.MatchScore, c.MatchReasoning, c.Rank, 
-                c.Status, c.ReviewedAt))
+                c.Status, c.ReviewedAt,
+                JsonSerializer.Deserialize<List<AdditionalSkillDto>>(c.AdditionalSkills) ?? new()))
             .ToList();
 
         return new GenerateRecommendationResponse(

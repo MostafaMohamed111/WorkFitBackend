@@ -20,7 +20,7 @@ public sealed class Recommendation : BaseEntity
         Guid taskId,
         Guid createdById,
         IReadOnlyList<Guid> requiredSkillIds,
-        IEnumerable<(Guid EmployeeId, decimal MatchScore, string MatchReasoning)> candidateInputs)
+        IEnumerable<(Guid EmployeeId, decimal MatchScore, string MatchReasoning, string AdditionalSkills)> candidateInputs)
     {
         var rec = new Recommendation
         {
@@ -32,7 +32,7 @@ public sealed class Recommendation : BaseEntity
         var ranked = candidateInputs
             .OrderByDescending(c => c.MatchScore)
             .Select((c, i) => RecommendationCandidate.Create(
-                rec.Id, c.EmployeeId, c.MatchScore, c.MatchReasoning, rank: i + 1))
+                rec.Id, c.EmployeeId, c.MatchScore, c.MatchReasoning, rank: i + 1, c.AdditionalSkills))
             .ToList();
 
         rec._candidates.AddRange(ranked);

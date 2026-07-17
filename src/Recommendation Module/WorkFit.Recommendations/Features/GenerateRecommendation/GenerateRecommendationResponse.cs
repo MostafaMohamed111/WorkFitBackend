@@ -17,5 +17,12 @@ public sealed record GenerateRecommendationCandidateDto(
     string MatchReasoning,
     int Rank,
     CandidateStatus Status,
-    DateTimeOffset? ReviewedAt
+    DateTimeOffset? ReviewedAt,
+    List<AdditionalSkillDto> AdditionalSkills
+);
+
+public sealed record AdditionalSkillDto(
+    Guid SkillId,
+    string SkillName,
+    int ConfidenceScore
 );

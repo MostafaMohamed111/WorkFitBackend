@@ -3,6 +3,8 @@ using WorkFit.Recommendations.Infrastructure.Data;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
 
+using System.Text.Json;
+
 namespace WorkFit.Recommendations.Features.GetRecommendationById;
 
 public sealed class GetRecommendationByIdQueryHandler
@@ -35,7 +37,8 @@ public sealed class GetRecommendationByIdQueryHandler
                 c.MatchReasoning,
                 c.Rank,
                 c.Status,
-                c.ReviewedAt))
+                c.ReviewedAt,
+                JsonSerializer.Deserialize<List<AdditionalSkillDto>>(c.AdditionalSkills) ?? new()))
             .ToList();
 
         return new RecommendationDetailDto(
