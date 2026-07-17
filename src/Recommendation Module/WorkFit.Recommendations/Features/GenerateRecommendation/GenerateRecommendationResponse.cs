@@ -16,8 +16,6 @@ public sealed record GenerateRecommendationCandidateDto(
     string MatchReasoning,
     int Rank,
     CandidateStatus Status,
-    Guid? ApprovedBy,
-    DateTimeOffset? ApprovedAt,
-    Guid? RejectedBy,
-    DateTimeOffset? RejectedAt
+    Guid? ReviewedBy,
+    DateTimeOffset? ReviewedAt
 );

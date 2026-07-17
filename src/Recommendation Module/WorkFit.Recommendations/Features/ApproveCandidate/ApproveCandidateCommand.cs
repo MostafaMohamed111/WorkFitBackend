@@ -5,5 +5,5 @@ namespace WorkFit.Recommendations.Features.ApproveCandidate;
 public sealed record ApproveCandidateCommand(
     Guid RecommendationId,
     Guid EmployeeId,
-    Guid ActionedBy
+    Guid ReviewedBy
 ) : IRequest;

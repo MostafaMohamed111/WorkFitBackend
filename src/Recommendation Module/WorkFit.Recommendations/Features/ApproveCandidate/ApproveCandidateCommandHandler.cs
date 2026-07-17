@@ -28,7 +28,7 @@ public sealed class ApproveCandidateCommandHandler : IRequestHandler<ApproveCand
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Recommendation", request.RecommendationId);
         }
 
-        recommendation.ApproveCandidate(request.EmployeeId, request.ActionedBy);
+        recommendation.ApproveCandidate(request.EmployeeId, request.ReviewedBy);
 
         await _context.SaveChangesAsync(cancellationToken);
 

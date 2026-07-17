@@ -1,4 +1,5 @@
 using System.Text.Json;
+using WorkFit.Recommendations.Domain.Enums;
 using WorkFit.Recommendations.Domain.Exceptions;
 using WorkFit.SharedKernel.BaseEntity;
 
@@ -37,39 +38,31 @@ public sealed class Recommendation : BaseEntity
         return rec;
     }
 
-    public void ApproveCandidate(Guid employeeId, Guid actionedBy)
+    public void ApproveCandidate(Guid employeeId, Guid reviewedBy)
     {
-        var targetCandidate = _candidates.FirstOrDefault(c => c.EmployeeId == employeeId)
-            ?? throw new CandidateNotPartOfRecommendationException(Id, employeeId);
+        var targetCandidate = GetCandidate(employeeId);
 
-        // If it's already approved, do nothing
-        if (targetCandidate.Status == Enums.CandidateStatus.Approved)
+        targetCandidate.MarkAsApproved(reviewedBy);
+
+        foreach (var candidate in _candidates.Where(c => c.EmployeeId != employeeId))
         {
-            return;
-        }
-
-        // Mark target as approved
-        targetCandidate.MarkAsApproved(actionedBy);
-
-        // Mark all other non-rejected candidates as rejected
-        var otherCandidates = _candidates.Where(c => c.EmployeeId != employeeId && c.Status != Enums.CandidateStatus.Rejected);
-        foreach (var candidate in otherCandidates)
-        {
-            candidate.MarkAsRejected(actionedBy);
+            if (candidate.Status == CandidateStatus.Pending)
+            {
+                candidate.MarkAsRejected(reviewedBy);
+            }
         }
     }
 
-    public void RejectCandidate(Guid employeeId, Guid actionedBy)
+    public void RejectCandidate(Guid employeeId, Guid reviewedBy)
     {
-        var targetCandidate = _candidates.FirstOrDefault(c => c.EmployeeId == employeeId)
+        var targetCandidate = GetCandidate(employeeId);
+
+        targetCandidate.MarkAsRejected(reviewedBy);
+    }
+
+    private RecommendationCandidate GetCandidate(Guid employeeId)
+    {
+        return _candidates.FirstOrDefault(c => c.EmployeeId == employeeId)
             ?? throw new CandidateNotPartOfRecommendationException(Id, employeeId);
-
-        // If it's already rejected, do nothing
-        if (targetCandidate.Status == Enums.CandidateStatus.Rejected)
-        {
-            return;
-        }
-
-        targetCandidate.MarkAsRejected(actionedBy);
     }
 }

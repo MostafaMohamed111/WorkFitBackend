@@ -55,7 +55,7 @@ public sealed class GenerateRecommendationCommandHandler
             .OrderBy(c => c.Rank)
             .Select(c => new GenerateRecommendationCandidateDto(
                 c.EmployeeId, c.MatchScore, c.MatchReasoning, c.Rank, 
-                c.Status, c.ApprovedBy, c.ApprovedAt, c.RejectedBy, c.RejectedAt))
+                c.Status, c.ReviewedBy, c.ReviewedAt))
             .ToList();
 
         return new GenerateRecommendationResponse(
