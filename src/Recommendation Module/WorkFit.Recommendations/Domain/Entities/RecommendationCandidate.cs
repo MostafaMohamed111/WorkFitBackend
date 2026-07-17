@@ -13,7 +13,6 @@ public sealed class RecommendationCandidate : BaseEntity
     public int Rank { get; private set; }
     
     public CandidateStatus Status { get; private set; } = CandidateStatus.Pending;
-    public Guid? ReviewedBy { get; private set; }
     public DateTimeOffset? ReviewedAt { get; private set; }
 
     private RecommendationCandidate() { }
@@ -34,7 +33,7 @@ public sealed class RecommendationCandidate : BaseEntity
             Status = CandidateStatus.Pending
         };
 
-    internal void MarkAsApproved(Guid reviewedBy)
+    internal void MarkAsApproved()
     {
         if (Status == CandidateStatus.Approved)
             throw new CandidateAlreadyApprovedException(EmployeeId);
@@ -43,11 +42,10 @@ public sealed class RecommendationCandidate : BaseEntity
             throw new CandidateAlreadyRejectedException(EmployeeId);
 
         Status = CandidateStatus.Approved;
-        ReviewedBy = reviewedBy;
         ReviewedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void MarkAsRejected(Guid reviewedBy)
+    internal void MarkAsRejected()
     {
         if (Status == CandidateStatus.Rejected)
             throw new CandidateAlreadyRejectedException(EmployeeId);
@@ -56,7 +54,6 @@ public sealed class RecommendationCandidate : BaseEntity
             throw new CandidateApprovalNotAllowedException(EmployeeId);
 
         Status = CandidateStatus.Rejected;
-        ReviewedBy = reviewedBy;
         ReviewedAt = DateTimeOffset.UtcNow;
     }
 }

@@ -35,14 +35,14 @@ public sealed class GetRecommendationByIdQueryHandler
                 c.MatchReasoning,
                 c.Rank,
                 c.Status,
-                c.ReviewedBy,
                 c.ReviewedAt))
             .ToList();
 
         return new RecommendationDetailDto(
             recommendation.Id,
             recommendation.TaskId,
-            recommendation.GeneratedAt,
+            recommendation.CreatedBy,
+            recommendation.CreatedAt,
             recommendation.RequiredSkillsSnapshot,
             candidates);
     }

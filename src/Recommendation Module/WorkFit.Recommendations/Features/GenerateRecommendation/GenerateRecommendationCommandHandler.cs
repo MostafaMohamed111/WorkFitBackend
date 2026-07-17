@@ -1,6 +1,7 @@
 using WorkFit.Recommendations.Domain.Entities;
 using WorkFit.Recommendations.Domain.Services;
 using WorkFit.Recommendations.Infrastructure.Data;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Contracts.LookUpServices;
 
@@ -10,15 +11,18 @@ public sealed class GenerateRecommendationCommandHandler
     : IRequestHandler<GenerateRecommendationCommand, GenerateRecommendationResponse>
 {
     private readonly RecommendationDbContext _context;
+    private readonly ICurrentUserContext _currentUserContext;
     private readonly IEmployeeLookUpService _employeeLookUpService;
     private readonly IRecommendationScoringService _scoringService;
 
     public GenerateRecommendationCommandHandler(
         RecommendationDbContext context,
+        ICurrentUserContext currentUserContext,
         IEmployeeLookUpService employeeLookUpService,
         IRecommendationScoringService scoringService)
     {
         _context = context;
+        _currentUserContext = currentUserContext;
         _employeeLookUpService = employeeLookUpService;
         _scoringService = scoringService;
     }
@@ -41,9 +45,10 @@ public sealed class GenerateRecommendationCommandHandler
                 candidateInputs.Add((employee.Id, score, reasoning));
             }
         }
-
+        var userId = _currentUserContext.GetUserId(ct);
         var recommendation = Recommendation.Create(
             command.TaskId,
+            userId,
             command.RequiredSkillIds,
             candidateInputs);
 
@@ -55,13 +60,14 @@ public sealed class GenerateRecommendationCommandHandler
             .OrderBy(c => c.Rank)
             .Select(c => new GenerateRecommendationCandidateDto(
                 c.EmployeeId, c.MatchScore, c.MatchReasoning, c.Rank, 
-                c.Status, c.ReviewedBy, c.ReviewedAt))
+                c.Status, c.ReviewedAt))
             .ToList();
 
         return new GenerateRecommendationResponse(
             recommendation.Id,
             recommendation.TaskId,
-            recommendation.GeneratedAt,
+            recommendation.CreatedBy,
+            recommendation.CreatedAt,
             recommendation.Candidates.Count,
             responseCandidates);
     }

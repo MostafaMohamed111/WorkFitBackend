@@ -5,6 +5,7 @@ namespace WorkFit.Recommendations.Features.GenerateRecommendation;
 public sealed record GenerateRecommendationResponse(
     Guid Id,
     Guid TaskId,
+    Guid GeneratedBy,
     DateTimeOffset GeneratedAt,
     int TotalCandidates,
     List<GenerateRecommendationCandidateDto> Candidates
@@ -16,6 +17,5 @@ public sealed record GenerateRecommendationCandidateDto(
     string MatchReasoning,
     int Rank,
     CandidateStatus Status,
-    Guid? ReviewedBy,
     DateTimeOffset? ReviewedAt
 );

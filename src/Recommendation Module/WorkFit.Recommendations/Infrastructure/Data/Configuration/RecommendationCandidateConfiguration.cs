@@ -16,7 +16,6 @@ internal class RecommendationCandidateConfiguration : IEntityTypeConfiguration<R
         builder.Property(x => x.Rank).IsRequired();
         
         builder.Property(x => x.Status).IsRequired().HasConversion<string>();
-        builder.Property(x => x.ReviewedBy);
         builder.Property(x => x.ReviewedAt);
 
         builder.HasIndex(x => x.RecommendationId);

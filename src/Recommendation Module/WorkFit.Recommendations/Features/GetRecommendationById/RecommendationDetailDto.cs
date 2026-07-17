@@ -5,6 +5,7 @@ namespace WorkFit.Recommendations.Features.GetRecommendationById;
 public sealed record RecommendationDetailDto(
     Guid Id,
     Guid TaskId,
+    Guid GeneratedBy,
     DateTimeOffset GeneratedAt,
     string RequiredSkillsSnapshot,
     List<CandidateDetailDto> Candidates
@@ -16,6 +17,5 @@ public sealed record CandidateDetailDto(
     string MatchReasoning,
     int Rank,
     CandidateStatus Status,
-    Guid? ReviewedBy,
     DateTimeOffset? ReviewedAt
 );
