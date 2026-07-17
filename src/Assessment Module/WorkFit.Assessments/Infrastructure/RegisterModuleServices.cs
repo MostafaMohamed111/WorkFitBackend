@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Assessments.Contracts.CreateAssessmentService;
 using WorkFit.Assessments.CrossCutting;
-using WorkFit.Assessments.Domain.DomainServices;
 using WorkFit.Assessments.Infrastructure.Data;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
@@ -21,6 +20,5 @@ internal sealed class RegisterModuleServices : IRegisterModuleServices
 
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<ICreateAssessmentService, CreateAssessmentService>();
-        services.AddScoped<AssessmentAuthorityService>();
     }
 }

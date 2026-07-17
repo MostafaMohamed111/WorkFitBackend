@@ -2,7 +2,7 @@
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
-public sealed record GetEmployeeSkillDetailsCommand(Guid EmployeeSkillId) : IRequest<EmployeeSkillDetailsDto>;
+public sealed record GetEmployeeSkillDetailsQuery(Guid EmployeeId, Guid EmployeeSkillId) : IRequest<EmployeeSkillDetailsDto>;
 
 public sealed record EmployeeSkillDetailsDto(
     Guid EmployeeSkillId,

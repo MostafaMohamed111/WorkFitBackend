@@ -4,7 +4,7 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.ApproveAssessment;
+namespace WorkFit.Assessments.Features.Commands.ApproveAssessment;
 
 internal sealed class ApproveAssessmentEndPoint : Endpoint<ApproveAssessmentRequest,Guid>
 {
