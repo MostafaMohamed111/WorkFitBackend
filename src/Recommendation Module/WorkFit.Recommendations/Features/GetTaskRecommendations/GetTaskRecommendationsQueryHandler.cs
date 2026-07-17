@@ -21,11 +21,12 @@ public sealed class GetTaskRecommendationsQueryHandler
         return await _context.Recommendations
             .AsNoTracking()
             .Where(r => r.TaskId == query.TaskId)
-            .OrderByDescending(r => r.GeneratedAt)
+            .OrderByDescending(r => r.CreatedAt)
             .Select(r => new RecommendationListItemDto(
                 r.Id,
                 r.TaskId,
-                r.GeneratedAt,
+                r.CreatedBy,
+                r.CreatedAt,
                 r.Candidates.Count))
             .ToListAsync(ct);
     }

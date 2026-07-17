@@ -11,9 +11,9 @@ public sealed class RecommendationCandidate : BaseEntity
     public decimal MatchScore { get; private set; }
     public string MatchReasoning { get; private set; } = default!;
     public int Rank { get; private set; }
+    public string AdditionalSkills { get; private set; } = "[]";
     
     public CandidateStatus Status { get; private set; } = CandidateStatus.Pending;
-    public Guid? ReviewedBy { get; private set; }
     public DateTimeOffset? ReviewedAt { get; private set; }
 
     private RecommendationCandidate() { }
@@ -23,7 +23,8 @@ public sealed class RecommendationCandidate : BaseEntity
         Guid employeeId,
         decimal score,
         string matchReasoning,
-        int rank)
+        int rank,
+        string additionalSkills)
         => new()
         {
             RecommendationId = recommendationId,
@@ -31,10 +32,11 @@ public sealed class RecommendationCandidate : BaseEntity
             MatchScore = score,
             MatchReasoning = matchReasoning,
             Rank = rank,
+            AdditionalSkills = additionalSkills,
             Status = CandidateStatus.Pending
         };
 
-    internal void MarkAsApproved(Guid reviewedBy)
+    internal void MarkAsApproved()
     {
         if (Status == CandidateStatus.Approved)
             throw new CandidateAlreadyApprovedException(EmployeeId);
@@ -43,11 +45,10 @@ public sealed class RecommendationCandidate : BaseEntity
             throw new CandidateAlreadyRejectedException(EmployeeId);
 
         Status = CandidateStatus.Approved;
-        ReviewedBy = reviewedBy;
         ReviewedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void MarkAsRejected(Guid reviewedBy)
+    internal void MarkAsRejected()
     {
         if (Status == CandidateStatus.Rejected)
             throw new CandidateAlreadyRejectedException(EmployeeId);
@@ -56,7 +57,6 @@ public sealed class RecommendationCandidate : BaseEntity
             throw new CandidateApprovalNotAllowedException(EmployeeId);
 
         Status = CandidateStatus.Rejected;
-        ReviewedBy = reviewedBy;
         ReviewedAt = DateTimeOffset.UtcNow;
     }
 }

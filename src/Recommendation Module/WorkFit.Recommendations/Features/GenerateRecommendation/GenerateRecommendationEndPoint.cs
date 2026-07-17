@@ -15,7 +15,6 @@ public sealed class GenerateRecommendationEndPoint
     {
         Post("/api/tasks/{taskId}/recommendations");
         Options(x => x.WithTags("Recommendations"));
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(GenerateRecommendationRequest req, CancellationToken ct)

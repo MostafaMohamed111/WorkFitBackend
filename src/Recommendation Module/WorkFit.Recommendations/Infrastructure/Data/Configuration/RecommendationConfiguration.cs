@@ -11,10 +11,11 @@ internal class RecommendationConfiguration : IEntityTypeConfiguration<Recommenda
         builder.ToTable("recommendations");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.TaskId).IsRequired();
-        builder.Property(x => x.GeneratedAt).IsRequired();
         builder.Property(x => x.RequiredSkillsSnapshot)
             .HasColumnType("nvarchar(max)")
             .IsRequired();
+
+        builder.Property(x => x.CreatedBy);
 
         builder.HasMany(x => x.Candidates)
             .WithOne()
@@ -22,6 +23,5 @@ internal class RecommendationConfiguration : IEntityTypeConfiguration<Recommenda
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(x => x.TaskId);
-        builder.HasIndex(x => x.GeneratedAt);
     }
 }

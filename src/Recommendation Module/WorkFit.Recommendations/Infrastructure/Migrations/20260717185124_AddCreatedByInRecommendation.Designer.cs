@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.Recommendations.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using WorkFit.Recommendations.Infrastructure.Data;
 namespace WorkFit.Recommendations.Infrastructure.Migrations
 {
     [DbContext(typeof(RecommendationDbContext))]
-    partial class RecommendationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717185124_AddCreatedByInRecommendation")]
+    partial class AddCreatedByInRecommendation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,10 +63,6 @@ namespace WorkFit.Recommendations.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AdditionalSkills")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
