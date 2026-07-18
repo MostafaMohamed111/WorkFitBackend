@@ -13,6 +13,8 @@ public class OrganizationDbContext : DbContext
     public DbSet<Organization> Organizations { get; set; } = null!;
     public DbSet<Department> Departments { get; set; } = null!;
     public DbSet<Team> Teams { get; set; } = null!;
+    public DbSet<OrganizationMember> OrganizationMembers { get; set; } = null!;
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +43,15 @@ public class OrganizationDbContext : DbContext
             builder.HasOne<Department>()
                 .WithMany()
                 .HasForeignKey(x => x.DepartmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<OrganizationMember>(builder =>
+        {
+            builder.HasIndex(x => x.UserId).IsUnique();
+
+            builder.HasOne<Organization>()
+                .WithMany(o => o.Members)
+                .HasForeignKey(x => x.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

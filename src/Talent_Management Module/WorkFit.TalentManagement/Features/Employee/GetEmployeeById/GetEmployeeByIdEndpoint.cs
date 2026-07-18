@@ -1,6 +1,8 @@
-﻿using FastEndpoints;
+﻿// GetEmployeeByIdEndPoint.cs
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.TalentManagement.Common;
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 
@@ -16,13 +18,14 @@ public sealed class GetEmployeeByIdEndPoint : Endpoint<GetEmployeeByIdRequest, E
     public override void Configure()
     {
         Get("/api/talent-management/employees/{id}");
-        Roles("TeamLeader", "OrganizationOwner", "SuperAdmin", "Employee");
+        Roles(TalentManagementRoles.Privileged.Append("Employee").ToArray());
         Options(x => x.WithTags("Talent Management"));
     }
 
     public override async Task HandleAsync(GetEmployeeByIdRequest req, CancellationToken ct)
     {
-        var query = new GetEmployeeByIdCommand(req.Id);
+        var isPrivileged = TalentManagementRoles.Privileged.Any(r => HttpContext.User.IsInRole(r));
+        var query = new GetEmployeeByIdCommand(req.Id, isPrivileged);
         var result = await _mediator.Send(query, ct);
 
         await Send.OkAsync(result, cancellation: ct);

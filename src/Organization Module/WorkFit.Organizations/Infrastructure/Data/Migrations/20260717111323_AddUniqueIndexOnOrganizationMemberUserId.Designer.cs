@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.Organizations.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using WorkFit.Organizations.Infrastructure.Data;
 namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(OrganizationDbContext))]
-    partial class OrganizationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717111323_AddUniqueIndexOnOrganizationMemberUserId")]
+    partial class AddUniqueIndexOnOrganizationMemberUserId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,10 +117,7 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("OrganizationMembers", "Organization");
+                    b.ToTable("OrganizationMember", "Organization");
                 });
 
             modelBuilder.Entity("WorkFit.Organizations.Domain.Entities.Team", b =>

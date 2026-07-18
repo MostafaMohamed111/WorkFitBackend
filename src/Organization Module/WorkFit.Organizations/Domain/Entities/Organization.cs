@@ -11,6 +11,9 @@ public sealed class Organization : BaseEntity
     public string BrandingJson { get; private set; } = "{}";
     public string SettingsJson { get; private set; } = "{}";
 
+    private readonly List<OrganizationMember> _members = new();
+    public IReadOnlyCollection<OrganizationMember> Members => _members;
+
     private Organization() : base() { } // EF
     private Organization(string name, Guid userId, string brandingJson, string settingsJson) : base()
     {
@@ -39,6 +42,15 @@ public sealed class Organization : BaseEntity
     public void UpdateSettings(string settingsJson)
     {
         SettingsJson = string.IsNullOrWhiteSpace(settingsJson) ? "{}" : settingsJson;
+        MarkUpdated();
+
+    }
+    
+
+    public void AddMember(Guid userId)
+    {
+        if (_members.Any(m => m.UserId == userId)) return; 
+        _members.Add(OrganizationMember.Create(Id, userId));
         MarkUpdated();
     }
 }

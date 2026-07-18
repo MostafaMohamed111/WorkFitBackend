@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations.Contracts\WorkFit.Organizations.Contracts.csproj" />
     <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
     <ProjectReference Include="..\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
   </ItemGroup>

@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
-using WorkFit.TalentManagement.Contracts.Dtos;
+using WorkFit.TalentManagement.Common;
+
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeSkillDetails;
 
@@ -15,18 +16,20 @@ public sealed class GetEmployeeSkillDetailsEndPoint : Endpoint<GetEmployeeSkillD
         _mediator = mediator;
     }
 
-    public override void Configure()
-    {
-        Get("/api/talent-management/employee-skills/{id}");
-        Roles("TeamLeader");
-        Options(x => x.WithTags("Talent Management"));
-    }
 
-    public override async Task HandleAsync(GetEmployeeSkillDetailsRequest req, CancellationToken ct)
-    {
-        var query = new GetEmployeeSkillDetailsCommand(req.Id);
-        var result = await _mediator.Send(query, ct);
+public override void Configure()
+{
+    Get("/api/talent-management/employee-skills/{id}");
+    Roles(TalentManagementRoles.Privileged.Append("Employee").ToArray()); 
+    Options(x => x.WithTags("Talent Management"));
+}
 
-        await Send.OkAsync(result, cancellation: ct);
-    }
+public override async Task HandleAsync(GetEmployeeSkillDetailsRequest req, CancellationToken ct)
+{
+    var isPrivileged = TalentManagementRoles.Privileged.Any(r => HttpContext.User.IsInRole(r));
+    var query = new GetEmployeeSkillDetailsCommand(req.Id, isPrivileged);
+    var result = await _mediator.Send(query, ct);
+
+    await Send.OkAsync(result, cancellation: ct);
+}
 }

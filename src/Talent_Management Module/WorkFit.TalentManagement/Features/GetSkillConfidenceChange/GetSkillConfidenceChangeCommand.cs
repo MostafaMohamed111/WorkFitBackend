@@ -2,4 +2,4 @@
 
 namespace WorkFit.TalentManagement.Features.GetSkillConfidenceChange;
 
-public sealed record GetSkillConfidenceChangeCommand(Guid Id) : IRequest<SkillConfidenceChangeDto>;
+public sealed record GetSkillConfidenceChangeCommand(Guid Id, bool IsPrivilegedCaller) : IRequest<SkillConfidenceChangeDto>;
