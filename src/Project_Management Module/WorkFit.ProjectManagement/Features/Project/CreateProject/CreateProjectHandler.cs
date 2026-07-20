@@ -25,8 +25,9 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
             : request.Status.ToProjectStatus();
 
         var project = Domain.Entities.Project.Create(
-            request.DepartmentId,
+            request.OrganizationId,
             request.Name,
+            request.AttachedDocumentIds,
             request.Description,
             request.StartDate,
             request.EndDate,

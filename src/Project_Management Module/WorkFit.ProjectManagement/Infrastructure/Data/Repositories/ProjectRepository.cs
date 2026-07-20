@@ -3,7 +3,6 @@ using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Features.Project.GetProjectById;
-using WorkFit.ProjectManagement.Features.Project.GetProjectDomains;
 using WorkFit.ProjectManagement.Features.Project.GetProjects;
 
 namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
@@ -38,7 +37,7 @@ public sealed class ProjectRepository : IProjectRepository
 
         if (departmentId.HasValue)
         {
-            query = query.Where(x => x.DepartmentId == departmentId.Value);
+            query = query.Where(x => x.OrganizationId == departmentId.Value);
         }
 
         return await query
@@ -47,7 +46,7 @@ public sealed class ProjectRepository : IProjectRepository
            .Select(x => new ProjectListItemDto(
             x.Id,
             x.Name,
-            x.DepartmentId,
+            x.OrganizationId,
             x.Status,
             x.StartDate,
             x.EndDate,
@@ -83,49 +82,14 @@ public sealed class ProjectRepository : IProjectRepository
         // If you don't have domain methods yet, leave this method empty
         // until they are added.
     }
-    public async Task<IReadOnlyList<ProjectDomainDto>> GetDomainsAsync(Guid projectId, CancellationToken ct)
-    {
-        var domainIds = await _context.ProjectDomains
-            .AsNoTracking()
-            .Where(d => d.ProjectId == projectId)
-            .Select(d => d.DomainId)
-            .ToArrayAsync(ct);
-
-        if (domainIds.Length == 0)
-            return Array.Empty<ProjectDomainDto>();
-
-        return await _context.Set<OrgDomain>()
-            .Where(x => domainIds.Contains(x.Id))
-            .Select(x => new ProjectDomainDto(
-                x.Id,
-                x.Name))
-            .ToListAsync(ct);
-    }
+   
     public Task<bool> ExistsAsync(Guid id, CancellationToken ct)
     {
         return _context.Projects.AnyAsync(x => x.Id == id, ct);
     }
-    public Task<bool> DomainTagExistsAsync(Guid projectId, Guid domainId, CancellationToken ct)
-    {
-        return _context.ProjectDomains.AsNoTracking()
-            .AnyAsync(d => d.ProjectId == projectId && d.DomainId == domainId, ct);
-    }
 
-    public async Task AddDomainAsync(ProjectDomain projectDomain, CancellationToken ct)
-    {
-        await _context.ProjectDomains.AddAsync(projectDomain, ct);
-    }
-    public async Task<bool> RemoveDomainAsync(Guid projectId, Guid domainId, CancellationToken ct)
-    {
-        var existing = await _context.ProjectDomains
-            .FirstOrDefaultAsync(d => d.ProjectId == projectId && d.DomainId == domainId, ct);
 
-        if (existing is null)
-            return false;
 
-        _context.ProjectDomains.Remove(existing);
-        return true;
-    }
     public async Task<ProjectDetailDto?> GetDetailByIdAsync(Guid id, CancellationToken ct)
     {
         var project = await _context.Projects
@@ -150,7 +114,7 @@ public sealed class ProjectRepository : IProjectRepository
             project.Id,
             project.Name,
             project.Description,
-            project.DepartmentId,
+            project.OrganizationId,
             project.Status.ToApiString(),
             project.TeamLeaderId,
             project.StartDate,
@@ -165,7 +129,6 @@ public sealed class ProjectRepository : IProjectRepository
     {
         return _context.Projects
             .Include(p => p.RequiredSkills)
-            .Include(p => p.Domains)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
     }
     public async Task AddActivityLogAsync(ProjectActivityLog log, CancellationToken ct)

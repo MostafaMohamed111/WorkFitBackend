@@ -29,6 +29,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
     {
         var command = new CreateProjectCommand(
             req.Name,
+            req.AttatchedDocumentIds,
             req.Description,
             req.DepartmentId,
             req.TeamLeaderId,

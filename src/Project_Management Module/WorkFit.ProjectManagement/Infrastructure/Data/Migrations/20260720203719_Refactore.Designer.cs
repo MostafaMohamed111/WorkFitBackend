@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WorkFit.ProjectManagement.Infrastructure;
 
 #nullable disable
 
-namespace WorkFit.ProjectManagement.Migrations
+namespace WorkFit.ProjectManagement.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(WorkFitProjectDbContext))]
-    partial class WorkFitProjectDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260720203719_Refactore")]
+    partial class Refactore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

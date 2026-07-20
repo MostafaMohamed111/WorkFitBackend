@@ -5,8 +5,9 @@ namespace WorkFit.ProjectManagement.Features.Project.CreateProject;
 
 public sealed record CreateProjectCommand(
     string Name,
+    List<Guid> AttachedDocumentIds,
     string? Description,
-    Guid DepartmentId,
+    Guid OrganizationId,
     Guid TeamLeaderId,
     DateOnly StartDate,
     DateOnly EndDate,

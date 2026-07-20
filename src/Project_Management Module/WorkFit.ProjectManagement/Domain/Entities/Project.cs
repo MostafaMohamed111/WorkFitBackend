@@ -5,10 +5,10 @@ namespace WorkFit.ProjectManagement.Domain.Entities;
 
 public class Project : BaseEntity
 {
-    public Guid DepartmentId { get; private set; }
-
+    public Guid OrganizationId { get; private set; } // ref to organization
+    private readonly List<Guid> _projectDocumentIds = new(); // ref to documents associated with the project
+    public IReadOnlyCollection<Guid> ProjectDocumentIds => _projectDocumentIds;
     public string Name { get; private set; }
-
     public string? Description { get; private set; }
 
     public ProjectStatus Status { get; private set; }
@@ -27,15 +27,14 @@ public class Project : BaseEntity
 
     public ICollection<ProjectAssignment> Assignments { get; private set; } = new List<ProjectAssignment>();
 
-    public ICollection<ProjectDomain> Domains { get; private set; } = new List<ProjectDomain>();
-
     public ICollection<ProjectActivityLog> ActivityLogs { get; private set; } = new List<ProjectActivityLog>();
 
     private Project() { }
 
     public static Project Create(
-        Guid departmentId,
+        Guid organizationId,
         string name,
+        List<Guid> projectDocumentIds,
         string? description,
         DateOnly? startDate,
         DateOnly? endDate,
@@ -60,9 +59,9 @@ public class Project : BaseEntity
                 nameof(teamLeaderId));
         }
 
-        return new Project
+        var project = new Project
         {
-            DepartmentId = departmentId,
+            OrganizationId = organizationId,
             Name = name,
             Description = description,
             StartDate = startDate,
@@ -70,8 +69,15 @@ public class Project : BaseEntity
             TeamLeaderId = teamLeaderId,
             Status = status,
             SourceSystem = sourceSystem,
-            SourceReferenceId = sourceReferenceId
+            SourceReferenceId = sourceReferenceId,
         };
+        foreach (var docId in projectDocumentIds)
+        {
+            if (docId == Guid.Empty)
+                throw new ArgumentException("Project document ID cannot be empty.", nameof(projectDocumentIds));
+            project._projectDocumentIds.Add(docId);
+        }
+        return project;
     }
 
     public void UpdateDetails(string? name, string? description, DateOnly? endDate)

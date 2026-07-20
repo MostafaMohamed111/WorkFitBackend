@@ -8,7 +8,7 @@ public class ProjectActivityLog : BaseEntity
 {
     public Guid ProjectId { get; private set; }
 
-    public Guid _UserId { get; private set; }
+    public Guid UserId { get; private set; }
 
     public string Action { get; private set; }
 
@@ -38,7 +38,7 @@ public class ProjectActivityLog : BaseEntity
         return new ProjectActivityLog
         {
             ProjectId = projectId,
-            _UserId = _UserId,
+            UserId = _UserId,
             Action = action,
             EntityType = entityType,
             EntityId = entityId,
