@@ -11,8 +11,7 @@ public class OrganizationDbContext : DbContext
     }
 
     public DbSet<Organization> Organizations { get; set; } = null!;
-    public DbSet<Department> Departments { get; set; } = null!;
-    public DbSet<Team> Teams { get; set; } = null!;
+ 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,24 +23,6 @@ public class OrganizationDbContext : DbContext
             builder.Property(x => x.Name).IsRequired().HasMaxLength(200);
             builder.Property(x => x.BrandingJson).IsRequired();
             builder.Property(x => x.SettingsJson).IsRequired();
-        });
-
-        modelBuilder.Entity<Department>(builder =>
-        {
-            builder.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            builder.HasOne<Organization>()
-                .WithMany()
-                .HasForeignKey(x => x.OrganizationId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Team>(builder =>
-        {
-            builder.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            builder.HasOne<Department>()
-                .WithMany()
-                .HasForeignKey(x => x.DepartmentId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

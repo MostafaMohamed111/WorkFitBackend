@@ -7,9 +7,9 @@ namespace WorkFit.Recommendations.Domain.Entities;
 
 public sealed class Recommendation : BaseEntity
 {
-    public Guid TaskId { get; private set; }
+    public Guid TaskId { get; private set; } // ref to task
     public string RequiredSkillsSnapshot { get; private set; } = default!;
-    public Guid CreatedBy { get; private set; }
+    public Guid CreatedBy { get; private set; } // ref to task team lead
 
     private readonly List<RecommendationCandidate> _candidates = new();
     public IReadOnlyCollection<RecommendationCandidate> Candidates => _candidates;
