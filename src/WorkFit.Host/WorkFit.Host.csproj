@@ -34,8 +34,9 @@
 	  <ProjectReference Include="..\Skills_Taxonomy_Module\WorkFit.Skills\WorkFit.Skills.csproj" />
 	  <ProjectReference Include="..\Talent_Management Module\WorkFit.TalentManagement\WorkFit.TalentManagement.csproj" />
 	  <ProjectReference Include="..\WorkFlow Module\WorkFit.WorkFlow\WorkFit.WorkFlow.csproj" />
-	  <ProjectReference Include="..\AuditLog Module\WorkFit.AuditLog\WorkFit.AuditLog.csproj" />
-	  <ProjectReference Include="..\WorkFit_Integration Module\WorkFit.Integration\WorkFit.Integration.csproj" />
+    <ProjectReference Include="..\AuditLog Module\WorkFit.AuditLog\WorkFit.AuditLog.csproj" />
+    <ProjectReference Include="..\Payment Module\WorkFit.Payments\WorkFit.Payments.csproj" />
+    <ProjectReference Include="..\WorkFit_Integration Module\WorkFit.Integration\WorkFit.Integration.csproj" />
   </ItemGroup>
 
 </Project>
