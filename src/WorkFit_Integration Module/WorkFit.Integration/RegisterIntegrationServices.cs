@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Integration.Contracts.Abstractions;
 using WorkFit.Integration.Infrastructure.Data;
 using WorkFit.Integration.Providers.Jira;
-using WorkFit.Integration.Services;
 using WorkFit.SharedKernel.RegisterModuleServices;
 
 namespace WorkFit.Integration;
@@ -38,6 +37,6 @@ public sealed class RegisterIntegrationServices : IRegisterModuleServices
         services.AddScoped<IProjectManagementProvider, JiraProjectManagementProvider>();
 
         // ── Orchestration service ─────────────────────────────────────────────
-        services.AddScoped<IIntegrationSyncService, IntegrationSyncService>();
+        //services.AddScoped<IIntegrationSyncService, IntegrationSyncService>();
     }
 }
