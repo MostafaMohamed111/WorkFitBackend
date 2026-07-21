@@ -28,8 +28,7 @@
     <ProjectReference Include="..\..\Talent_Management Module\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
     <ProjectReference Include="..\..\Skills_Taxonomy_Module\WorkFit.Skills.Contracts\WorkFit.Skills.Contracts.csproj" />
 
-    <!-- ProjectManagement domain (for Project/Task entities + DbContext) -->
-    <ProjectReference Include="..\..\Project_Management Module\WorkFit.ProjectManagement\WorkFit.ProjectManagement.csproj" />
+    <!-- Removed direct dependency on ProjectManagement implementation to respect Architecture rules -->
   </ItemGroup>
 
 </Project>
