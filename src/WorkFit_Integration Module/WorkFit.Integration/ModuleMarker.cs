@@ -1,6 +1,6 @@
 namespace WorkFit.Integration;
 
-/// <summary>
-/// Marker class used for assembly scanning (e.g. MediatR handler discovery).
-/// </summary>
-public sealed class ModuleMarker;
+internal sealed class ModuleMarker
+{
+    public static string ModuleName => "Integration_Module";
+}
