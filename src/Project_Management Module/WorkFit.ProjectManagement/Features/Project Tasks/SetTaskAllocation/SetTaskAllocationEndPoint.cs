@@ -1,10 +1,9 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http;
-using WorkFit.ProjectManagement.Features.Project_Tasks.SetTaskAllocation;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.SetTaskAllocation;
-public sealed class SetTaskAllocationEndPoint : Endpoint<SetTaskAllocationRequest, SetTaskAllocationResponse>
+public sealed class SetTaskAllocationEndPoint : Endpoint<SetTaskAllocationRequest, Guid>
 {
     private readonly IMediator _mediator;
     public SetTaskAllocationEndPoint(IMediator mediator) => _mediator = mediator;

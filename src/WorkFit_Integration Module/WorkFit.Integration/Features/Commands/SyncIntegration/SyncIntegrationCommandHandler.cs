@@ -197,7 +197,8 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
             AssigneeId: resolvedAssigneeId,
             StoryPoints: ext.StoryPoints,
             CompletedAt: ext.ResolvedAt,
-            UpdatedAt: ext.ResolvedAt
+            UpdatedAt: ext.ResolvedAt,
+            0
         );
 
         await _createTaskService.UpsertExternalTaskAsync(dto, ct);

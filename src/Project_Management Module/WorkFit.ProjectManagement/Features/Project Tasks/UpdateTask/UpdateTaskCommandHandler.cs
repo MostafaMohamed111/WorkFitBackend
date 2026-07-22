@@ -1,23 +1,34 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
-public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskDetailDto>
+public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Guid>
 {
     private readonly WorkFitProjectDbContext _context;
+    private readonly ICurrentUserContext _currentUser;
 
-    public UpdateTaskCommandHandler(WorkFitProjectDbContext context)
+    public UpdateTaskCommandHandler(WorkFitProjectDbContext context,
+            ICurrentUserContext currentUser
+        )
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
-    public async Task<TaskDetailDto> Handle(UpdateTaskCommand command, CancellationToken ct)
+    public async Task<Guid> Handle(UpdateTaskCommand command, CancellationToken ct)
     {
         var task = await _context.ProjectTasks.FirstOrDefaultAsync(t => t.Id == command.TaskId, ct);
         if (task is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
+
+        var actorId = _currentUser.GetUserId(ct);
+
+        if (actorId != task.CreatedById)
+            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
         task.UpdateDetails(command.Title, command.Description, command.Priority, command.StoryPoints, command.DueDate);
 
@@ -26,8 +37,6 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
 
         await _context.SaveChangesAsync(ct);
 
-        return new TaskDetailDto(task.Id, task.ProjectId, task.Title, task.Description, task.TaskType,
-            task.Status, task.Priority, task.AssigneeId, task.CreatedById, task.StoryPoints, task.AllocationPercentage,task.DueDate,
-            task.SourceSystem, task.SourceReferenceId, task.CompletedAt, task.CreatedAt);
+        return task.Id;
     }
 }

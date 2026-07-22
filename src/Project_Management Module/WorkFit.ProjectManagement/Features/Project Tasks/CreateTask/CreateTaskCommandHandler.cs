@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -9,7 +10,7 @@ using TaskType = WorkFit.ProjectManagement.Domain.Enums.TaskType;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.CreateTask;
 
-public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, CreateTaskResponse>
+public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand, Guid>
 {
     private readonly WorkFitProjectDbContext _context;
     private readonly ICurrentUserContext _currentUser;
@@ -20,37 +21,20 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         _currentUser = currentUser;
     }
 
-    public async Task<CreateTaskResponse> Handle(CreateTaskCommand command, CancellationToken ct)
+    public async Task<Guid> Handle(CreateTaskCommand command, CancellationToken ct)
     {
-        var project = await _context.Projects.FindAsync(new object[] { command.ProjectId }, ct);
+        var project = await _context.Projects.AsTracking()
+            .Include(p => p.Tasks)
+            .Include(p => p.AssignedEmployees)
+            .FirstOrDefaultAsync(p => p.Id == command.ProjectId, ct);
         if (project is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", command.ProjectId);
 
         var actorId = _currentUser.GetUserId(ct);
+        if(actorId != project.TeamLeaderId)
+            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
-        if (command.AssigneeId.HasValue)
-        {
-            var isMemberOfProject = await _context.ProjectAssignments.AnyAsync(
-                a => a.ProjectId == command.ProjectId &&
-                     a.EmployeeId == command.AssigneeId.Value &&
-                     a.IsActive, ct);
-
-            if (!isMemberOfProject)
-            {
-                var newAssignment = ProjectAssignment.Create(
-                    projectId: command.ProjectId,
-                    employeeId: command.AssigneeId.Value,
-                    roleOnProject: null,
-                    allocationPercentage: 0,
-                    startDate: DateOnly.FromDateTime(DateTime.UtcNow),
-                    endDate: null);
-
-                _context.ProjectAssignments.Add(newAssignment);
-
-            }
-        }
-
-        var task = ProjectTask.Create(
+        var task = project.CreateTask(
             command.ProjectId,
             command.Title,
             command.Description,
@@ -59,12 +43,11 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
             actorId,
             command.AssigneeId,
             command.StoryPoints,
-            command.DueDate);
-
-        _context.ProjectTasks.Add(task);
+            command.DueDate,
+            command.AllocationPercentage);
 
         await _context.SaveChangesAsync(ct);
 
-        return new CreateTaskResponse(task.Id, task.Title, task.Status.ToString(), DateTimeOffset.UtcNow);
+        return task.Id;
     }
 }

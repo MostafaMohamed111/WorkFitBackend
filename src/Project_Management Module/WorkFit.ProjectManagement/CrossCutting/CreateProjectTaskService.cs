@@ -41,7 +41,8 @@ internal sealed class CreateProjectTaskService : ICreateProjectTaskService
                 createdById: Guid.Empty, // external tasks might not have a creator initially
                 assigneeId: dto.AssigneeId,
                 storyPoints: dto.StoryPoints,
-                dueDate: null
+                dueDate: null,
+                allocationPercentage: dto.AllocationPercentage
             );
 
             task.SetSource(sourceSystem.ToString(), dto.SourceReferenceId);

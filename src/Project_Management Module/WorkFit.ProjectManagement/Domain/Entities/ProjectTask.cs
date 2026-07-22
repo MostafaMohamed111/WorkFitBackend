@@ -14,7 +14,7 @@ public class ProjectTask : BaseEntity
     public TaskType TaskType { get; private set; }
     public TaskStatus Status { get; private set; }
     public TaskPriority Priority { get; private set; }
-    public Guid? AssigneeId { get; private set; }
+    public Guid? AssignedEmployeeId { get; private set; }
     public Guid CreatedById { get; private set; }
     public int? StoryPoints { get; private set; }
     public int AllocationPercentage { get; private set; }
@@ -24,13 +24,34 @@ public class ProjectTask : BaseEntity
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
-    public Project Project { get; private set; } = default!;
-
     public bool IsActive => Status != TaskStatus.Done && AllocationPercentage > 0;
 
 
 
     private ProjectTask() { }
+
+    private ProjectTask(
+        Guid projectId,
+        string title,
+        string? description,
+        TaskType taskType,
+        TaskPriority priority,
+        Guid createdById,
+        int? storyPoints,
+        DateOnly? dueDate,
+        int allocationPercentage)
+    {
+        ProjectId = projectId;
+        Title = title;
+        Description = description;
+        TaskType = taskType;
+        Priority = priority;
+        Status = TaskStatus.ToDo;
+        CreatedById = createdById;
+        StoryPoints = storyPoints;
+        AllocationPercentage = allocationPercentage;
+        DueDate = dueDate;
+    }
 
     public static ProjectTask Create(
         Guid projectId,
@@ -42,7 +63,7 @@ public class ProjectTask : BaseEntity
         Guid? assigneeId,
         int? storyPoints,
         DateOnly? dueDate,
-        int allocationPercentage = 0)
+        int allocationPercentage )
     {
         if (string.IsNullOrWhiteSpace(title) || title.Length < 3 || title.Length > 100)
             throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "Title");
@@ -51,21 +72,23 @@ public class ProjectTask : BaseEntity
             throw new ArgumentOutOfRangeException(nameof(allocationPercentage),
                 "Allocation percentage must be between 0 and 100.");
         
+        var task = new ProjectTask
+        (
+            projectId,
+            title,
+            description,
+            taskType,
+            priority,
+            createdById,
+            storyPoints,
+            dueDate,
+            allocationPercentage
+        );
 
-        return new ProjectTask
-        {
-            ProjectId = projectId,
-            Title = title,
-            Description = description,
-            TaskType = taskType,
-            Priority = priority,
-            Status = TaskStatus.ToDo,
-            CreatedById = createdById,
-            AssigneeId = assigneeId,
-            StoryPoints = storyPoints,
-            AllocationPercentage = allocationPercentage,
-            DueDate = dueDate
-        };
+        if (assigneeId.HasValue)
+            task.Assign(assigneeId.Value, allocationPercentage);
+
+        return task;
     }
 
     public void SetAllocationPercentage(int allocationPercentage)
@@ -112,12 +135,14 @@ public class ProjectTask : BaseEntity
         MarkUpdated();
     }
 
-    public void Assign(Guid assigneeId)
+    public void Assign(Guid assigneeId, int? allocationPercentage)
     {
         if (assigneeId == Guid.Empty)
             throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "AssigneeId");
+        if(allocationPercentage.HasValue)
+            SetAllocationPercentage(allocationPercentage.Value);
 
-        AssigneeId = assigneeId;
+        AssignedEmployeeId = assigneeId;
         MarkUpdated();
     }
 

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
-public sealed class UpdateTaskEndPoint : Endpoint<UpdateTaskRequest, TaskDetailDto>
+public sealed class UpdateTaskEndPoint : Endpoint<UpdateTaskRequest, Guid>
 {
     private readonly IMediator _mediator;
     public UpdateTaskEndPoint(IMediator mediator) => _mediator = mediator;

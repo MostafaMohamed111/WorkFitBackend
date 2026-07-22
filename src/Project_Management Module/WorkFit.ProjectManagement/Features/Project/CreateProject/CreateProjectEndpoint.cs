@@ -4,7 +4,7 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project.CreateProject;
 
-public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, ProjectCreatedDto>
+public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Guid>
 {
     private readonly IMediator _mediator;
 
@@ -19,7 +19,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
         Roles("TeamLeader");
         Options(x => x.WithTags("Project Management"));
         Description(static b => b
-            .Produces<ProjectCreatedDto>(201)
+            .Produces<Guid>(200)
             .ProducesProblem(400)
             .Produces(401)
             .Produces(403));
@@ -32,17 +32,13 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Proje
             req.AttatchedDocumentIds,
             req.Description,
             req.DepartmentId,
-            req.TeamLeaderId,
             req.StartDate,
             req.EndDate,
             req.Status,
             req.RequiredSkills);
 
-        var result = await _mediator.Send(command, ct);
+        var projectId = await _mediator.Send(command, ct);
 
-        await Send.CreatedAtAsync<GetProjectById.GetProjectByIdEndpoint>(
-            new { id = result.Id },
-            result,
-            cancellation: ct);
+        await Send.OkAsync(projectId);
     }
 }

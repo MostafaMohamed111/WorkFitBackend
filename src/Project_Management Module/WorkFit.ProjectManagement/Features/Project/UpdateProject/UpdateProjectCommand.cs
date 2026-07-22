@@ -8,6 +8,5 @@ public sealed record UpdateProjectCommand(
     Guid Id,
     string? Name,
     string? Description,
-    string? Status,
     DateOnly? EndDate,
     List<RequiredSkillInputDto>? RequiredSkills) : IRequest<ProjectUpdatedDto?>;

@@ -21,7 +21,7 @@ public sealed class GetTaskByIdQueryHandler : IRequestHandler<GetTaskByIdQuery, 
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", query.TaskId);
 
         return new TaskDetailDto(task.Id, task.ProjectId, task.Title, task.Description, task.TaskType,
-            task.Status, task.Priority, task.AssigneeId, task.CreatedById, task.StoryPoints, task.AllocationPercentage,task.DueDate,
+            task.Status, task.Priority, task.AssignedEmployeeId, task.CreatedById, task.StoryPoints, task.AllocationPercentage,task.DueDate,
             task.SourceSystem, task.SourceReferenceId, task.CompletedAt, task.CreatedAt,task.IsActive);
     }
 }

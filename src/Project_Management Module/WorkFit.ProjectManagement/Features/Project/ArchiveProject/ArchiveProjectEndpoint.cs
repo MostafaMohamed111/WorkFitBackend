@@ -5,7 +5,7 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project.ArchiveProject;
 
-public sealed class ArchiveProjectEndpoint : Endpoint<ArchiveProjectRequest, ProjectArchivedDto>
+public sealed class ArchiveProjectEndpoint : EndpointWithoutRequest<Guid>
 {
     private readonly IMediator _mediator;
 
@@ -16,22 +16,18 @@ public sealed class ArchiveProjectEndpoint : Endpoint<ArchiveProjectRequest, Pro
 
     public override void Configure()
     {
-        Delete("/api/projects/{id}");
+        Put("/api/projects/{id}/archive");
         Options(x => x.WithTags("Project Management"));
+        Roles("TeamLeader");
         Description(b => b
-            .Produces<ProjectArchivedDto>(200)
+            .Produces<Guid>(200)
             .Produces(404));
     }
 
-    public override async Task HandleAsync(ArchiveProjectRequest req, CancellationToken ct)
+    public override async Task HandleAsync( CancellationToken ct)
     {
-        var result = await _mediator.Send(new ArchiveProjectCommand(req.Id), ct);
-
-        if (result is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
+        var projectId = Route<Guid>("id");
+        var result = await _mediator.Send(new ArchiveProjectCommand(projectId), ct);
 
         await Send.OkAsync(result, ct);
     }

@@ -5,7 +5,7 @@ using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.CompleteTask;
-public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCommand, CompleteTaskResponse>
+public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCommand, Guid>
 {
     private readonly WorkFitProjectDbContext _context;
     private readonly IMediator _mediator;
@@ -16,7 +16,7 @@ public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCom
         _mediator = mediator;
     }
 
-    public async Task<CompleteTaskResponse> Handle(CompleteTaskCommand command, CancellationToken ct)
+    public async Task<Guid> Handle(CompleteTaskCommand command, CancellationToken ct)
     {
         var task = await _context.ProjectTasks.FirstOrDefaultAsync(t => t.Id == command.TaskId, ct);
         if (task is null)
@@ -26,9 +26,9 @@ public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCom
 
         await _context.SaveChangesAsync(ct);
         await _mediator.Publish(new TaskCompletedIntegrationEvent(
-            task.Id, task.AssigneeId!.Value, task.AllocationPercentage), ct);
+            task.Id, task.AssignedEmployeeId!.Value, task.AllocationPercentage), ct);
 
 
-        return new CompleteTaskResponse(task.Id, task.Status.ToString(), task.CompletedAt!.Value);
+        return task.Id;
     }
 }

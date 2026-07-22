@@ -16,7 +16,6 @@ public class WorkFitProjectDbContext : DbContext
     public DbSet<ProjectTask> ProjectTasks { get; set; }
 
     public DbSet<ProjectActivityLog> ProjectActivityLogs { get; set; }
-    public DbSet<ProjectAssignment> ProjectAssignments { get; set; }
 
     public DbSet<ProjectRequiredSkill> ProjectRequiredSkills { get; set; }
 

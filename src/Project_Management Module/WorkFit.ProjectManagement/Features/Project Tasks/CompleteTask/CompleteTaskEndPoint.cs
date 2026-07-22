@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.CompleteTask;
-public sealed class CompleteTaskEndPoint : EndpointWithoutRequest<CompleteTaskResponse>
+public sealed class CompleteTaskEndPoint : EndpointWithoutRequest<Guid>
 {
     private readonly IMediator _mediator;
     public CompleteTaskEndPoint(IMediator mediator) => _mediator = mediator;
@@ -12,7 +12,7 @@ public sealed class CompleteTaskEndPoint : EndpointWithoutRequest<CompleteTaskRe
     {
         Put("/api/tasks/{id}/complete");
         Options(x => x.WithTags("Project Management"));
-        AllowAnonymous();
+        Roles("TeamLeader");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

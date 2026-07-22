@@ -9,5 +9,6 @@ public sealed record CreateTaskRequest(
     TaskPriority? Priority,
     Guid? AssigneeId,
     int? StoryPoints,
-    DateOnly? DueDate
+    DateOnly? DueDate,
+    int AllocationPercentage
 );

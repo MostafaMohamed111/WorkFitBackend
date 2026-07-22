@@ -26,13 +26,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 
         builder.Property(x => x.EndDate);
 
-        builder.HasMany(x => x.Tasks)
-               .WithOne(x => x.Project)
-               .HasForeignKey(x => x.ProjectId);
 
-        builder.HasMany(x => x.Assignments)
-               .WithOne(x => x.Project)
-               .HasForeignKey(x => x.ProjectId);
 
         builder.HasMany(x => x.ActivityLogs)
                .WithOne(x => x.Project)

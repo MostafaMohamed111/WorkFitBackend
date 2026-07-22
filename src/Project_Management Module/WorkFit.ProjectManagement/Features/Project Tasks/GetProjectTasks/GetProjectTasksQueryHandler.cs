@@ -23,13 +23,13 @@ public sealed class GetProjectTasksQueryHandler : IRequestHandler<GetProjectTask
         var tasksQuery = _context.ProjectTasks.Where(t => t.ProjectId == query.ProjectId);
 
         if (query.Status.HasValue) tasksQuery = tasksQuery.Where(t => t.Status == query.Status.Value);
-        if (query.AssigneeId.HasValue) tasksQuery = tasksQuery.Where(t => t.AssigneeId == query.AssigneeId.Value);
+        if (query.AssigneeId.HasValue) tasksQuery = tasksQuery.Where(t => t.AssignedEmployeeId == query.AssigneeId.Value);
         if (query.TaskType.HasValue) tasksQuery = tasksQuery.Where(t => t.TaskType == query.TaskType.Value);
         if (query.Priority.HasValue) tasksQuery = tasksQuery.Where(t => t.Priority == query.Priority.Value);
 
         return await tasksQuery
             .Select(t => new TaskListItemDto(t.Id, t.Title, t.TaskType, t.Status, t.Priority,
-                t.AssigneeId, t.StoryPoints, t.DueDate, t.CompletedAt))
+                t.AssignedEmployeeId, t.StoryPoints, t.DueDate, t.CompletedAt))
             .ToListAsync(ct);
     }
 }

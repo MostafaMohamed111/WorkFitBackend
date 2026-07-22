@@ -12,5 +12,6 @@ public sealed record UpsertExternalTaskDto(
     Guid? AssigneeId,
     int? StoryPoints,
     DateTimeOffset? CompletedAt,
-    DateTimeOffset? UpdatedAt
+    DateTimeOffset? UpdatedAt,
+    int AllocationPercentage
 );

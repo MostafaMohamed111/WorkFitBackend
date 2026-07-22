@@ -7,8 +7,6 @@ using WorkFit.ProjectManagement.Features.Project.GetProjects;
 
 namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 
-
-
 public sealed class ProjectRepository : IProjectRepository
 {
     private readonly WorkFitProjectDbContext _context;
@@ -27,7 +25,6 @@ public sealed class ProjectRepository : IProjectRepository
     {
         IQueryable<Project> query = _context.Projects
             .AsNoTracking()
-            .Include(x => x.Assignments)
             .Include(x => x.Tasks);
 
         if (Enum.TryParse<ProjectStatus>(status, true, out var projectStatus))
@@ -50,7 +47,7 @@ public sealed class ProjectRepository : IProjectRepository
             x.Status,
             x.StartDate,
             x.EndDate,
-            x.Assignments.Count(a => a.IsActive),
+            x.AssignedEmployees.Count(),
             x.Tasks.Count))
             .ToListAsync(ct);
     }
@@ -69,7 +66,6 @@ public sealed class ProjectRepository : IProjectRepository
     public async Task ArchiveAsync(Guid id, CancellationToken ct)
     {
         var project = await _context.Projects
-            .Include(x => x.Assignments)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
 
         if (project is null)
@@ -127,7 +123,7 @@ public sealed class ProjectRepository : IProjectRepository
     }
     public Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        return _context.Projects
+        return _context.Projects.AsTracking()
             .Include(p => p.RequiredSkills)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
     }

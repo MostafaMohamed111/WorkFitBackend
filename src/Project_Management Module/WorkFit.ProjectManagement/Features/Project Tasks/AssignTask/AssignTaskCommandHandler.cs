@@ -1,66 +1,50 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
-using WorkFit.ProjectManagement.Domain.Entities;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.AssignTask;
 
-public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand, AssignTaskResponse>
+public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand, Guid>
 {
     private readonly WorkFitProjectDbContext _context;
 
     private readonly IMediator _mediator;
+    private readonly ICurrentUserContext _currentUser;
 
     public AssignTaskCommandHandler(WorkFitProjectDbContext context,
-            IMediator mediator
+            IMediator mediator,
+            ICurrentUserContext currentUser
         )
     {
         _context = context;
         _mediator = mediator;
+        _currentUser = currentUser;
     }
 
-    public async Task<AssignTaskResponse> Handle(AssignTaskCommand command, CancellationToken ct)
+    public async Task<Guid> Handle(AssignTaskCommand command, CancellationToken ct)
     {
-        var task = await _context.ProjectTasks.FirstOrDefaultAsync(t => t.Id == command.TaskId, ct);
-        if (task is null)
-            throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
+        var project = await _context.Projects.AsTracking()
+            .Include(p => p.Tasks)
+            .FirstOrDefaultAsync(p => p.Id == command.ProjectId, ct)
+            ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Domain.Entities.Project).Name, command.ProjectId);
 
+        var actorId = _currentUser.GetUserId(ct);
+        if(actorId != project.TeamLeaderId)
+            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
-        var isMemberOfProject = await _context.ProjectAssignments.AnyAsync(
-            a => a.ProjectId == task.ProjectId &&
-                 a.EmployeeId == command.AssigneeId &&
-                 a.IsActive, ct);
-
-        if (!isMemberOfProject)
-        {
-            var newAssignment = ProjectAssignment.Create(
-                projectId: task.ProjectId,
-                employeeId: command.AssigneeId,
-                roleOnProject: null,
-                allocationPercentage: 0,
-                startDate: DateOnly.FromDateTime(DateTime.UtcNow),
-                endDate: null);
-
-            _context.ProjectAssignments.Add(newAssignment);
-        
-        }
-
-        task.Assign(command.AssigneeId);
-
-        if (command.AllocationPercentage.HasValue)
-            task.SetAllocationPercentage(command.AllocationPercentage.Value);
-
+        var task = project.AssignEmployeeForTask(command.TaskId, command.AssigneeId, command.AllocationPercentage);
 
         await _context.SaveChangesAsync(ct);
 
-        if (task.IsActive)
-        {
-            await _mediator.Publish(new TaskAssignedIntegrationEvent(
-                task.Id, task.AssigneeId!.Value, task.AllocationPercentage), ct);
-        }
+       
+        await _mediator.Publish(new TaskAssignedIntegrationEvent(
+        task.Id, task.AssignedEmployeeId!.Value, task.AllocationPercentage), ct);
 
-        return new AssignTaskResponse(task.Id, task.AssigneeId!.Value);
+
+        return task.Id;
     }
 }

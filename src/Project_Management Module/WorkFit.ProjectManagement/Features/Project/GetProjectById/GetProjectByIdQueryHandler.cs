@@ -3,11 +3,11 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project.GetProjectById;
 
-public sealed class GetProjectByIdHandler : IRequestHandler<GetProjectByIdQuery, ProjectDetailDto?>
+public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQuery, ProjectDetailDto?>
 {
     private readonly IProjectRepository _projectRepository;
 
-    public GetProjectByIdHandler(IProjectRepository projectRepository)
+    public GetProjectByIdQueryHandler(IProjectRepository projectRepository)
     {
         _projectRepository = projectRepository;
     }

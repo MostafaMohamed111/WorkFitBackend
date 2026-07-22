@@ -2,4 +2,4 @@
 
 namespace WorkFit.ProjectManagement.Features.Project.UpdateProjectStatus;
 
-public sealed record UpdateProjectStatusCommand(Guid Id, string Status) : IRequest<ProjectStatusDto?>;
+public sealed record UpdateProjectStatusCommand(Guid Id, string Status) : IRequest<Guid>;

@@ -2,4 +2,4 @@
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.DeleteTask;
 
-public sealed record DeleteTaskCommand(Guid TaskId) : IRequest<DeleteTaskResponse>;
+public sealed record DeleteTaskCommand(Guid TaskId) : IRequest;

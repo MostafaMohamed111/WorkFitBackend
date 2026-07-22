@@ -11,5 +11,6 @@ public sealed record CreateTaskCommand(
     TaskPriority? Priority,
     Guid? AssigneeId,
     int? StoryPoints,
-    DateOnly? DueDate
-) : IRequest<CreateTaskResponse>;
+    DateOnly? DueDate,
+    int AllocationPercentage
+) : IRequest<Guid>;

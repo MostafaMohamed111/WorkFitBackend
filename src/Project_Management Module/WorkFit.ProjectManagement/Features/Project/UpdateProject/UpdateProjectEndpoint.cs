@@ -18,6 +18,7 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
     {
         Put("/api/projects/{id}");
         Options(x => x.WithTags("Project Management"));
+        Roles("TeamLeader");
         Description(b => b
             .Produces<ProjectUpdatedDto>(200)
             .Produces(404));
@@ -29,7 +30,6 @@ public sealed class UpdateProjectEndpoint : Endpoint<UpdateProjectRequest, Proje
             req.Id,
             req.Name,
             req.Description,
-            req.Status,
             req.EndDate,
             req.RequiredSkills);
 

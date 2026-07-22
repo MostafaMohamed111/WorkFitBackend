@@ -1,13 +1,13 @@
-﻿using WorkFit.ProjectManagement.Domain.Entities;
-using WorkFit.ProjectManagement.Domain.Enums;
-using WorkFit.ProjectManagement.Features.Common;
+﻿using WorkFit.ProjectManagement.Features.Common;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
+using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project.UpdateProjectStatus;
 
-public sealed class UpdateProjectStatusHandler : IRequestHandler<UpdateProjectStatusCommand, ProjectStatusDto?>
+public sealed class UpdateProjectStatusHandler : IRequestHandler<UpdateProjectStatusCommand, Guid>
 {
     private readonly IProjectRepository _projectRepository;
     private readonly ICurrentUserContext _currentUser;
@@ -18,36 +18,29 @@ public sealed class UpdateProjectStatusHandler : IRequestHandler<UpdateProjectSt
         _currentUser = currentUser;
     }
 
-    public async Task<ProjectStatusDto?> Handle(UpdateProjectStatusCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(UpdateProjectStatusCommand command, CancellationToken cancellationToken)
     {
-        var project = await _projectRepository.GetByIdAsync(request.Id, cancellationToken);
+        var project = await _projectRepository.GetByIdAsync(command.Id, cancellationToken);
         if (project is null)
-            return null;
+            throw new EntityNotFoundException(
+                    ModuleMarker.ModuleName,
+                    typeof(Domain.Entities.Project).Name,
+                    command.Id
+                );
 
-        var beforeStatus = project.Status.ToApiString();
+        var actorId = _currentUser.GetUserId(cancellationToken);
+        if(actorId != project.TeamLeaderId)
+            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
         // Project.ChangeStatus enforces the allowed transition graph and throws
         // InvalidOperationException on an illegal transition (e.g. completed -> active).
-        project.ChangeStatus(request.Status.ToProjectStatus());
-
-        await _projectRepository.UpdateAsync(project, cancellationToken);
-
-        var log = ProjectActivityLog.Create(
-            project.Id,
-            _currentUser.GetUserId(cancellationToken),
-            ActivityActions.ProjectStatusChanged,
-            ActivityEntityType.Project,
-            project.Id,
-            beforeState: $"{{\"status\":\"{beforeStatus}\"}}",
-            afterState: $"{{\"status\":\"{project.Status.ToApiString()}\"}}");
-
-        project.ActivityLogs.Add(log);
+        project.ChangeStatus(actorId, command.Status.ToProjectStatus());
 
         // project.status_changed also notifies all active project members (handled
         // by the notification service subscribed to project_activity_logs inserts).
 
         await _projectRepository.SaveChangesAsync(cancellationToken);
 
-        return new ProjectStatusDto(project.Id, project.Status.ToApiString());
+        return project.Id;
     }
 }

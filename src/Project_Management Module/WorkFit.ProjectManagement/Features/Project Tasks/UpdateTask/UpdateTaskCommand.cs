@@ -12,4 +12,4 @@ public sealed record UpdateTaskCommand(
     TaskPriority? Priority,
     DateOnly? DueDate,
     int? StoryPoints
-) : IRequest<TaskDetailDto>;
+) : IRequest<Guid>;

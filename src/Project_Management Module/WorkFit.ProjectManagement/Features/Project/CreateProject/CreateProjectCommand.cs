@@ -8,8 +8,7 @@ public sealed record CreateProjectCommand(
     List<Guid> AttachedDocumentIds,
     string? Description,
     Guid OrganizationId,
-    Guid TeamLeaderId,
     DateOnly StartDate,
     DateOnly EndDate,
     string? Status,
-    List<RequiredSkillInputDto>? RequiredSkills) : IRequest<ProjectCreatedDto>;
+    List<RequiredSkillInputDto>? RequiredSkills) : IRequest<Guid>;

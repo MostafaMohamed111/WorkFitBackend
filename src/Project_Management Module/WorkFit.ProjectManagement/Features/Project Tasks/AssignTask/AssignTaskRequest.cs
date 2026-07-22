@@ -1,2 +1,2 @@
 ﻿namespace WorkFit.ProjectManagement.Features.Project_Tasks.AssignTask;
-public sealed record AssignTaskRequest(Guid AssigneeId, int? AllocationPercentage);
+public sealed record AssignTaskRequest(Guid ProjectId, Guid AssigneeId, int? AllocationPercentage);
