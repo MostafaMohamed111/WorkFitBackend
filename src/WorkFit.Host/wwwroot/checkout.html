@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WorkFit Payments</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="checkout-card">
+      <div class="hero">
+        <p class="eyebrow">WorkFit Payments</p>
+        <h1>Checkout test payment</h1>
+        <p class="lede">A simple Stripe-style checkout page for testing payments inside the payment module.</p>
+      </div>
+
+      <div class="checkout-form">
+        <div class="product">
+          <div class="product-badge">WF</div>
+          <div>
+            <h2>Invoice payment</h2>
+            <p>Demo payment for Invoice INV-1005</p>
+          </div>
+          <div class="price">$1.00</div>
+        </div>
+
+        <button type="button" id="payButton">Pay with Stripe</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('payButton').addEventListener('click', () => {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/api/payments/checkout-session';
+
+      const fields = {
+        ReferenceId: 'INV-1005',
+        ReferenceType: 'Invoice',
+        Amount: '1',
+        Currency: 'usd',
+        Description: 'Stripe test payment'
+      };
+
+      for (const [name, value] of Object.entries(fields)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+
+      document.body.appendChild(form);
+      form.submit();
+    });
+  </script>
+</body>
+</html>

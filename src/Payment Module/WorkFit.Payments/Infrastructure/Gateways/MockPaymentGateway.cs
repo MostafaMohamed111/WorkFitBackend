@@ -39,50 +39,23 @@ public sealed class MockPaymentGateway : IPaymentGateway
         return Task.FromResult(result);
     }
 
+    public Task<PaymentCheckoutSessionResult> CreateCheckoutSessionAsync(
+        PaymentGatewayRequest request,
+        string successUrl,
+        string cancelUrl,
+        CancellationToken cancellationToken)
+    {
+        var sessionId = $"cs_mock_{Guid.NewGuid():N}";
+        var url = successUrl.Replace("{CHECKOUT_SESSION_ID}", sessionId, StringComparison.OrdinalIgnoreCase);
+
+        return Task.FromResult(new PaymentCheckoutSessionResult(sessionId, url));
+    }
+
     public Task<PaymentGatewayResult> RetrievePaymentIntentAsync(
         string providerPaymentId,
         CancellationToken cancellationToken)
     {
         return Task.FromResult(GetStoredResult(providerPaymentId));
-    }
-
-    public Task<PaymentGatewayResult> ConfirmPaymentAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        var current = GetStoredResult(providerPaymentId);
-        var confirmed = current.Status is PaymentStatus.Cancelled or PaymentStatus.Failed
-            ? current
-            : current with
-            {
-                Status = PaymentStatus.Succeeded,
-                TransactionId = current.TransactionId ?? $"txn_mock_{Guid.NewGuid():N}"
-            };
-
-        Store[providerPaymentId] = confirmed;
-        return Task.FromResult(confirmed);
-    }
-
-    public Task<PaymentGatewayResult> CancelPaymentAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        var current = GetStoredResult(providerPaymentId);
-        var cancelled = current with
-        {
-            Status = PaymentStatus.Cancelled,
-            TransactionId = current.TransactionId ?? $"txn_mock_{Guid.NewGuid():N}"
-        };
-
-        Store[providerPaymentId] = cancelled;
-        return Task.FromResult(cancelled);
-    }
-
-    public Task<PaymentGatewayResult> GetPaymentStatusAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        return RetrievePaymentIntentAsync(providerPaymentId, cancellationToken);
     }
 
     private static PaymentGatewayResult GetStoredResult(string providerPaymentId)

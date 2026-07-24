@@ -1,14 +1,11 @@
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace WorkFit.Payments.Infrastructure.Data.Migrations
 {
-    /// <inheritdoc />
-    public partial class InitialPaymentModule : Migration
+    public partial class CreatePaymentsTable : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
@@ -51,7 +48,6 @@ namespace WorkFit.Payments.Infrastructure.Data.Migrations
                 columns: new[] { "ReferenceId", "ReferenceType" });
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

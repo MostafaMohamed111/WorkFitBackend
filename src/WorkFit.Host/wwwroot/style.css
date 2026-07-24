@@ -1,0 +1,212 @@
+:root {
+  --bg: #111827;
+  --bg-soft: #1f2937;
+  --card: rgba(255, 255, 255, 0.96);
+  --text: #0f172a;
+  --muted: #475569;
+  --accent: #3b82f6;
+  --accent-2: #2563eb;
+  --border: rgba(15, 23, 42, 0.08);
+  --success: #16a34a;
+  --cancel: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.28), transparent 35%),
+    radial-gradient(circle at right center, rgba(37, 99, 235, 0.2), transparent 28%),
+    linear-gradient(160deg, #0b1220 0%, #111827 45%, #0f172a 100%);
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.checkout-card,
+.status-card {
+  width: min(100%, 560px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+  padding: 28px;
+}
+
+.hero {
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 44px);
+  line-height: 1.05;
+}
+
+.lede {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.product {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  margin: 24px 0;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #f8fbff, #eef4ff);
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+.product-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+
+.product h2,
+.product p {
+  margin: 0;
+}
+
+.product h2 {
+  font-size: 18px;
+}
+
+.product p {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.price {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+}
+
+.checkout-form {
+  display: grid;
+  gap: 14px;
+}
+
+.checkout-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.checkout-form input {
+  width: 100%;
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font: inherit;
+  color: var(--text);
+  background: white;
+  outline: none;
+}
+
+.checkout-form input:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+}
+
+button,
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+button {
+  color: white;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.28);
+}
+
+button:hover,
+.link-button:hover {
+  transform: translateY(-1px);
+}
+
+.status-card {
+  text-align: center;
+  display: grid;
+  gap: 16px;
+}
+
+.status-card.success {
+  border-top: 6px solid var(--success);
+}
+
+.status-card.cancel {
+  border-top: 6px solid var(--cancel);
+}
+
+.meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.link-button {
+  margin: 0 auto;
+  color: white;
+  background: linear-gradient(135deg, #334155, #0f172a);
+}
+
+@media (max-width: 640px) {
+  .checkout-card,
+  .status-card {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .product {
+    grid-template-columns: 52px 1fr;
+  }
+
+  .price {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}

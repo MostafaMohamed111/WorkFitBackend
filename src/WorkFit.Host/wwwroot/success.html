@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment success</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="status-card success">
+      <p class="eyebrow">Payment completed</p>
+      <h1>Payment successful</h1>
+      <p>Your payment has been completed successfully.</p>
+      <button class="link-button" type="button" onclick="finish()">Close</button>
+    </section>
+  </main>
+
+  <script>
+    function finish() {
+      window.close();
+      window.location.href = 'about:blank';
+    }
+  </script>
+</body>
+</html>

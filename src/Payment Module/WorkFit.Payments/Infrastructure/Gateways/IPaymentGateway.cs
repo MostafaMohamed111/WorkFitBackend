@@ -8,11 +8,11 @@ public interface IPaymentGateway
 
     Task<PaymentGatewayResult> CreatePaymentIntentAsync(PaymentGatewayRequest request, CancellationToken cancellationToken);
 
+    Task<PaymentCheckoutSessionResult> CreateCheckoutSessionAsync(
+        PaymentGatewayRequest request,
+        string successUrl,
+        string cancelUrl,
+        CancellationToken cancellationToken);
+
     Task<PaymentGatewayResult> RetrievePaymentIntentAsync(string providerPaymentId, CancellationToken cancellationToken);
-
-    Task<PaymentGatewayResult> ConfirmPaymentAsync(string providerPaymentId, CancellationToken cancellationToken);
-
-    Task<PaymentGatewayResult> CancelPaymentAsync(string providerPaymentId, CancellationToken cancellationToken);
-
-    Task<PaymentGatewayResult> GetPaymentStatusAsync(string providerPaymentId, CancellationToken cancellationToken);
 }
