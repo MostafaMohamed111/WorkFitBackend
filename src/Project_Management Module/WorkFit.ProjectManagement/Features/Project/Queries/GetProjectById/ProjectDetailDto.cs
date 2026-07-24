@@ -6,7 +6,7 @@ public sealed record ProjectDetailDto(
     Guid Id,
     string Name,
     string? Description,
-    Guid DepartmentId,
+    Guid OrganizationId,
     string Status,
     Guid? TeamLeaderId,
     DateOnly? StartDate,

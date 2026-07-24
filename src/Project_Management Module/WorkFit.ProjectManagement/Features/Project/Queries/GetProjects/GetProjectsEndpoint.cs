@@ -1,9 +1,9 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http;
-using WorkFit.ProjectManagement.Features.Project.GetProjects;
+using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.ProjectManagement.Features.Projects.GetProjects;
+namespace WorkFit.ProjectManagement.Features.Project.Queries.GetProjects;
 
 public sealed class GetProjectsEndpoint
     : Endpoint<GetProjectsRequest, IReadOnlyList<ProjectListItemDto>>
@@ -30,7 +30,7 @@ public sealed class GetProjectsEndpoint
     {
         var query = new GetProjectsQuery(
             req.Status,
-            req.DepartmentId,
+            req.OrganizationId,
             req.Page,
             req.Limit);
 

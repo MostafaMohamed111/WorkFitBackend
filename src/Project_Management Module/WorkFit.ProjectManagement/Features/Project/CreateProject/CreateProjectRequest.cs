@@ -9,7 +9,7 @@ public sealed class CreateProjectRequest
 
     public string? Description { get; set; }
     public List<Guid> AttatchedDocumentIds { get; set; }
-    public Guid DepartmentId { get; set; }
+    public Guid OrgnaizationId { get; set; }
     public Guid TeamLeaderId { get; set; }
 
     public DateOnly StartDate { get; set; }

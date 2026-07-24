@@ -31,7 +31,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Guid>
             req.Name,
             req.AttatchedDocumentIds,
             req.Description,
-            req.DepartmentId,
+            req.OrgnaizationId,
             req.StartDate,
             req.EndDate,
             req.Status,

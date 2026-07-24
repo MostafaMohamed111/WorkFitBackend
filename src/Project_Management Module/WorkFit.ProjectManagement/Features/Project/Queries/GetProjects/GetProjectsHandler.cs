@@ -1,8 +1,8 @@
-﻿using WorkFit.ProjectManagement.Features.Project.GetProjects;
+﻿using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.ProjectManagement.Features.Projects.GetProjects;
+namespace WorkFit.ProjectManagement.Features.Project.Queries.GetProjects;
 
 public sealed class GetProjectsHandler
     : IRequestHandler<GetProjectsQuery, IReadOnlyList<ProjectListItemDto>>
@@ -20,7 +20,7 @@ public sealed class GetProjectsHandler
     {
         return await _projectRepository.GetProjectsAsync(
             request.Status,
-            request.DepartmentId,
+            request.OrganizationId,
             request.Page,
             request.Limit,
             cancellationToken);

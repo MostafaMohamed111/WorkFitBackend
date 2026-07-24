@@ -1,6 +1,7 @@
 ﻿using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Features.Project.GetProjectById;
-using WorkFit.ProjectManagement.Features.Project.GetProjects;
+using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
+
 namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 
 
@@ -9,7 +10,7 @@ public interface IProjectRepository
 {
     Task<IReadOnlyList<ProjectListItemDto>> GetProjectsAsync(
         string? status,
-        Guid? departmentId,
+        Guid? organizationId,
         int page,
         int limit,
         CancellationToken ct);

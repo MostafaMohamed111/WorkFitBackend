@@ -3,7 +3,7 @@ using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Features.Project.GetProjectById;
-using WorkFit.ProjectManagement.Features.Project.GetProjects;
+using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
 
 namespace WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 
@@ -18,7 +18,7 @@ public sealed class ProjectRepository : IProjectRepository
 
     public async Task<IReadOnlyList<ProjectListItemDto>> GetProjectsAsync(
         string? status,
-        Guid? departmentId,
+        Guid? organizationId,
         int page,
         int limit,
         CancellationToken ct)
@@ -32,9 +32,9 @@ public sealed class ProjectRepository : IProjectRepository
             query = query.Where(x => x.Status == projectStatus);
         }
 
-        if (departmentId.HasValue)
+        if (organizationId.HasValue)
         {
-            query = query.Where(x => x.OrganizationId == departmentId.Value);
+            query = query.Where(x => x.OrganizationId == organizationId.Value);
         }
 
         return await query
