@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Stripe;
+using Stripe.Checkout;
 using WorkFit.Payments.Contracts.Enums;
 using WorkFit.Payments.Infrastructure.Configuration;
 
@@ -8,6 +9,7 @@ namespace WorkFit.Payments.Infrastructure.Gateways;
 public sealed class StripePaymentGateway : IPaymentGateway
 {
     private readonly PaymentIntentService _paymentIntentService;
+    private readonly SessionService _checkoutSessionService;
 
     public StripePaymentGateway(IOptions<PaymentOptions> options)
     {
@@ -20,6 +22,7 @@ public sealed class StripePaymentGateway : IPaymentGateway
 
         var client = new StripeClient(stripeOptions.SecretKey);
         _paymentIntentService = new PaymentIntentService(client);
+        _checkoutSessionService = new SessionService(client);
     }
 
     public PaymentProvider Provider => PaymentProvider.Stripe;
@@ -42,6 +45,49 @@ public sealed class StripePaymentGateway : IPaymentGateway
         return Map(paymentIntent);
     }
 
+    public async Task<PaymentCheckoutSessionResult> CreateCheckoutSessionAsync(
+        PaymentGatewayRequest request,
+        string successUrl,
+        string cancelUrl,
+        CancellationToken cancellationToken)
+    {
+        var session = await _checkoutSessionService.CreateAsync(
+            new SessionCreateOptions
+            {
+                Mode = "payment",
+                SuccessUrl = successUrl,
+                CancelUrl = cancelUrl,
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new()
+                    {
+                        Quantity = 1,
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            Currency = request.Currency,
+                            UnitAmount = ToStripeAmount(request.Amount),
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = request.Description ?? "WorkFit payment",
+                                Description = $"{request.ReferenceType} {request.ReferenceId}",
+                                Metadata = new Dictionary<string, string>(request.Metadata)
+                            }
+                        }
+                    }
+                },
+                Metadata = new Dictionary<string, string>(request.Metadata),
+                PaymentIntentData = new SessionPaymentIntentDataOptions
+                {
+                    Metadata = new Dictionary<string, string>(request.Metadata)
+                }
+            },
+            cancellationToken: cancellationToken);
+
+        return new PaymentCheckoutSessionResult(
+            session.Id,
+            session.Url ?? successUrl);
+    }
+
     public async Task<PaymentGatewayResult> RetrievePaymentIntentAsync(
         string providerPaymentId,
         CancellationToken cancellationToken)
@@ -51,37 +97,6 @@ public sealed class StripePaymentGateway : IPaymentGateway
             cancellationToken: cancellationToken);
 
         return Map(paymentIntent);
-    }
-
-    public async Task<PaymentGatewayResult> ConfirmPaymentAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = await _paymentIntentService.ConfirmAsync(
-            providerPaymentId,
-            new PaymentIntentConfirmOptions(),
-            cancellationToken: cancellationToken);
-
-        return Map(paymentIntent);
-    }
-
-    public async Task<PaymentGatewayResult> CancelPaymentAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        var paymentIntent = await _paymentIntentService.CancelAsync(
-            providerPaymentId,
-            new PaymentIntentCancelOptions(),
-            cancellationToken: cancellationToken);
-
-        return Map(paymentIntent);
-    }
-
-    public async Task<PaymentGatewayResult> GetPaymentStatusAsync(
-        string providerPaymentId,
-        CancellationToken cancellationToken)
-    {
-        return await RetrievePaymentIntentAsync(providerPaymentId, cancellationToken);
     }
 
     private static PaymentGatewayResult Map(PaymentIntent paymentIntent)

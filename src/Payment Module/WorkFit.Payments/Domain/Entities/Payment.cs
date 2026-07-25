@@ -68,6 +68,11 @@ public sealed class Payment
         PaymentStatus status,
         string? clientSecret = null)
     {
+        if (Status == PaymentStatus.Succeeded && status != PaymentStatus.Succeeded)
+        {
+            return;
+        }
+
         ProviderPaymentId = providerPaymentId;
         TransactionId = transactionId ?? TransactionId;
         Status = status;
@@ -82,6 +87,11 @@ public sealed class Payment
 
     public void MarkStatus(PaymentStatus status, string? transactionId = null)
     {
+        if (Status == PaymentStatus.Succeeded && status != PaymentStatus.Succeeded)
+        {
+            return;
+        }
+
         Status = status;
 
         if (!string.IsNullOrWhiteSpace(transactionId))

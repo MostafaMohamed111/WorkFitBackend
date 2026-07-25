@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment canceled</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="status-card cancel">
+      <p class="eyebrow">Payment canceled</p>
+      <h1>No worries</h1>
+      <p id="message">The checkout was canceled before payment was completed.</p>
+      <button class="link-button" type="button" onclick="finish()">OK</button>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const referenceId = params.get('reference_id');
+    const referenceType = params.get('reference_type');
+    const message = document.getElementById('message');
+
+    async function syncCancel() {
+      if (!referenceId || !referenceType) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/payments/checkout-session/cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            referenceId,
+            referenceType
+          })
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        message.textContent = 'The checkout was canceled and the database has been updated.';
+      } catch {
+        message.textContent = 'The checkout was canceled, but the update could not be confirmed.';
+      }
+    }
+
+    function finish() {
+      window.close();
+      window.location.href = 'about:blank';
+    }
+
+    syncCancel();
+  </script>
+</body>
+</html>

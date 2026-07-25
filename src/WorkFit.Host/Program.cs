@@ -63,6 +63,8 @@ namespace WorkFit.Host
 
             // Configure the HTTP request pipeline.
             app.UseHttpsRedirection();
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
 
             app.UseAuthentication();
