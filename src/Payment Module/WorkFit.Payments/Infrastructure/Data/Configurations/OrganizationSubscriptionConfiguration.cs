@@ -23,6 +23,13 @@ public sealed class OrganizationSubscriptionConfiguration : IEntityTypeConfigura
             .IsRequired()
             .HasMaxLength(50);
 
+        builder.Property(x => x.IsRecurring)
+            .IsRequired();
+
+        builder.Property(x => x.BillingCycle)
+            .IsRequired()
+            .HasMaxLength(50);
+
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 

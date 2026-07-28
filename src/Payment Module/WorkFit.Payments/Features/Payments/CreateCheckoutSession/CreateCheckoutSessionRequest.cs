@@ -13,4 +13,6 @@ public sealed class CreateCheckoutSessionRequest
     public string? Description { get; set; }
 
     public string? PlanName { get; set; }
+
+    public string? BillingCycle { get; set; }
 }

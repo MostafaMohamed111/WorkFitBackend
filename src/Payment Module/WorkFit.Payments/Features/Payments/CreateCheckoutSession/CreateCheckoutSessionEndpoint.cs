@@ -58,7 +58,8 @@ public sealed class CreateCheckoutSessionEndpoint : Endpoint<CreateCheckoutSessi
                 {
                     ["reference_id"] = req.ReferenceId,
                     ["reference_type"] = req.ReferenceType,
-                    ["plan_name"] = string.IsNullOrWhiteSpace(req.PlanName) ? "Basic" : req.PlanName
+                    ["plan_name"] = string.IsNullOrWhiteSpace(req.PlanName) ? "Basic" : req.PlanName,
+                    ["billing_cycle"] = string.IsNullOrWhiteSpace(req.BillingCycle) ? "Onetime" : req.BillingCycle
                 },
                 null),
             successUrl,
