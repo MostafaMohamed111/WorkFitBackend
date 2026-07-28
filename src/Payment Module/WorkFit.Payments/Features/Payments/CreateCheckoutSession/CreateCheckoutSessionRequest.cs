@@ -11,4 +11,6 @@ public sealed class CreateCheckoutSessionRequest
     public string Currency { get; set; } = "usd";
 
     public string? Description { get; set; }
+
+    public string? PlanName { get; set; }
 }

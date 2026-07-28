@@ -4,6 +4,10 @@
     <Project Path="src/WorkFit.Infrastructure/WorkFit.Infrastructure.csproj" />
     <Project Path="src/WorkFit.SharedKernel/WorkFit.SharedKernel.csproj" />
   </Folder>
+  <Folder Name="/src/Code Review Module/">
+    <Project Path="src/Code Review Module/WorkFit.CodeReview.Contracts/WorkFit.CodeReview.Contracts.csproj" />
+    <Project Path="src/Code Review Module/WorkFit.CodeReview/WorkFit.CodeReview.csproj" />
+  </Folder>
   <Folder Name="/src/Identity Module/">
     <Project Path="src/Identity Module/WorkFit.Identity.Contracts/WorkFit.Identity.Contracts.csproj" Id="58ad49e9-de29-4c96-a112-f236d6be9708" />
     <Project Path="src/Identity Module/WorkFit.Identity/WorkFit.Identity.csproj" Id="b3456b36-e314-4dbf-afc7-3166fef27f49" />

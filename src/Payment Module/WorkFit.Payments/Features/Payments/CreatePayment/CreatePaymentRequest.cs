@@ -14,5 +14,7 @@ public sealed class CreatePaymentRequest
 
     public string? Description { get; set; }
 
+    public string? PlanName { get; set; }
+
     public MockPaymentOutcome? MockOutcome { get; set; }
 }

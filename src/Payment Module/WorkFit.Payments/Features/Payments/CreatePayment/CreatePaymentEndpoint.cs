@@ -34,6 +34,7 @@ public sealed class CreatePaymentEndpoint : Endpoint<CreatePaymentRequest, Payme
             req.Amount,
             req.Currency,
             req.Description,
+            req.PlanName,
             req.MockOutcome);
 
         var result = await _mediator.Send(command, ct);

@@ -49,6 +49,7 @@ public sealed class RegisterPaymentModuleServices : IRegisterModuleServices
 
         services.AddScoped<IPaymentWebhookService, PaymentWebhookService>();
         services.AddScoped<IStripeWebhookProcessor, StripeWebhookProcessor>();
+        services.AddScoped<IOrganizationSubscriptionService, OrganizationSubscriptionService>();
 
         services.AddMediatorHandlers<ModuleMarker>();
     }

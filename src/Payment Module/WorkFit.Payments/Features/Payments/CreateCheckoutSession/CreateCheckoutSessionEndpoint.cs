@@ -57,7 +57,8 @@ public sealed class CreateCheckoutSessionEndpoint : Endpoint<CreateCheckoutSessi
                 new Dictionary<string, string>
                 {
                     ["reference_id"] = req.ReferenceId,
-                    ["reference_type"] = req.ReferenceType
+                    ["reference_type"] = req.ReferenceType,
+                    ["plan_name"] = string.IsNullOrWhiteSpace(req.PlanName) ? "Basic" : req.PlanName
                 },
                 null),
             successUrl,

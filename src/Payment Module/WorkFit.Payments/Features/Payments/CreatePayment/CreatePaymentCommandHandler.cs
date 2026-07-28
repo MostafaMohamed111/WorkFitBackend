@@ -55,7 +55,8 @@ public sealed class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentC
                 new Dictionary<string, string>
                 {
                     ["reference_id"] = request.ReferenceId,
-                    ["reference_type"] = request.ReferenceType
+                    ["reference_type"] = request.ReferenceType,
+                    ["plan_name"] = string.IsNullOrWhiteSpace(request.PlanName) ? "Basic" : request.PlanName
                 },
                 request.MockOutcome),
             cancellationToken);
