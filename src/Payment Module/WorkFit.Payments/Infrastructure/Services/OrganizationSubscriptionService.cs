@@ -13,19 +13,30 @@ public sealed class OrganizationSubscriptionService : IOrganizationSubscriptionS
         _context = context;
     }
 
-    public async Task ActivateSubscriptionAsync(Guid organizationId, Guid paymentId, string planName, CancellationToken cancellationToken = default)
+    public async Task ActivateSubscriptionAsync(
+        Guid organizationId,
+        Guid paymentId,
+        string planName,
+        bool isRecurring,
+        string billingCycle,
+        CancellationToken cancellationToken = default)
     {
         var subscription = await _context.Set<OrganizationSubscription>()
             .SingleOrDefaultAsync(x => x.OrganizationId == organizationId, cancellationToken);
 
         if (subscription is null)
         {
-            subscription = OrganizationSubscription.Create(organizationId, planName, paymentId);
+            subscription = OrganizationSubscription.Create(
+                organizationId,
+                planName,
+                isRecurring,
+                billingCycle,
+                paymentId);
             _context.Add(subscription);
         }
         else
         {
-            subscription.Activate(planName, paymentId);
+            subscription.Activate(planName, isRecurring, billingCycle, paymentId);
         }
 
         await _context.SaveChangesAsync(cancellationToken);

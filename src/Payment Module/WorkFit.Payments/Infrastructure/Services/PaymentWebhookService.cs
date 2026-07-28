@@ -75,6 +75,19 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        if (payment.Status == PaymentStatus.Succeeded)
+        {
+            var billingCycle = GetMetadata(paymentIntent, "billing_cycle", "Onetime");
+            var isRecurring = string.Equals(billingCycle, "Recurring", StringComparison.OrdinalIgnoreCase);
+
+            await TryActivateSubscriptionAsync(
+                payment,
+                GetMetadata(paymentIntent, "plan_name", "Basic"),
+                isRecurring,
+                billingCycle,
+                cancellationToken);
+        }
     }
 
     private async Task HandleCheckoutSessionAsync(string eventType, Session checkoutSession, CancellationToken cancellationToken)
@@ -115,7 +128,17 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
 
         if (payment.Status == PaymentStatus.Succeeded)
         {
-            await TryActivateSubscriptionAsync(payment, GetMetadata(checkoutSession.Metadata, "plan_name", "Basic"), cancellationToken);
+            var isRecurring = string.Equals(
+                GetMetadata(checkoutSession.Metadata, "billing_cycle", "Onetime"),
+                "Recurring",
+                StringComparison.OrdinalIgnoreCase);
+
+            await TryActivateSubscriptionAsync(
+                payment,
+                GetMetadata(checkoutSession.Metadata, "plan_name", "Basic"),
+                isRecurring,
+                GetMetadata(checkoutSession.Metadata, "billing_cycle", "Onetime"),
+                cancellationToken);
         }
     }
 
@@ -192,7 +215,7 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
             ?? latestChargeProperty?.GetValue(paymentIntent)?.ToString();
     }
 
-    private async Task TryActivateSubscriptionAsync(Payment payment, string planName, CancellationToken cancellationToken)
+    private async Task TryActivateSubscriptionAsync(Payment payment, string planName, bool isRecurring, string billingCycle, CancellationToken cancellationToken)
     {
         var organizationId = TryParseGuid(payment.ReferenceId);
         if (organizationId is null)
@@ -204,6 +227,8 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
             organizationId.Value,
             payment.Id,
             planName,
+            isRecurring,
+            billingCycle,
             cancellationToken);
     }
 
