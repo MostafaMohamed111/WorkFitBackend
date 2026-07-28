@@ -12,6 +12,8 @@ public sealed class PaymentDbContext : DbContext
 
     internal DbSet<Payment> Payments => Set<Payment>();
 
+    internal DbSet<OrganizationSubscription> OrganizationSubscriptions => Set<OrganizationSubscription>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.HasDefaultSchema("payment");

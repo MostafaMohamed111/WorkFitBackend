@@ -10,4 +10,5 @@ public sealed record CreatePaymentCommand(
     decimal Amount,
     string Currency,
     string? Description,
+    string? PlanName,
     MockPaymentOutcome? MockOutcome) : IRequest<PaymentDto>;

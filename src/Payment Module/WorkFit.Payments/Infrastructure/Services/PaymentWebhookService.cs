@@ -11,13 +11,16 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
 {
     private readonly PaymentDbContext _context;
     private readonly IPaymentDatabaseMigrator _databaseMigrator;
+    private readonly IOrganizationSubscriptionService _subscriptionService;
 
     public PaymentWebhookService(
         PaymentDbContext context,
-        IPaymentDatabaseMigrator databaseMigrator)
+        IPaymentDatabaseMigrator databaseMigrator,
+        IOrganizationSubscriptionService subscriptionService)
     {
         _context = context;
         _databaseMigrator = databaseMigrator;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task HandleEventAsync(Event stripeEvent, CancellationToken cancellationToken)
@@ -109,6 +112,11 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
         }
 
         await _context.SaveChangesAsync(cancellationToken);
+
+        if (payment.Status == PaymentStatus.Succeeded)
+        {
+            await TryActivateSubscriptionAsync(payment, GetMetadata(checkoutSession.Metadata, "plan_name", "Basic"), cancellationToken);
+        }
     }
 
     private async Task<Payment?> FindByMetadataAsync(IReadOnlyDictionary<string, string> metadata, CancellationToken cancellationToken)
@@ -182,5 +190,25 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
 
         return latestChargeIdProperty?.GetValue(paymentIntent)?.ToString()
             ?? latestChargeProperty?.GetValue(paymentIntent)?.ToString();
+    }
+
+    private async Task TryActivateSubscriptionAsync(Payment payment, string planName, CancellationToken cancellationToken)
+    {
+        var organizationId = TryParseGuid(payment.ReferenceId);
+        if (organizationId is null)
+        {
+            return;
+        }
+
+        await _subscriptionService.ActivateSubscriptionAsync(
+            organizationId.Value,
+            payment.Id,
+            planName,
+            cancellationToken);
+    }
+
+    private static Guid? TryParseGuid(string value)
+    {
+        return Guid.TryParse(value, out var id) ? id : null;
     }
 }

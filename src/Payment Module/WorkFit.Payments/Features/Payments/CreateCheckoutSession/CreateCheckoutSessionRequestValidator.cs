@@ -25,5 +25,9 @@ public sealed class CreateCheckoutSessionRequestValidator : Validator<CreateChec
         RuleFor(x => x.Description)
             .MaximumLength(500)
             .When(x => !string.IsNullOrWhiteSpace(x.Description));
+
+        RuleFor(x => x.PlanName)
+            .MaximumLength(100)
+            .When(x => !string.IsNullOrWhiteSpace(x.PlanName));
     }
 }
