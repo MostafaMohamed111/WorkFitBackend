@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stripe;
 using Stripe.Checkout;
+using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.Payments.Contracts.Enums;
 using WorkFit.Payments.Domain.Entities;
 using WorkFit.Payments.Infrastructure.Data;
@@ -10,15 +11,18 @@ namespace WorkFit.Payments.Infrastructure.Services;
 public sealed class PaymentWebhookService : IPaymentWebhookService
 {
     private readonly PaymentDbContext _context;
+    private readonly OrganizationDbContext _organizationContext;
     private readonly IPaymentDatabaseMigrator _databaseMigrator;
     private readonly IOrganizationSubscriptionService _subscriptionService;
 
     public PaymentWebhookService(
         PaymentDbContext context,
+        OrganizationDbContext organizationContext,
         IPaymentDatabaseMigrator databaseMigrator,
         IOrganizationSubscriptionService subscriptionService)
     {
         _context = context;
+        _organizationContext = organizationContext;
         _databaseMigrator = databaseMigrator;
         _subscriptionService = subscriptionService;
     }
@@ -217,14 +221,21 @@ public sealed class PaymentWebhookService : IPaymentWebhookService
 
     private async Task TryActivateSubscriptionAsync(Payment payment, string planName, bool isRecurring, string billingCycle, CancellationToken cancellationToken)
     {
-        var organizationId = TryParseGuid(payment.ReferenceId);
-        if (organizationId is null)
+        if (!Guid.TryParse(payment.ReferenceId, out var organizationId))
+        {
+            return;
+        }
+
+        var organizationExists = await _organizationContext.Organizations
+            .AnyAsync(x => x.Id == organizationId, cancellationToken);
+
+        if (!organizationExists)
         {
             return;
         }
 
         await _subscriptionService.ActivateSubscriptionAsync(
-            organizationId.Value,
+            organizationId,
             payment.Id,
             planName,
             isRecurring,

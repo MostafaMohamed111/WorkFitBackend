@@ -37,11 +37,18 @@ public sealed class CreatePaymentEndpoint : Endpoint<CreatePaymentRequest, Payme
             req.PlanName,
             req.MockOutcome);
 
-        var result = await _mediator.Send(command, ct);
+        try
+        {
+            var result = await _mediator.Send(command, ct);
 
-        await Send.CreatedAtAsync<GetPaymentById.GetPaymentByIdEndpoint>(
-            new { id = result.Id },
-            result,
-            cancellation: ct);
+            await Send.CreatedAtAsync<GetPaymentById.GetPaymentByIdEndpoint>(
+                new { id = result.Id },
+                result,
+                cancellation: ct);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("existing organization", StringComparison.OrdinalIgnoreCase))
+        {
+            ThrowError(ex.Message);
+        }
     }
 }

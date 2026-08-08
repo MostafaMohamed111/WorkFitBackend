@@ -13,7 +13,10 @@ public sealed class CreatePaymentRequestValidator : Validator<CreatePaymentReque
 
         RuleFor(x => x.ReferenceType)
             .NotEmpty()
-            .MaximumLength(100);
+            .MaximumLength(100)
+            .Must(x => string.Equals(x, "Organization", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(x, "Project", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("ReferenceType must be either 'Organization' or 'Project'.");
 
         RuleFor(x => x.Amount)
             .GreaterThan(0);
