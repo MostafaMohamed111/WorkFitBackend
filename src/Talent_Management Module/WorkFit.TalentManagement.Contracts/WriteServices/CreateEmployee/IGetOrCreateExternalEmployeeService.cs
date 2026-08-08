@@ -15,5 +15,6 @@ public interface IGetOrCreateExternalEmployeeService
         string externalDisplayName,
         string? email,
         string jobTitle,
+        string? linkedInUrl = null,
         CancellationToken cancellationToken = default);
 }
