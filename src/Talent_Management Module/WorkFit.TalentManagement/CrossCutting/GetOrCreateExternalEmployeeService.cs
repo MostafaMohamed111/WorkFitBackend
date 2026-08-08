@@ -22,6 +22,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
         string externalDisplayName, 
         string? email, 
         string jobTitle, 
+        string? linkedInUrl = null,
         CancellationToken cancellationToken = default)
     {
         var existingMapping = await _db.IdentityMappings
@@ -29,23 +30,34 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
 
         if (existingMapping != null)
         {
+            var mappedEmployee = await _db.EmployeeProfiles.FirstOrDefaultAsync(e => e.Id == existingMapping.EmployeeProfileId, cancellationToken);
+            if (mappedEmployee != null && !string.IsNullOrWhiteSpace(linkedInUrl) && string.IsNullOrWhiteSpace(mappedEmployee.LinkedInUrl))
+            {
+                mappedEmployee.UpdateEmployeePersonalData(mappedEmployee.Name, mappedEmployee.JobTitle, mappedEmployee.Bio, linkedInUrl);
+                await _db.SaveChangesAsync(cancellationToken);
+            }
             return existingMapping.EmployeeProfileId;
         }
 
         
-        var existingEmployee = await _db.EmployeeProfiles
+        // If userId is Guid.Empty (anonymous upload), do not look up or share an existing employee by Guid.Empty.
+        var existingEmployee = userId == Guid.Empty ? null : await _db.EmployeeProfiles
             .Include(e => e.IdentityMappings)
             .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
 
         if (existingEmployee != null)
         {
             existingEmployee.AddExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
+            if (!string.IsNullOrWhiteSpace(linkedInUrl) && string.IsNullOrWhiteSpace(existingEmployee.LinkedInUrl))
+            {
+                existingEmployee.UpdateEmployeePersonalData(existingEmployee.Name, existingEmployee.JobTitle, existingEmployee.Bio, linkedInUrl);
+            }
             await _db.SaveChangesAsync(cancellationToken);
             return existingEmployee.Id;
         }
 
         
-        var employee = EmployeeProfile.Create(organizationId, userId, email, externalDisplayName, jobTitle);
+        var employee = EmployeeProfile.Create(organizationId, userId, email, externalDisplayName, jobTitle, linkedInUrl: linkedInUrl);
         employee.AddExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
         
         await _db.EmployeeProfiles.AddAsync(employee, cancellationToken);

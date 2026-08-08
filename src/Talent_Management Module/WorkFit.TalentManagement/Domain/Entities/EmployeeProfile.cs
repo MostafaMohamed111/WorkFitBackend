@@ -33,7 +33,7 @@ internal sealed class EmployeeProfile : BaseEntity
 
     public static EmployeeProfile Create(
         Guid orgId, Guid userId, string? email, string name,
-         string jobTitle, DateOnly? hireDate = null)
+         string jobTitle, DateOnly? hireDate = null, string? linkedInUrl = null)
     {
         // Validation here
         return new EmployeeProfile()
@@ -45,6 +45,7 @@ internal sealed class EmployeeProfile : BaseEntity
             Email = email,
             JobTitle = jobTitle,
             HireDate = hireDate,
+            LinkedInUrl = linkedInUrl,
             Status = EmployeeProfileStatus.PendingReview
         };
     }
