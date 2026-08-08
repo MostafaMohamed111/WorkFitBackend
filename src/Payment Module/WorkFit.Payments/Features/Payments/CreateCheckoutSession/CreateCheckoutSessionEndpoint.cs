@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.Payments.Contracts.Enums;
 using WorkFit.Payments.Domain.Entities;
 using WorkFit.Payments.Infrastructure.Data;
@@ -11,15 +12,18 @@ namespace WorkFit.Payments.Features.Payments.CreateCheckoutSession;
 public sealed class CreateCheckoutSessionEndpoint : Endpoint<CreateCheckoutSessionRequest, CreateCheckoutSessionResponse>
 {
     private readonly PaymentDbContext _context;
+    private readonly OrganizationDbContext _organizationContext;
     private readonly IPaymentGateway _paymentGateway;
     private readonly IPaymentDatabaseMigrator _databaseMigrator;
 
     public CreateCheckoutSessionEndpoint(
         PaymentDbContext context,
+        OrganizationDbContext organizationContext,
         IPaymentGateway paymentGateway,
         IPaymentDatabaseMigrator databaseMigrator)
     {
         _context = context;
+        _organizationContext = organizationContext;
         _paymentGateway = paymentGateway;
         _databaseMigrator = databaseMigrator;
     }
@@ -37,6 +41,13 @@ public sealed class CreateCheckoutSessionEndpoint : Endpoint<CreateCheckoutSessi
     public override async Task HandleAsync(CreateCheckoutSessionRequest req, CancellationToken ct)
     {
         await _databaseMigrator.EnsureMigratedAsync(ct);
+
+        if (!Guid.TryParse(req.ReferenceId, out var organizationId)
+            || !await _organizationContext.Organizations.AnyAsync(x => x.Id == organizationId, ct))
+        {
+            ThrowError("The supplied referenceId does not correspond to an existing organization.");
+            return;
+        }
 
         var payment = await _context.Payments
             .SingleOrDefaultAsync(

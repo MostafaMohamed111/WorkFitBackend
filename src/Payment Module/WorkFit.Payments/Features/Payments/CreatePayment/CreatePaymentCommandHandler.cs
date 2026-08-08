@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.Payments.Contracts.Dtos;
 using WorkFit.Payments.Domain.Entities;
 using WorkFit.Payments.Features.Payments;
@@ -14,15 +15,18 @@ namespace WorkFit.Payments.Features.Payments.CreatePayment;
 public sealed class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand, PaymentDto>
 {
     private readonly PaymentDbContext _context;
+    private readonly OrganizationDbContext _organizationContext;
     private readonly IPaymentGateway _paymentGateway;
     private readonly IPaymentDatabaseMigrator _databaseMigrator;
 
     public CreatePaymentCommandHandler(
         PaymentDbContext context,
+        OrganizationDbContext organizationContext,
         IPaymentGateway paymentGateway,
         IPaymentDatabaseMigrator databaseMigrator)
     {
         _context = context;
+        _organizationContext = organizationContext;
         _paymentGateway = paymentGateway;
         _databaseMigrator = databaseMigrator;
     }
@@ -30,6 +34,12 @@ public sealed class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentC
     public async Task<PaymentDto> Handle(CreatePaymentCommand request, CancellationToken cancellationToken)
     {
         await _databaseMigrator.EnsureMigratedAsync(cancellationToken);
+
+        if (!Guid.TryParse(request.ReferenceId, out var organizationId)
+            || !await _organizationContext.Organizations.AnyAsync(x => x.Id == organizationId, cancellationToken))
+        {
+            throw new InvalidOperationException("The supplied referenceId does not correspond to an existing organization.");
+        }
 
         var existingPayment = await _context.Payments
             .AsNoTracking()
