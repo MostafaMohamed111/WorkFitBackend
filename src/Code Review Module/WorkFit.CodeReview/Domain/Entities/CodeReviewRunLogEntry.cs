@@ -5,6 +5,8 @@ namespace WorkFit.CodeReview.Domain.Entities;
 public sealed class CodeReviewRunLogEntry : BaseEntity
 {
     public string ExecutionId { get; private set; } = string.Empty;
+    public Guid? TaskId { get; private set; }
+    public Guid? EmployeeId { get; private set; }
     public string Organization { get; private set; } = string.Empty;
     public string Repository { get; private set; } = string.Empty;
     public string Branch { get; private set; } = string.Empty;
@@ -28,6 +30,8 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
         string branch,
         string commitSha,
         string pullRequestNumber,
+        Guid? taskId,
+        Guid? employeeId,
         int overallScore,
         string risk,
         string summary,
@@ -36,6 +40,8 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
         return new CodeReviewRunLogEntry
         {
             ExecutionId = executionId,
+            TaskId = taskId,
+            EmployeeId = employeeId,
             Organization = organization,
             Repository = repository,
             Branch = branch,
@@ -55,11 +61,15 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
         string workflowName,
         string stageName,
         string errorMessage,
+        Guid? taskId,
+        Guid? employeeId,
         DateTime loggedAt)
     {
         return new CodeReviewRunLogEntry
         {
             ExecutionId = executionId,
+            TaskId = taskId,
+            EmployeeId = employeeId,
             Organization = string.Empty,
             Repository = string.Empty,
             Branch = string.Empty,

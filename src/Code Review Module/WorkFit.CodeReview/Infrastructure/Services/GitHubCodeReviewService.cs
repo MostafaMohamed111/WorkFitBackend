@@ -69,42 +69,53 @@ public sealed class GitHubCodeReviewService : IGitHubCodeReviewService
             message = messageElement.GetString() ?? string.Empty;
         }
 
-        var files = new List<GitHubCommitFile>();
-        if (root.TryGetProperty("files", out var filesElement) && filesElement.ValueKind == JsonValueKind.Array)
+        return new GitHubCommitSnapshot(sha, authorName, message, ParseFiles(root));
+    }
+
+    public async Task<GitHubPullRequestSnapshot> GetPullRequestAsync(string organization, string repository, int pullRequestNumber, string? accessToken, CancellationToken ct)
+    {
+        var relativeUrl = $"repos/{organization}/{repository}/pulls/{pullRequestNumber}";
+        var json = await SendAndReadJsonAsync(relativeUrl, accessToken, ct);
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        var baseBranch = GetStringProperty(root, "base", "ref");
+        var headBranch = GetStringProperty(root, "head", "ref");
+        var headSha = GetStringProperty(root, "head", "sha");
+
+        return new GitHubPullRequestSnapshot(baseBranch, headBranch, headSha, json);
+    }
+
+    public async Task<GitHubComparisonSnapshot> GetComparisonAsync(string organization, string repository, string baseRef, string headRef, string? accessToken, CancellationToken ct)
+    {
+        var relativeUrl = $"repos/{organization}/{repository}/compare/{baseRef}...{headRef}";
+        var json = await SendAndReadJsonAsync(relativeUrl, accessToken, ct);
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+
+        var headSha = string.Empty;
+        if (root.TryGetProperty("commits", out var commitsElement) && commitsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var fileElement in filesElement.EnumerateArray())
+            foreach (var commitElement in commitsElement.EnumerateArray())
             {
-                var filename = fileElement.TryGetProperty("filename", out var filenameElement)
-                    ? filenameElement.GetString() ?? string.Empty
-                    : string.Empty;
-
-                var status = fileElement.TryGetProperty("status", out var statusElement)
-                    ? statusElement.GetString() ?? string.Empty
-                    : string.Empty;
-
-                var additions = fileElement.TryGetProperty("additions", out var additionsElement) && additionsElement.TryGetInt32(out var additionsValue)
-                    ? additionsValue
-                    : 0;
-
-                var deletions = fileElement.TryGetProperty("deletions", out var deletionsElement) && deletionsElement.TryGetInt32(out var deletionsValue)
-                    ? deletionsValue
-                    : 0;
-
-                var patch = fileElement.TryGetProperty("patch", out var patchElement)
-                    ? patchElement.GetString() ?? string.Empty
-                    : string.Empty;
-
-                files.Add(new GitHubCommitFile(filename, status, additions, deletions, patch));
+                if (commitElement.TryGetProperty("sha", out var shaElement))
+                {
+                    headSha = shaElement.GetString() ?? string.Empty;
+                }
             }
         }
 
-        return new GitHubCommitSnapshot(sha, authorName, message, files);
+        return new GitHubComparisonSnapshot(headSha, ParseFiles(root), json);
     }
 
     private async Task<string> SendAndReadJsonAsync(string relativeUrl, string? accessToken, CancellationToken ct)
     {
         var options = _options.Value.GitHub;
         var token = accessToken;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            token = options.PersonalAccessToken;
+        }
 
         var client = _httpClientFactory.CreateClient("CodeReviewGitHub");
         client.BaseAddress ??= new Uri(options.BaseUrl, UriKind.Absolute);
@@ -166,5 +177,53 @@ public sealed class GitHubCodeReviewService : IGitHubCodeReviewService
 
         var body = await response.Content.ReadAsStringAsync();
         throw new InvalidOperationException($"{systemName} request to '{relativeUrl}' failed with status {(int)response.StatusCode} ({response.StatusCode}). {body}");
+    }
+
+    private static IReadOnlyList<GitHubCommitFile> ParseFiles(JsonElement root)
+    {
+        var files = new List<GitHubCommitFile>();
+
+        if (!root.TryGetProperty("files", out var filesElement) || filesElement.ValueKind != JsonValueKind.Array)
+        {
+            return files;
+        }
+
+        foreach (var fileElement in filesElement.EnumerateArray())
+        {
+            var filename = fileElement.TryGetProperty("filename", out var filenameElement)
+                ? filenameElement.GetString() ?? string.Empty
+                : string.Empty;
+
+            var status = fileElement.TryGetProperty("status", out var statusElement)
+                ? statusElement.GetString() ?? string.Empty
+                : string.Empty;
+
+            var additions = fileElement.TryGetProperty("additions", out var additionsElement) && additionsElement.TryGetInt32(out var additionsValue)
+                ? additionsValue
+                : 0;
+
+            var deletions = fileElement.TryGetProperty("deletions", out var deletionsElement) && deletionsElement.TryGetInt32(out var deletionsValue)
+                ? deletionsValue
+                : 0;
+
+            var patch = fileElement.TryGetProperty("patch", out var patchElement)
+                ? patchElement.GetString() ?? string.Empty
+                : string.Empty;
+
+            files.Add(new GitHubCommitFile(filename, status, additions, deletions, patch));
+        }
+
+        return files;
+    }
+
+    private static string GetStringProperty(JsonElement root, string parentProperty, string childProperty)
+    {
+        if (root.TryGetProperty(parentProperty, out var parentElement) &&
+            parentElement.TryGetProperty(childProperty, out var childElement))
+        {
+            return childElement.GetString() ?? string.Empty;
+        }
+
+        return string.Empty;
     }
 }

@@ -28,6 +28,9 @@ public sealed class GetOrganizationMeQueryHandler : IRequestHandler<GetOrganizat
             organization.UserId,
             organization.BrandingJson,
             organization.SettingsJson,
+            organization.GitHubOrganizationId,
+            organization.GitHubOrganizationLogin,
+            organization.GitHubCreatedAt,
             organization.CreatedAt,
             organization.UpdatedAt);
     }

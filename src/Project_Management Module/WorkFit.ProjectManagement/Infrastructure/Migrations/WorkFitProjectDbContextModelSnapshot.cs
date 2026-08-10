@@ -227,6 +227,49 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.ToTable("tasks", "ProjectManagement");
                 });
 
+            modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.TaskGitHub", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GitHubBranchName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("GitHubPullRequestNumber")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("GitHubRepositoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GitHubRepositoryName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId")
+                        .IsUnique();
+
+                    b.ToTable("task_github", "ProjectManagement");
+                });
+
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.ProjectActivityLog", b =>
                 {
                     b.HasOne("WorkFit.ProjectManagement.Domain.Entities.Project", "Project")
@@ -256,6 +299,17 @@ namespace WorkFit.ProjectManagement.Migrations
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.TaskGitHub", b =>
+                {
+                    b.HasOne("WorkFit.ProjectManagement.Domain.Entities.ProjectTask", "Task")
+                        .WithOne()
+                        .HasForeignKey("WorkFit.ProjectManagement.Domain.Entities.TaskGitHub", "TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.Project", b =>

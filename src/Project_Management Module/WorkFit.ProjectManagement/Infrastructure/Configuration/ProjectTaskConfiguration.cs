@@ -10,7 +10,9 @@ public class ProjectTaskConfiguration
 {
     public void Configure(EntityTypeBuilder<ProjectTask> builder)
     {
-        builder.ToTable("tasks");
+        // Mark the table as trigger-backed so EF does not rely on rowcount-based
+        // concurrency checks that can fail when SQL Server triggers are present.
+        builder.ToTable("tasks", tb => tb.HasTrigger("TR_tasks"));
 
         builder.HasKey(x => x.Id);
 

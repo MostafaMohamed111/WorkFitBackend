@@ -8,6 +8,10 @@ public sealed record GitHubCommitFile(string Filename, string Status, int Additi
 
 public sealed record GitHubCommitSnapshot(string Sha, string AuthorName, string Message, IReadOnlyList<GitHubCommitFile> Files);
 
+public sealed record GitHubPullRequestSnapshot(string BaseBranch, string HeadBranch, string HeadSha, string RawJson);
+
+public sealed record GitHubComparisonSnapshot(string HeadSha, IReadOnlyList<GitHubCommitFile> Files, string RawJson);
+
 public sealed record CodeReviewReviewerConfig(
     string ReviewerKey,
     string ReviewerName,

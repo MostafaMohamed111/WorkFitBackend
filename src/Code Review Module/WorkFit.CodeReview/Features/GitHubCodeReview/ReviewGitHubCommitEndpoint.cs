@@ -63,7 +63,6 @@ public sealed class ReviewGitHubCommitEndpoint : Endpoint<ReviewGitHubCommitRequ
         if (string.IsNullOrWhiteSpace(req.repository)) missingFields.Add(nameof(req.repository));
         if (string.IsNullOrWhiteSpace(req.branch)) missingFields.Add(nameof(req.branch));
         if (string.IsNullOrWhiteSpace(req.commitSha)) missingFields.Add(nameof(req.commitSha));
-        if (string.IsNullOrWhiteSpace(req.accessToken)) missingFields.Add(nameof(req.accessToken));
         return missingFields;
     }
 }

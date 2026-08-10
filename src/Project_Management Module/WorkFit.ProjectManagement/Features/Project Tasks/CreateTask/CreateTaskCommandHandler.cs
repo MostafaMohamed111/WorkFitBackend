@@ -23,9 +23,7 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
 
     public async Task<Guid> Handle(CreateTaskCommand command, CancellationToken ct)
     {
-        var project = await _context.Projects.AsTracking()
-            .Include(p => p.Tasks)
-            .Include(p => p.AssignedEmployees)
+        var project = await _context.Projects.AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == command.ProjectId, ct);
         if (project is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", command.ProjectId);
@@ -34,7 +32,14 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         if(actorId != project.TeamLeaderId)
             throw new UnAuthorizedTeamLeadAccessException(actorId);
 
-        var task = project.CreateTask(
+        var taskExists = await _context.ProjectTasks
+            .AsNoTracking()
+            .AnyAsync(t => t.ProjectId == command.ProjectId && t.Title == command.Title, ct);
+
+        if (taskExists)
+            throw new InvalidOperationException($"Task '{command.Title}' already exists for project '{command.ProjectId}'.");
+
+        var task = ProjectTask.Create(
             command.ProjectId,
             command.Title,
             command.Description,
@@ -45,6 +50,8 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
             command.StoryPoints,
             command.DueDate,
             command.AllocationPercentage);
+
+        await _context.ProjectTasks.AddAsync(task, ct);
 
         await _context.SaveChangesAsync(ct);
 
