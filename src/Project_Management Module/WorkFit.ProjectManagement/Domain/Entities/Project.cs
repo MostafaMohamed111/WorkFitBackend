@@ -21,6 +21,8 @@ public class Project : BaseEntity
     public SourceSystem? SourceSystem { get; private set; }
 
     public string? SourceReferenceId { get; private set; }
+    public long? GitHubRepositoryId { get; private set; }
+    public string? GitHubRepositoryName { get; private set; }
 
     public ICollection<ProjectRequiredSkill> RequiredSkills { get; private set; } = new List<ProjectRequiredSkill>();
 
@@ -121,6 +123,20 @@ public class Project : BaseEntity
     public void ReplaceRequiredSkills(ICollection<ProjectRequiredSkill> requiredSkills)
     {
         RequiredSkills = requiredSkills;
+        MarkUpdated();
+    }
+
+    public void SetGitHubRepository(long githubRepositoryId, string? githubRepositoryName = null)
+    {
+        if (githubRepositoryId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(githubRepositoryId));
+        }
+
+        GitHubRepositoryId = githubRepositoryId;
+        GitHubRepositoryName = string.IsNullOrWhiteSpace(githubRepositoryName)
+            ? null
+            : githubRepositoryName.Trim();
         MarkUpdated();
     }
 

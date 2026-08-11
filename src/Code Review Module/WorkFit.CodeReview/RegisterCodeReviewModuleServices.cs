@@ -33,6 +33,7 @@ public sealed class RegisterCodeReviewModuleServices : IRegisterModuleServices
 
         services.AddScoped<ICodeReviewRepository, CodeReviewRepository>();
         services.AddScoped<IGitHubCodeReviewService, GitHubCodeReviewService>();
+        services.AddScoped<IGitHubAppAuthenticationService, GitHubAppAuthenticationService>();
         services.AddScoped<ICodeReviewAgentService, CodeReviewAgentService>();
         services.AddScoped<ICodeReviewReviewerService, CodeReviewReviewerService>();
         services.AddScoped<ICodeReviewWorkflowService, CodeReviewWorkflowService>();

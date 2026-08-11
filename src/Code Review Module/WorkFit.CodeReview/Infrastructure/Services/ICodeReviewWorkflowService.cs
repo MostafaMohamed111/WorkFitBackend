@@ -7,4 +7,8 @@ public interface ICodeReviewWorkflowService
     Task<CodeReviewWorkflowExecutionResult> ExecuteAsync(
         ReviewGitHubCommitCommand request,
         CancellationToken ct);
+
+    Task<CodeReviewWorkflowExecutionResult> ExecuteTaskAsync(
+        ReviewTaskGitHubChangesCommand request,
+        CancellationToken ct);
 }

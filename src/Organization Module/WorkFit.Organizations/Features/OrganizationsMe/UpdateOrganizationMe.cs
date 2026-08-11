@@ -31,6 +31,9 @@ public sealed class UpdateOrganizationMeCommandHandler : IRequestHandler<UpdateO
             organization.UserId,
             organization.BrandingJson,
             organization.SettingsJson,
+            organization.GitHubOrganizationId,
+            organization.GitHubOrganizationLogin,
+            organization.GitHubCreatedAt,
             organization.CreatedAt,
             organization.UpdatedAt);
     }

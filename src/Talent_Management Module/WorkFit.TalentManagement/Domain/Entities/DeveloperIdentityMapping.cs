@@ -20,6 +20,15 @@ internal sealed class DeveloperIdentityMapping : BaseEntity
         string externalAccountId,
         string externalDisplayName)
     {
+        if (employeeProfileId == Guid.Empty)
+            throw new ArgumentException("Employee profile id is required.", nameof(employeeProfileId));
+        if (string.IsNullOrWhiteSpace(sourceSystem))
+            throw new ArgumentException("Source system is required.", nameof(sourceSystem));
+        if (string.IsNullOrWhiteSpace(externalAccountId))
+            throw new ArgumentException("External account id is required.", nameof(externalAccountId));
+        if (string.IsNullOrWhiteSpace(externalDisplayName))
+            throw new ArgumentException("External display name is required.", nameof(externalDisplayName));
+
         return new DeveloperIdentityMapping
         {
             EmployeeProfileId = employeeProfileId,
@@ -27,5 +36,14 @@ internal sealed class DeveloperIdentityMapping : BaseEntity
             ExternalAccountId = externalAccountId,
             ExternalDisplayName = externalDisplayName
         };
+    }
+
+    internal void UpdateDisplayName(string externalDisplayName)
+    {
+        if (string.IsNullOrWhiteSpace(externalDisplayName))
+            throw new ArgumentException("External display name is required.", nameof(externalDisplayName));
+
+        ExternalDisplayName = externalDisplayName;
+        MarkUpdated();
     }
 }

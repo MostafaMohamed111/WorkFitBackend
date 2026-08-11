@@ -5,6 +5,8 @@ namespace WorkFit.CodeReview.Domain.Entities;
 public sealed class CodeReviewRunLogEntry : BaseEntity
 {
     public string ExecutionId { get; private set; } = string.Empty;
+    public Guid? TaskId { get; private set; }
+    public Guid? EmployeeId { get; private set; }
     public string Organization { get; private set; } = string.Empty;
     public string Repository { get; private set; } = string.Empty;
     public string Branch { get; private set; } = string.Empty;
@@ -28,6 +30,8 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
         string branch,
         string commitSha,
         string pullRequestNumber,
+        Guid? taskId,
+        Guid? employeeId,
         int overallScore,
         string risk,
         string summary,
@@ -35,16 +39,18 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
     {
         return new CodeReviewRunLogEntry
         {
-            ExecutionId = executionId,
-            Organization = organization,
-            Repository = repository,
-            Branch = branch,
-            CommitSha = commitSha,
-            PullRequestNumber = pullRequestNumber,
+            ExecutionId = Truncate(executionId, 100),
+            TaskId = taskId,
+            EmployeeId = employeeId,
+            Organization = Truncate(organization, 200),
+            Repository = Truncate(repository, 200),
+            Branch = Truncate(branch, 200),
+            CommitSha = Truncate(commitSha, 100),
+            PullRequestNumber = Truncate(pullRequestNumber, 50),
             OverallScore = overallScore,
-            Risk = risk,
+            Risk = Truncate(risk, 50),
             Status = "success",
-            Summary = summary,
+            Summary = Truncate(summary, 4000),
             ErrorMessage = string.Empty,
             LoggedAt = loggedAt
         };
@@ -55,11 +61,15 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
         string workflowName,
         string stageName,
         string errorMessage,
+        Guid? taskId,
+        Guid? employeeId,
         DateTime loggedAt)
     {
         return new CodeReviewRunLogEntry
         {
-            ExecutionId = executionId,
+            ExecutionId = Truncate(executionId, 100),
+            TaskId = taskId,
+            EmployeeId = employeeId,
             Organization = string.Empty,
             Repository = string.Empty,
             Branch = string.Empty,
@@ -68,11 +78,22 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
             OverallScore = 0,
             Risk = string.Empty,
             Status = "error",
-            Summary = $"Workflow failed: {workflowName}",
-            ErrorMessage = string.IsNullOrWhiteSpace(stageName)
+            Summary = Truncate($"Workflow failed: {workflowName}", 4000),
+            ErrorMessage = Truncate(string.IsNullOrWhiteSpace(stageName)
                 ? errorMessage
-                : $"[{stageName}] {errorMessage}",
+                : $"[{stageName}] {errorMessage}", 4000),
             LoggedAt = loggedAt
         };
+    }
+
+    private static string Truncate(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
     }
 }

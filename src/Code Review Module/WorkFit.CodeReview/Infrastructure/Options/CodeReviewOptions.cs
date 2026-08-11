@@ -10,6 +10,9 @@ public sealed class CodeReviewOptions
     {
         public string BaseUrl { get; init; } = "https://api.github.com/";
         public string? PersonalAccessToken { get; init; }
+        public string? AppId { get; init; }
+        public string? AppPrivateKey { get; init; }
+        public string? WebhookSecret { get; init; }
         public string ApiVersion { get; init; } = "2022-11-28";
         public string UserAgent { get; init; } = "WorkFit.CodeReview";
     }

@@ -12,6 +12,8 @@ public sealed class CodeReviewRunLogEntryConfiguration : IEntityTypeConfiguratio
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.ExecutionId).HasMaxLength(100).IsRequired();
+        builder.Property(x => x.TaskId);
+        builder.Property(x => x.EmployeeId);
         builder.Property(x => x.Organization).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Repository).HasMaxLength(200).IsRequired();
         builder.Property(x => x.Branch).HasMaxLength(200).IsRequired();
@@ -25,5 +27,7 @@ public sealed class CodeReviewRunLogEntryConfiguration : IEntityTypeConfiguratio
         builder.Property(x => x.LoggedAt).IsRequired();
 
         builder.HasIndex(x => x.ExecutionId);
+        builder.HasIndex(x => x.TaskId);
+        builder.HasIndex(x => x.EmployeeId);
     }
 }
