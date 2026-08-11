@@ -14,7 +14,7 @@ public sealed class GetEmployeesEndpoint
     public override void Configure()
     {
         Get("/api/employees");
-        Roles("Admin", "HR", "Manager");
+        Roles("Admin", "HR", "OrganizationOwner");
         Options(x => x.WithTags("Talent Management"));
     }
 
