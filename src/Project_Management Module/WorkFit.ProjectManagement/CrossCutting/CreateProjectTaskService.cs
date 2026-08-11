@@ -46,6 +46,10 @@ internal sealed class CreateProjectTaskService : ICreateProjectTaskService
             );
 
             task.SetSource(sourceSystem.ToString(), dto.SourceReferenceId);
+            if (sourceSystem == SourceSystem.GitHub)
+            {
+                task.SetGitHubBranchName(dto.SourceReferenceId);
+            }
 
             ApplyTaskStatus(task, dto.Status);
             SetHistoricalTimestamps(task, dto.CompletedAt); // CompletedAt or UpdatedAt

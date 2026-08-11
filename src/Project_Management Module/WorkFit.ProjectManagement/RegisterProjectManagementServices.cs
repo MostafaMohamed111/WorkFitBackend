@@ -9,6 +9,10 @@ using WorkFit.ProjectManagement.Contracts.CreateProjectService;
 using WorkFit.ProjectManagement.Contracts.CreateProjectTaskService;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
+using WorkFit.CodeReview.Infrastructure.Services;
+using WorkFit.Organizations.Contracts.OrganizationGitHub;
+using WorkFit.ProjectManagement.Infrastructure.Data;
+using Microsoft.Extensions.Hosting;
 
 namespace WorkFit.ProjectManagement;
 
@@ -27,5 +31,7 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
         services.AddScoped<ITaskLookUpService, TaskLookUpService>();
         services.AddScoped<ICreateProjectService, CreateProjectService>();
         services.AddScoped<ICreateProjectTaskService, CreateProjectTaskService>();
+        services.AddScoped<IGitHubProjectProvisioningService, GitHubProjectProvisioningService>();
+        services.AddHostedService<ProjectManagementDatabaseInitializer>();
     }
 }

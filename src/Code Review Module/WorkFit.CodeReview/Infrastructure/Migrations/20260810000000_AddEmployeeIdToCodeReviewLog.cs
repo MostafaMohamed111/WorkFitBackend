@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace WorkFit.CodeReview.Migrations
+namespace WorkFit.CodeReview.Infrastructure.Migrations
 {
     public partial class AddEmployeeIdToCodeReviewLog : Migration
     {

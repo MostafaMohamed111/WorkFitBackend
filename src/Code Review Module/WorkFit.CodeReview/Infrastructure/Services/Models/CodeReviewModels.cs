@@ -2,7 +2,13 @@ using WorkFit.CodeReview.Contracts.GitHubCodeReview;
 
 namespace WorkFit.CodeReview.Infrastructure.Services.Models;
 
-public sealed record GitHubRepositoryMetadata(string DefaultBranch, string RawJson);
+public sealed record GitHubRepositoryMetadata(long Id, string Name, string DefaultBranch, string RawJson);
+
+public sealed record GitHubRepositoryCreationResult(long Id, string Name, string DefaultBranch, string RawJson);
+
+public sealed record GitHubBranchCreationResult(string Name, string Sha, string NodeId, string RawJson);
+
+public sealed record GitHubBranchMetadata(string Name, string Sha, string NodeId, string RawJson);
 
 public sealed record GitHubCommitFile(string Filename, string Status, int Additions, int Deletions, string Patch);
 

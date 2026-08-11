@@ -38,6 +38,13 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date");
 
+                    b.Property<long?>("GitHubRepositoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GitHubRepositoryName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -195,6 +202,14 @@ namespace WorkFit.ProjectManagement.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SourceReferenceId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("GitHubBranchName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("GitHubBranchNodeId")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 

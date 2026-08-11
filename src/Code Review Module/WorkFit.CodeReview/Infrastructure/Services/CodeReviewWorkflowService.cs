@@ -156,7 +156,7 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
         var cached = await _repository.GetFreshRepoMetadataAsync(cacheKey, now, _options.Value.MetadataCacheTtl, ct);
         if (cached is not null)
         {
-            return new GitHubRepositoryMetadata(cached.DefaultBranch, cached.MetadataJson);
+            return new GitHubRepositoryMetadata(0, cached.Repository, cached.DefaultBranch, cached.MetadataJson);
         }
 
         var repoMetadata = await ExecuteStageAsync(

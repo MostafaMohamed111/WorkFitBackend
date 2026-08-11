@@ -35,12 +35,89 @@ public sealed class GitHubCodeReviewService : IGitHubCodeReviewService
         var relativeUrl = $"repos/{organization}/{repository}";
         var json = await SendAndReadJsonAsync(relativeUrl, accessToken, ct);
         using var document = JsonDocument.Parse(json);
+        return ReadRepositoryMetadata(document.RootElement, json);
+    }
 
-        var defaultBranch = document.RootElement.TryGetProperty("default_branch", out var defaultBranchElement)
-            ? defaultBranchElement.GetString() ?? string.Empty
-            : string.Empty;
+    public async Task<GitHubRepositoryCreationResult> CreateRepositoryAsync(string organization, string repository, string? accessToken, string? description, CancellationToken ct)
+    {
+        var options = _options.Value.GitHub;
+        var client = _httpClientFactory.CreateClient("CodeReviewGitHub");
+        client.BaseAddress ??= new Uri(options.BaseUrl, UriKind.Absolute);
 
-        return new GitHubRepositoryMetadata(defaultBranch, json);
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"orgs/{organization}/repos");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        request.Headers.TryAddWithoutValidation("X-GitHub-Api-Version", options.ApiVersion);
+        request.Headers.TryAddWithoutValidation("User-Agent", options.UserAgent);
+        ApplyAuthorizationHeader(request, accessToken, options.PersonalAccessToken);
+        request.Content = CreateJsonContent(new
+        {
+            name = repository,
+            description,
+            auto_init = true,
+            @private = true
+        });
+
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync(ct);
+            using var document = JsonDocument.Parse(json);
+            return ReadRepositoryCreationResult(document.RootElement, json);
+        }
+
+        if (response.StatusCode is HttpStatusCode.UnprocessableEntity or HttpStatusCode.Conflict)
+        {
+            var existing = await GetRepositoryMetadataAsync(organization, repository, accessToken, ct);
+            return new GitHubRepositoryCreationResult(existing.Id, existing.Name, existing.DefaultBranch, existing.RawJson);
+        }
+
+        await EnsureSuccessAsync(response, "GitHub", $"orgs/{organization}/repos");
+        throw new InvalidOperationException("GitHub repository creation failed.");
+    }
+
+    public async Task<GitHubBranchMetadata> GetBranchAsync(string organization, string repository, string branchName, string? accessToken, CancellationToken ct)
+    {
+        var relativeUrl = $"repos/{organization}/{repository}/branches/{branchName}";
+        var json = await SendAndReadJsonAsync(relativeUrl, accessToken, ct);
+        using var document = JsonDocument.Parse(json);
+        return ReadBranchMetadata(document.RootElement, json);
+    }
+
+    public async Task<GitHubBranchCreationResult> CreateBranchAsync(string organization, string repository, string branchName, string baseBranchName, string? accessToken, CancellationToken ct)
+    {
+        var baseBranch = await GetBranchAsync(organization, repository, baseBranchName, accessToken, ct);
+
+        var options = _options.Value.GitHub;
+        var client = _httpClientFactory.CreateClient("CodeReviewGitHub");
+        client.BaseAddress ??= new Uri(options.BaseUrl, UriKind.Absolute);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"repos/{organization}/{repository}/git/refs");
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+        request.Headers.TryAddWithoutValidation("X-GitHub-Api-Version", options.ApiVersion);
+        request.Headers.TryAddWithoutValidation("User-Agent", options.UserAgent);
+        ApplyAuthorizationHeader(request, accessToken, options.PersonalAccessToken);
+        request.Content = CreateJsonContent(new
+        {
+            @ref = $"refs/heads/{branchName}",
+            sha = baseBranch.Sha
+        });
+
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (response.IsSuccessStatusCode)
+        {
+            var json = await response.Content.ReadAsStringAsync(ct);
+            using var document = JsonDocument.Parse(json);
+            return ReadBranchCreationResult(document.RootElement, json);
+        }
+
+        if (response.StatusCode is HttpStatusCode.UnprocessableEntity or HttpStatusCode.Conflict)
+        {
+            var existing = await GetBranchAsync(organization, repository, branchName, accessToken, ct);
+            return new GitHubBranchCreationResult(existing.Name, existing.Sha, existing.NodeId, existing.RawJson);
+        }
+
+        await EnsureSuccessAsync(response, "GitHub", $"repos/{organization}/{repository}/git/refs");
+        throw new InvalidOperationException("GitHub branch creation failed.");
     }
 
     public async Task<GitHubCommitSnapshot> GetCommitAsync(string organization, string repository, string commitSha, string? accessToken, CancellationToken ct)
@@ -143,6 +220,74 @@ public sealed class GitHubCodeReviewService : IGitHubCodeReviewService
         }, ct);
     }
 
+    private static StringContent CreateJsonContent<T>(T payload)
+    {
+        return new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json");
+    }
+
+    private static void ApplyAuthorizationHeader(HttpRequestMessage request, string? accessToken, string? personalAccessToken)
+    {
+        var token = accessToken;
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            token = personalAccessToken;
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new InvalidOperationException("GitHub access token is missing. Provide accessToken in the request body.");
+        }
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
+    private static GitHubRepositoryMetadata ReadRepositoryMetadata(JsonElement root, string rawJson)
+    {
+        var id = root.TryGetProperty("id", out var idElement) && idElement.TryGetInt64(out var idValue)
+            ? idValue
+            : 0;
+
+        var name = GetStringProperty(root, "name");
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = GetStringProperty(root, "full_name");
+        }
+
+        var defaultBranch = GetStringProperty(root, "default_branch");
+        return new GitHubRepositoryMetadata(id, name, defaultBranch, rawJson);
+    }
+
+    private static GitHubRepositoryCreationResult ReadRepositoryCreationResult(JsonElement root, string rawJson)
+    {
+        var metadata = ReadRepositoryMetadata(root, rawJson);
+        return new GitHubRepositoryCreationResult(metadata.Id, metadata.Name, metadata.DefaultBranch, metadata.RawJson);
+    }
+
+    private static GitHubBranchMetadata ReadBranchMetadata(JsonElement root, string rawJson)
+    {
+        var name = GetStringProperty(root, "name");
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            name = GetBranchNameFromRef(GetStringProperty(root, "ref"));
+        }
+        var nodeId = GetStringProperty(root, "node_id");
+
+        var sha = string.Empty;
+        if (root.TryGetProperty("commit", out var commitElement) &&
+            commitElement.TryGetProperty("sha", out var shaElement))
+        {
+            sha = shaElement.GetString() ?? string.Empty;
+        }
+
+        return new GitHubBranchMetadata(name, sha, nodeId, rawJson);
+    }
+
+    private static GitHubBranchCreationResult ReadBranchCreationResult(JsonElement root, string rawJson)
+    {
+        var branch = ReadBranchMetadata(root, rawJson);
+        return new GitHubBranchCreationResult(branch.Name, branch.Sha, branch.NodeId, branch.RawJson);
+    }
+
     private async Task<T> RetryAsync<T>(Func<Task<T>> action, CancellationToken ct)
     {
         Exception? lastException = null;
@@ -225,5 +370,28 @@ public sealed class GitHubCodeReviewService : IGitHubCodeReviewService
         }
 
         return string.Empty;
+    }
+
+    private static string GetStringProperty(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var element)
+            ? element.GetString() ?? string.Empty
+            : string.Empty;
+    }
+
+    private static string GetBranchNameFromRef(string reference)
+    {
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return string.Empty;
+        }
+
+        const string headsPrefix = "refs/heads/";
+        if (reference.StartsWith(headsPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return reference[headsPrefix.Length..];
+        }
+
+        return reference;
     }
 }

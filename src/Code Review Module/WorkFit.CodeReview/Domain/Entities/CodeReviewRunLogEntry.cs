@@ -39,18 +39,18 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
     {
         return new CodeReviewRunLogEntry
         {
-            ExecutionId = executionId,
+            ExecutionId = Truncate(executionId, 100),
             TaskId = taskId,
             EmployeeId = employeeId,
-            Organization = organization,
-            Repository = repository,
-            Branch = branch,
-            CommitSha = commitSha,
-            PullRequestNumber = pullRequestNumber,
+            Organization = Truncate(organization, 200),
+            Repository = Truncate(repository, 200),
+            Branch = Truncate(branch, 200),
+            CommitSha = Truncate(commitSha, 100),
+            PullRequestNumber = Truncate(pullRequestNumber, 50),
             OverallScore = overallScore,
-            Risk = risk,
+            Risk = Truncate(risk, 50),
             Status = "success",
-            Summary = summary,
+            Summary = Truncate(summary, 4000),
             ErrorMessage = string.Empty,
             LoggedAt = loggedAt
         };
@@ -67,7 +67,7 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
     {
         return new CodeReviewRunLogEntry
         {
-            ExecutionId = executionId,
+            ExecutionId = Truncate(executionId, 100),
             TaskId = taskId,
             EmployeeId = employeeId,
             Organization = string.Empty,
@@ -78,11 +78,22 @@ public sealed class CodeReviewRunLogEntry : BaseEntity
             OverallScore = 0,
             Risk = string.Empty,
             Status = "error",
-            Summary = $"Workflow failed: {workflowName}",
-            ErrorMessage = string.IsNullOrWhiteSpace(stageName)
+            Summary = Truncate($"Workflow failed: {workflowName}", 4000),
+            ErrorMessage = Truncate(string.IsNullOrWhiteSpace(stageName)
                 ? errorMessage
-                : $"[{stageName}] {errorMessage}",
+                : $"[{stageName}] {errorMessage}", 4000),
             LoggedAt = loggedAt
         };
+    }
+
+    private static string Truncate(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
     }
 }

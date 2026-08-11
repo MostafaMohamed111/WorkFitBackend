@@ -20,6 +20,7 @@ namespace WorkFit.Host
                 .Select(Assembly.LoadFrom)
                 .ToArray();
             builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
+            builder.Services.AddControllers();
             builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
                              .SwaggerDocument(o =>
                              {
@@ -70,6 +71,7 @@ namespace WorkFit.Host
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapControllers();
             app.UseFastEndpoints()
                .UseSwaggerGen();
 

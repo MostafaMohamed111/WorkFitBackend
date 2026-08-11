@@ -35,6 +35,12 @@ public class ProjectTaskConfiguration
         builder.Property(x => x.SourceReferenceId)
                .HasMaxLength(255);
 
+        builder.Property(x => x.GitHubBranchName)
+               .HasMaxLength(255);
+
+        builder.Property(x => x.GitHubBranchNodeId)
+               .HasMaxLength(255);
+
         builder.HasQueryFilter(x => !x.IsDeleted);
     }
 }

@@ -67,6 +67,8 @@ public sealed class SetTaskGitHubCommandHandler : IRequestHandler<SetTaskGitHubC
                 command.GitHubPullRequestNumber);
         }
 
+        task.SetGitHubBranchName(command.GitHubBranchName);
+
         await _context.SaveChangesAsync(ct);
 
         return task.Id;
