@@ -27,6 +27,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Assessment Module\WorkFit.Assessments\WorkFit.Assessments.csproj" />
     <ProjectReference Include="..\Code Review Module\WorkFit.CodeReview\WorkFit.CodeReview.csproj" />
+    <ProjectReference Include="..\Document Module\WorkFit.Documents\WorkFit.Documents.csproj" />
     <ProjectReference Include="..\Identity Module\WorkFit.Identity\WorkFit.Identity.csproj" />
     <ProjectReference Include="..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
     <ProjectReference Include="..\Project_Management Module\WorkFit.ProjectManagement\WorkFit.ProjectManagement.csproj" />
@@ -38,6 +39,7 @@
     <ProjectReference Include="..\AuditLog Module\WorkFit.AuditLog\WorkFit.AuditLog.csproj" />
     <ProjectReference Include="..\Payment Module\WorkFit.Payments\WorkFit.Payments.csproj" />
     <ProjectReference Include="..\WorkFit_Integration Module\WorkFit.Integration\WorkFit.Integration.csproj" />
+    <ProjectReference Include="..\Engine Module\WorkFit.Engine\WorkFit.Engine.csproj" />
   </ItemGroup>
 
 </Project>

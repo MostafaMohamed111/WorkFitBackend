@@ -26,6 +26,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 
         builder.Property(x => x.EndDate);
 
+        builder.Property(x => x.GitHubRepositoryId);
+
+        builder.Property(x => x.GitHubRepositoryName)
+               .HasMaxLength(100);
+
 
 
         builder.HasMany(x => x.ActivityLogs)

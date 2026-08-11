@@ -13,7 +13,10 @@ public sealed class CreateCheckoutSessionRequestValidator : Validator<CreateChec
 
         RuleFor(x => x.ReferenceType)
             .NotEmpty()
-            .MaximumLength(100);
+            .MaximumLength(100)
+            .Must(x => string.Equals(x, "Organization", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(x, "Project", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("ReferenceType must be either 'Organization' or 'Project'.");
 
         RuleFor(x => x.Amount)
             .GreaterThan(0);
@@ -32,6 +35,8 @@ public sealed class CreateCheckoutSessionRequestValidator : Validator<CreateChec
 
         RuleFor(x => x.BillingCycle)
             .MaximumLength(50)
+            .Must(x => string.IsNullOrWhiteSpace(x) || string.Equals(x, "Onetime", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "Recurring", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("BillingCycle must be either 'Onetime' or 'Recurring'.")
             .When(x => !string.IsNullOrWhiteSpace(x.BillingCycle));
     }
 }

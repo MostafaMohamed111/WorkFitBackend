@@ -21,6 +21,8 @@ public class ProjectTask : BaseEntity
     public DateOnly? DueDate { get; private set; }
     public string? SourceSystem { get; private set; }
     public string? SourceReferenceId { get; private set; }
+    public string? GitHubBranchName { get; private set; }
+    public string? GitHubBranchNodeId { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
 
@@ -177,6 +179,18 @@ public class ProjectTask : BaseEntity
     {
         SourceSystem      = sourceSystem;
         SourceReferenceId = sourceReferenceId;
+        MarkUpdated();
+    }
+
+    public void SetGitHubBranchNodeId(string? nodeId)
+    {
+        GitHubBranchNodeId = string.IsNullOrWhiteSpace(nodeId) ? null : nodeId.Trim();
+        MarkUpdated();
+    }
+
+    public void SetGitHubBranchName(string? branchName)
+    {
+        GitHubBranchName = string.IsNullOrWhiteSpace(branchName) ? null : branchName.Trim();
         MarkUpdated();
     }
 }

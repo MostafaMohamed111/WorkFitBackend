@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
     <ProjectReference Include="..\WorkFit.Payments.Contracts\WorkFit.Payments.Contracts.csproj" />
   </ItemGroup>
 

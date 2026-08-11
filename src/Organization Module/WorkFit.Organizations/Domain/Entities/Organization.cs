@@ -9,6 +9,9 @@ public sealed class Organization : BaseEntity
     public Guid UserId { get; private set; }
     public string BrandingJson { get; private set; } = "{}";
     public string SettingsJson { get; private set; } = "{}";
+    public long? GitHubOrganizationId { get; private set; }
+    public string? GitHubOrganizationLogin { get; private set; }
+    public DateTimeOffset? GitHubCreatedAt { get; private set; }
 
     private Organization() : base() { } // EF
     private Organization(string name, Guid userId, string brandingJson, string settingsJson) : base()
@@ -38,6 +41,24 @@ public sealed class Organization : BaseEntity
     public void UpdateSettings(string settingsJson)
     {
         SettingsJson = string.IsNullOrWhiteSpace(settingsJson) ? "{}" : settingsJson;
+        MarkUpdated();
+    }
+
+    public void ConnectGitHubOrganization(long githubOrganizationId, string githubOrganizationLogin, DateTimeOffset? githubCreatedAt)
+    {
+        if (githubOrganizationId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(githubOrganizationId));
+        }
+
+        if (string.IsNullOrWhiteSpace(githubOrganizationLogin))
+        {
+            throw new ArgumentException("GitHub organization login is required.", nameof(githubOrganizationLogin));
+        }
+
+        GitHubOrganizationId = githubOrganizationId;
+        GitHubOrganizationLogin = githubOrganizationLogin.Trim();
+        GitHubCreatedAt = githubCreatedAt;
         MarkUpdated();
     }
 }

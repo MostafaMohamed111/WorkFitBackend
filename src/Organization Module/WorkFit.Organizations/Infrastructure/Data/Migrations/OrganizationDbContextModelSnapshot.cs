@@ -23,6 +23,41 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("WorkFit.Organizations.Domain.Entities.GitHubAppInstallation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("GitHubInstallationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("InstalledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("GitHubOrganizationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId")
+                        .IsUnique();
+
+                    b.ToTable("GitHubAppInstallations", "Organization");
+                });
+
             modelBuilder.Entity("WorkFit.Organizations.Domain.Entities.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -35,6 +70,16 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTimeOffset?>("GitHubCreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("GitHubOrganizationId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GitHubOrganizationLogin")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -57,6 +102,17 @@ namespace WorkFit.Organizations.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Organizations", "Organization");
+                });
+
+            modelBuilder.Entity("WorkFit.Organizations.Domain.Entities.GitHubAppInstallation", b =>
+                {
+                    b.HasOne("WorkFit.Organizations.Domain.Entities.Organization", "Organization")
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
                 });
 #pragma warning restore 612, 618
         }

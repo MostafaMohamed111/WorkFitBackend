@@ -10,7 +10,9 @@ public class ProjectTaskConfiguration
 {
     public void Configure(EntityTypeBuilder<ProjectTask> builder)
     {
-        builder.ToTable("tasks");
+        // Mark the table as trigger-backed so EF does not rely on rowcount-based
+        // concurrency checks that can fail when SQL Server triggers are present.
+        builder.ToTable("tasks", tb => tb.HasTrigger("TR_tasks"));
 
         builder.HasKey(x => x.Id);
 
@@ -31,6 +33,12 @@ public class ProjectTaskConfiguration
                .HasConversion<string>();
 
         builder.Property(x => x.SourceReferenceId)
+               .HasMaxLength(255);
+
+        builder.Property(x => x.GitHubBranchName)
+               .HasMaxLength(255);
+
+        builder.Property(x => x.GitHubBranchNodeId)
                .HasMaxLength(255);
 
         builder.HasQueryFilter(x => !x.IsDeleted);

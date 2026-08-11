@@ -5,6 +5,7 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.WorkFlow.Features.OrganizationRegistration
 {
+    [HideFromDocs]
     public sealed class OrganizationRegistrationEndPoint : Endpoint<OrganizationRegistrationRequest, Guid>
     {
         private readonly IMediator _mediator;
@@ -17,7 +18,7 @@ namespace WorkFit.WorkFlow.Features.OrganizationRegistration
         public override void Configure()
         {
             Post("/api/workflow/organization/register");
-            Options(x => x.WithTags("WorkFlow"));
+            Options(x => x.WithTags("WorkFlow", "Organization"));
             AllowAnonymous();
         }
 

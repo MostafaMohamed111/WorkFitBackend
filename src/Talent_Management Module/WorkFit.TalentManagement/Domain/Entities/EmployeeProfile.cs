@@ -1,5 +1,6 @@
 
 using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.TalentManagement.Domain.Constants;
 using WorkFit.TalentManagement.Domain.Enums;
 using WorkFit.TalentManagement.Domain.Exceptions;
 
@@ -33,7 +34,7 @@ internal sealed class EmployeeProfile : BaseEntity
 
     public static EmployeeProfile Create(
         Guid orgId, Guid userId, string? email, string name,
-         string jobTitle, DateOnly? hireDate = null)
+         string jobTitle, DateOnly? hireDate = null, string? linkedInUrl = null)
     {
         // Validation here
         return new EmployeeProfile()
@@ -45,6 +46,7 @@ internal sealed class EmployeeProfile : BaseEntity
             Email = email,
             JobTitle = jobTitle,
             HireDate = hireDate,
+            LinkedInUrl = linkedInUrl,
             Status = EmployeeProfileStatus.PendingReview
         };
     }
@@ -118,12 +120,35 @@ internal sealed class EmployeeProfile : BaseEntity
     // if an update certificate is needed would be implemented as an entry here as in the aggregate root
 
     public void AddExternalIdentity(string sourceSystem, string externalAccountId, string externalDisplayName)
+        => AddOrUpdateExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
+
+    public void AddOrUpdateExternalIdentity(string sourceSystem, string externalAccountId, string externalDisplayName)
     {
+        if (string.IsNullOrWhiteSpace(sourceSystem))
+            throw new ArgumentException("Source system is required.", nameof(sourceSystem));
+        if (string.IsNullOrWhiteSpace(externalAccountId))
+            throw new ArgumentException("External account id is required.", nameof(externalAccountId));
+        if (string.IsNullOrWhiteSpace(externalDisplayName))
+            throw new ArgumentException("External display name is required.", nameof(externalDisplayName));
+
         var existing = _identityMappings.FirstOrDefault(m => m.SourceSystem == sourceSystem && m.ExternalAccountId == externalAccountId);
         if (existing == null)
         {
             _identityMappings.Add(DeveloperIdentityMapping.Create(Id, sourceSystem, externalAccountId, externalDisplayName));
             MarkUpdated();
         }
+        else
+        {
+            existing.UpdateDisplayName(externalDisplayName);
+            MarkUpdated();
+        }
     }
+
+    public void AddGitHubIdentity(string externalAccountId, string externalDisplayName)
+        => AddOrUpdateExternalIdentity(ExternalSourceSystems.GitHub, externalAccountId, externalDisplayName);
+
+    public bool HasGitHubIdentity(string externalAccountId)
+        => _identityMappings.Any(m =>
+            m.SourceSystem == ExternalSourceSystems.GitHub &&
+            m.ExternalAccountId == externalAccountId);
 }

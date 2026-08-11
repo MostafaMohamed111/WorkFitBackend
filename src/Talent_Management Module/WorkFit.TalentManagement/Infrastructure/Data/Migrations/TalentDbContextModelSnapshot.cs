@@ -144,6 +144,9 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
 
                     b.HasIndex("EmployeeProfileId");
 
+                    b.HasIndex("EmployeeProfileId", "SourceSystem")
+                        .IsUnique();
+
                     b.HasIndex("SourceSystem", "ExternalAccountId")
                         .IsUnique();
 

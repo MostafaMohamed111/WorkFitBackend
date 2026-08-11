@@ -6,6 +6,7 @@ using WorkFit.CodeReview.Features.GitHubCodeReview;
 using WorkFit.CodeReview.Infrastructure.Options;
 using WorkFit.CodeReview.Infrastructure.Repositories;
 using WorkFit.CodeReview.Infrastructure.Services.Models;
+using WorkFit.Organizations.Contracts.OrganizationGitHub;
 
 namespace WorkFit.CodeReview.Infrastructure.Services;
 
@@ -18,6 +19,8 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
     private readonly ICodeReviewReviewerService _reviewerService;
     private readonly ICodeReviewAgentService _aiService;
     private readonly IOptions<CodeReviewOptions> _options;
+    private readonly IGitHubOrganizationInstallationLookupService _organizationInstallationLookup;
+    private readonly IGitHubAppAuthenticationService _appAuthService;
     private readonly ILogger<CodeReviewWorkflowService> _logger;
 
     public CodeReviewWorkflowService(
@@ -26,6 +29,8 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
         ICodeReviewReviewerService reviewerService,
         ICodeReviewAgentService aiService,
         IOptions<CodeReviewOptions> options,
+        IGitHubOrganizationInstallationLookupService organizationInstallationLookup,
+        IGitHubAppAuthenticationService appAuthService,
         ILogger<CodeReviewWorkflowService> logger)
     {
         _repository = repository;
@@ -33,6 +38,8 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
         _reviewerService = reviewerService;
         _aiService = aiService;
         _options = options;
+        _organizationInstallationLookup = organizationInstallationLookup;
+        _appAuthService = appAuthService;
         _logger = logger;
     }
 
@@ -40,65 +47,231 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
     {
         var executionId = Guid.NewGuid().ToString("N");
         var now = DateTime.UtcNow;
-        var cacheKey = $"{request.Organization}/{request.Repository}";
+        var effectiveToken = await ResolveAccessTokenAsync(request.AccessToken, request.Organization, ct);
+        var repoMetadata = await EnsureRepoMetadataAsync(request.Organization, request.Repository, effectiveToken, executionId, ct);
 
-        var cached = await _repository.GetFreshRepoMetadataAsync(cacheKey, now, _options.Value.MetadataCacheTtl, ct);
-        if (cached is null)
+        var commit = await ExecuteStageAsync(
+            "Fetch Commit",
+            () => _gitHubService.GetCommitAsync(request.Organization, request.Repository, request.CommitSha, effectiveToken, ct),
+            executionId,
+            ct);
+
+        return await ReviewFilesAsync(
+            executionId,
+            request.Organization,
+            request.Repository,
+            request.Branch,
+            commit.Sha,
+            request.PullRequestNumber,
+            null,
+            null,
+            commit.Files,
+            repoMetadata.DefaultBranch,
+            now,
+            ct,
+            "No reviewable code files found in this commit after filtering.");
+    }
+
+    public async Task<CodeReviewWorkflowExecutionResult> ExecuteTaskAsync(ReviewTaskGitHubChangesCommand request, CancellationToken ct)
+    {
+        var executionId = Guid.NewGuid().ToString("N");
+        var now = DateTime.UtcNow;
+        var effectiveToken = await ResolveAccessTokenAsync(request.AccessToken, request.Organization, ct);
+        var repoMetadata = await EnsureRepoMetadataAsync(request.Organization, request.Repository, effectiveToken, executionId, ct);
+
+        var branch = request.Branch?.Trim();
+        if (request.PullRequestNumber is null && string.IsNullOrWhiteSpace(branch))
         {
-            var repoMetadata = await ExecuteStageAsync("Fetch Repo Metadata", () =>
-                _gitHubService.GetRepositoryMetadataAsync(request.Organization, request.Repository, request.AccessToken, ct), executionId, ct);
-
-            await _repository.UpsertRepoMetadataAsync(
-                RepoMetadataCacheEntry.Create(
-                    cacheKey,
-                    request.Organization,
-                    request.Repository,
-                    repoMetadata.DefaultBranch,
-                    repoMetadata.RawJson,
-                    now),
-                ct);
-
-            await _repository.SaveChangesAsync(ct);
+            throw new InvalidOperationException("Task GitHub branch is missing.");
         }
 
-        var commit = await ExecuteStageAsync("Fetch Commit", () =>
-            _gitHubService.GetCommitAsync(request.Organization, request.Repository, request.CommitSha, request.AccessToken, ct), executionId, ct);
+        string effectiveBranch = branch ?? string.Empty;
+        string commitSha = string.Empty;
+        IReadOnlyList<GitHubCommitFile> files;
 
-        var reviewableFiles = FilterReviewableFiles(commit.Files);
+        if (request.PullRequestNumber is not null)
+        {
+            var pullRequest = await ExecuteStageAsync(
+                "Fetch Pull Request",
+                () => _gitHubService.GetPullRequestAsync(request.Organization, request.Repository, request.PullRequestNumber.Value, effectiveToken, ct),
+                executionId,
+                ct,
+                request.TaskId,
+                request.EmployeeId);
+
+            effectiveBranch = string.IsNullOrWhiteSpace(pullRequest.HeadBranch) ? effectiveBranch : pullRequest.HeadBranch;
+            var baseBranch = string.IsNullOrWhiteSpace(pullRequest.BaseBranch) ? repoMetadata.DefaultBranch : pullRequest.BaseBranch;
+
+            var comparison = await ExecuteStageAsync(
+                "Fetch Pull Request Changes",
+                () => _gitHubService.GetComparisonAsync(request.Organization, request.Repository, baseBranch, effectiveBranch, effectiveToken, ct),
+                executionId,
+                ct,
+                request.TaskId,
+                request.EmployeeId);
+
+            commitSha = string.IsNullOrWhiteSpace(comparison.HeadSha) ? pullRequest.HeadSha : comparison.HeadSha;
+            files = comparison.Files;
+        }
+        else
+        {
+            var comparison = await ExecuteStageAsync(
+                "Fetch Task Changes",
+                () => _gitHubService.GetComparisonAsync(request.Organization, request.Repository, repoMetadata.DefaultBranch, effectiveBranch, effectiveToken, ct),
+                executionId,
+                ct,
+                request.TaskId,
+                request.EmployeeId);
+
+            commitSha = string.IsNullOrWhiteSpace(comparison.HeadSha) ? effectiveBranch : comparison.HeadSha;
+            files = comparison.Files;
+        }
+
+        return await ReviewFilesAsync(
+            executionId,
+            request.Organization,
+            request.Repository,
+            effectiveBranch,
+            commitSha,
+            request.PullRequestNumber,
+            request.TaskId,
+            request.EmployeeId,
+            files,
+            repoMetadata.DefaultBranch,
+            now,
+            ct,
+            "No reviewable code files found for this task after filtering.");
+    }
+
+    private async Task<GitHubRepositoryMetadata> EnsureRepoMetadataAsync(
+        string organization,
+        string repository,
+        string? accessToken,
+        string executionId,
+        CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var cacheKey = $"{organization}/{repository}";
+
+        var cached = await _repository.GetFreshRepoMetadataAsync(cacheKey, now, _options.Value.MetadataCacheTtl, ct);
+        if (cached is not null)
+        {
+            return new GitHubRepositoryMetadata(0, cached.Repository, cached.DefaultBranch, cached.MetadataJson);
+        }
+
+        var repoMetadata = await ExecuteStageAsync(
+            "Fetch Repo Metadata",
+            () => _gitHubService.GetRepositoryMetadataAsync(organization, repository, accessToken, ct),
+            executionId,
+            ct);
+
+        await _repository.UpsertRepoMetadataAsync(
+            RepoMetadataCacheEntry.Create(
+                cacheKey,
+                organization,
+                repository,
+                repoMetadata.DefaultBranch,
+                repoMetadata.RawJson,
+                now),
+            ct);
+
+        await _repository.SaveChangesAsync(ct);
+        return repoMetadata;
+    }
+
+    private async Task<string?> ResolveAccessTokenAsync(string? accessToken, string organization, CancellationToken ct)
+    {
+        if (!string.IsNullOrWhiteSpace(accessToken))
+        {
+            return accessToken.Trim();
+        }
+
+        var installationId = await _organizationInstallationLookup.GetGitHubInstallationIdForOrganizationAsync(organization, ct);
+        if (installationId.HasValue)
+        {
+            return await _appAuthService.GetInstallationAccessTokenAsync(installationId.Value, ct);
+        }
+
+        return _options.Value.GitHub.PersonalAccessToken;
+    }
+
+    private async Task<CodeReviewWorkflowExecutionResult> ReviewFilesAsync(
+        string executionId,
+        string organization,
+        string repository,
+        string branch,
+        string commitSha,
+        int? pullRequestNumber,
+        Guid? taskId,
+        Guid? employeeId,
+        IReadOnlyList<GitHubCommitFile> files,
+        string defaultBranch,
+        DateTime now,
+        CancellationToken ct,
+        string noFilesMessage)
+    {
+        var reviewableFiles = FilterReviewableFiles(files);
         var codeContext = BuildAiContext(reviewableFiles, out var truncated);
 
         if (string.IsNullOrWhiteSpace(codeContext))
         {
-            return new CodeReviewWorkflowExecutionResult(
-                executionId,
-                new CodeReviewResultDto(
-                    request.Repository,
-                    request.CommitSha,
-                    null,
-                    "Unknown",
-                    "Unknown",
-                    new Dictionary<string, int?>(),
-                    Array.Empty<string>(),
-                    Array.Empty<CodeReviewIssueDto>(),
-                    new[] { "No reviewable code files found in this commit after filtering." },
-                    Array.Empty<string>()),
-                string.Empty,
-                string.Empty,
-                false,
-                truncated);
+            var noFilesResponse = new CodeReviewResultDto(
+                repository,
+                string.IsNullOrWhiteSpace(commitSha) ? branch : commitSha,
+                null,
+                "Unknown",
+                "Unknown",
+                new Dictionary<string, int?>(),
+                Array.Empty<string>(),
+                Array.Empty<CodeReviewIssueDto>(),
+                new[] { noFilesMessage },
+                Array.Empty<string>());
+
+            if (taskId.HasValue)
+            {
+                await _repository.AddSuccessLogAsync(
+                    CodeReviewRunLogEntry.CreateSuccess(
+                        executionId,
+                        organization,
+                        repository,
+                        branch,
+                        string.IsNullOrWhiteSpace(commitSha) ? branch : commitSha,
+                        pullRequestNumber is null ? string.Empty : pullRequestNumber.Value.ToString(),
+                        taskId,
+                        employeeId,
+                        0,
+                        "Unknown",
+                        noFilesMessage,
+                        now),
+                    ct);
+
+                await _repository.SaveChangesAsync(ct);
+            }
+
+            return new CodeReviewWorkflowExecutionResult(executionId, noFilesResponse, string.Empty, string.Empty, false, truncated);
         }
 
         var reviewers = BuildReviewerConfigs();
-        var reviewerResults = await ExecuteStageAsync("Run Reviewer Agents", () =>
-            _reviewerService.RunReviewersAsync(reviewers, request.Repository, request.CommitSha, codeContext, ct), executionId, ct);
+        var reviewerResults = await ExecuteStageAsync(
+            "Run Reviewer Agents",
+            () => _reviewerService.RunReviewersAsync(reviewers, repository, commitSha, codeContext, ct),
+            executionId,
+            ct,
+            taskId,
+            employeeId);
 
         var aggregate = AggregateFindings(reviewerResults);
-        var summaries = await ExecuteStageAsync("Generate Summaries", () =>
-            _aiService.GenerateSummariesAsync(aggregate, ct), executionId, ct);
+        var summaries = await ExecuteStageAsync(
+            "Generate Summaries",
+            () => _aiService.GenerateSummariesAsync(aggregate, ct),
+            executionId,
+            ct,
+            taskId,
+            employeeId);
 
-        var response = new CodeReviewResultDto(
-            request.Repository,
-            request.CommitSha,
+        var resultResponse = new CodeReviewResultDto(
+            repository,
+            commitSha,
             aggregate.OverallScore,
             aggregate.Risk,
             aggregate.TechnicalDebt,
@@ -108,7 +281,7 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
             aggregate.Recommendations,
             aggregate.NextActions);
 
-        var pullRequestNumber = request.PullRequestNumber is null ? string.Empty : request.PullRequestNumber.Value.ToString();
+        var pullRequestText = pullRequestNumber is null ? string.Empty : pullRequestNumber.Value.ToString();
         var summaryText = string.IsNullOrWhiteSpace(summaries.ExecutiveSummary)
             ? summaries.DeveloperSummary
             : summaries.ExecutiveSummary;
@@ -116,35 +289,43 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
         await _repository.AddSuccessLogAsync(
             CodeReviewRunLogEntry.CreateSuccess(
                 executionId,
-                request.Organization,
-                request.Repository,
-                request.Branch,
-                request.CommitSha,
-                pullRequestNumber,
+                organization,
+                repository,
+                branch,
+                commitSha,
+                pullRequestText,
+                taskId,
+                employeeId,
                 aggregate.OverallScore ?? 0,
                 aggregate.Risk,
                 summaryText,
-                DateTime.UtcNow),
+                now),
             ct);
 
         await _repository.SaveChangesAsync(ct);
 
         _logger.LogInformation(
             "Completed code review for {Repository}@{CommitSha} with score {Score}.",
-            request.Repository,
-            request.CommitSha,
+            repository,
+            commitSha,
             aggregate.OverallScore);
 
         return new CodeReviewWorkflowExecutionResult(
             executionId,
-            response,
+            resultResponse,
             summaries.ExecutiveSummary,
             summaries.DeveloperSummary,
             true,
             truncated);
     }
 
-    private async Task<T> ExecuteStageAsync<T>(string stageName, Func<Task<T>> action, string executionId, CancellationToken ct)
+    private async Task<T> ExecuteStageAsync<T>(
+        string stageName,
+        Func<Task<T>> action,
+        string executionId,
+        CancellationToken ct,
+        Guid? taskId = null,
+        Guid? employeeId = null)
     {
         try
         {
@@ -153,7 +334,7 @@ public sealed class CodeReviewWorkflowService : ICodeReviewWorkflowService
         catch (Exception ex)
         {
             await _repository.AddFailureLogAsync(
-                CodeReviewRunLogEntry.CreateFailure(executionId, WorkflowName, stageName, ex.Message, DateTime.UtcNow),
+                CodeReviewRunLogEntry.CreateFailure(executionId, WorkflowName, stageName, ex.Message, taskId, employeeId, DateTime.UtcNow),
                 ct);
 
             await _repository.SaveChangesAsync(ct);
