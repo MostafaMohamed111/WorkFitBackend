@@ -82,6 +82,15 @@ public sealed class TakeCompleteWithCodeReviewCommandHandler : IRequestHandler<T
                 null),
             ct);
 
+        await _mediator.Publish(
+            new TaskCompletedWithCodeReviewIntegrationEvent(
+                task.Id,
+                task.AssignedEmployeeId!.Value,
+                reviewResult.Response.Scores
+                    .Select(score => new TaskCompletedWithCodeReviewSkillScore(score.Key, score.Value))
+                    .ToArray()),
+            ct);
+
         _logger.LogInformation(
             "Completed take-complete-with-code-review for task {TaskId} in repository {RepositoryId}.",
             task.Id,
