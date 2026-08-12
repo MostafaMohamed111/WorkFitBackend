@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace WorkFit.CodeReview.Infrastructure.Services;
 
-internal static class PemKeyUtils
+public static class PemKeyUtils
 {
     public static RsaSecurityKey GetRsaSecurityKey(string privateKeyPem)
     {
