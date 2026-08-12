@@ -61,4 +61,15 @@ public sealed class Organization : BaseEntity
         GitHubCreatedAt = githubCreatedAt;
         MarkUpdated();
     }
+
+    public void UpdateGitHubOrganizationLogin(string githubOrganizationLogin)
+    {
+        if (string.IsNullOrWhiteSpace(githubOrganizationLogin))
+        {
+            throw new ArgumentException("GitHub organization login is required.", nameof(githubOrganizationLogin));
+        }
+
+        GitHubOrganizationLogin = githubOrganizationLogin.Trim();
+        MarkUpdated();
+    }
 }

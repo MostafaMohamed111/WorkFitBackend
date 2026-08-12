@@ -1,7 +1,6 @@
 using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using WorkFit.Organizations.Domain.Entities;
 using WorkFit.Organizations.Domain.Exceptions;
 using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.SharedKernel.MediatorContract;
@@ -11,18 +10,12 @@ namespace WorkFit.Organizations.Features.OrganizationsMe;
 public sealed record UpdateOrganizationGitHubRequest(
     Guid UserId,
     long GitHubOrganizationId,
-    string GitHubOrganizationLogin,
-    DateTimeOffset? GitHubCreatedAt,
-    long GitHubInstallationId,
-    DateTimeOffset? InstalledAt);
+    string GitHubOrganizationLogin);
 
 public sealed record UpdateOrganizationGitHubCommand(
     Guid UserId,
     long GitHubOrganizationId,
-    string GitHubOrganizationLogin,
-    DateTimeOffset? GitHubCreatedAt,
-    long GitHubInstallationId,
-    DateTimeOffset? InstalledAt) : IRequest<OrganizationDetailsResponse>;
+    string GitHubOrganizationLogin) : IRequest<OrganizationDetailsResponse>;
 
 public sealed class UpdateOrganizationGitHubCommandHandler : IRequestHandler<UpdateOrganizationGitHubCommand, OrganizationDetailsResponse>
 {
@@ -36,26 +29,10 @@ public sealed class UpdateOrganizationGitHubCommandHandler : IRequestHandler<Upd
             .FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken)
             ?? throw new OrganizationNotFoundException();
 
-        organization.ConnectGitHubOrganization(request.GitHubOrganizationId, request.GitHubOrganizationLogin, request.GitHubCreatedAt);
-
-        var installation = await _context.GitHubAppInstallations
-            .FirstOrDefaultAsync(x => x.OrganizationId == organization.Id, cancellationToken);
-
-        var installedAt = request.InstalledAt ?? DateTimeOffset.UtcNow;
-        if (installation is null)
-        {
-            await _context.GitHubAppInstallations.AddAsync(
-                GitHubAppInstallation.Create(
-                    organization.Id,
-                    request.GitHubInstallationId,
-                    request.GitHubOrganizationId,
-                    installedAt),
-                cancellationToken);
-        }
-        else
-        {
-            installation.Update(request.GitHubInstallationId, request.GitHubOrganizationId, installedAt);
-        }
+        organization.ConnectGitHubOrganization(
+            request.GitHubOrganizationId,
+            request.GitHubOrganizationLogin,
+            organization.GitHubCreatedAt);
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -92,10 +69,7 @@ public sealed class UpdateOrganizationGitHubEndpoint : Endpoint<UpdateOrganizati
             new UpdateOrganizationGitHubCommand(
                 req.UserId,
                 req.GitHubOrganizationId,
-                req.GitHubOrganizationLogin,
-                req.GitHubCreatedAt,
-                req.GitHubInstallationId,
-                req.InstalledAt),
+                req.GitHubOrganizationLogin),
             ct);
 
         await Send.OkAsync(response, ct);
