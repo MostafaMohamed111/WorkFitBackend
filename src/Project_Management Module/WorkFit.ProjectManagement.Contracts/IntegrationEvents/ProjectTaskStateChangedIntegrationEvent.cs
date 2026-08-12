@@ -1,0 +1,43 @@
+using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.ProjectManagement.Contracts.LookUpServices.TaskLookUp;
+
+namespace WorkFit.ProjectManagement.Contracts.IntegrationEvents;
+
+public sealed record ProjectTaskStateChangedIntegrationEvent(
+    Guid TaskId,
+    Guid ProjectId,
+    Guid OrganizationId,
+    Guid? TeamLeaderId,
+    string ProjectName,
+    string? ProjectDescription,
+    string ProjectStatus,
+    DateOnly? ProjectStartDate,
+    DateOnly? ProjectEndDate,
+    string? ProjectSourceSystem,
+    string? ProjectSourceReferenceId,
+    long? GitHubRepositoryId,
+    string? GitHubRepositoryName,
+    string Title,
+    string? Description,
+    string TaskType,
+    string Status,
+    string Priority,
+    int? StoryPoints,
+    DateOnly? DueDate,
+    int AllocationPercentage,
+    Guid? AssignedEmployeeId,
+    Guid CreatedById,
+    IReadOnlyList<ProjectRequiredSkillContextDto> ProjectRequiredSkills,
+    string? SourceSystem,
+    string? SourceReferenceId,
+    string? GitHubBranchName,
+    string? GitHubBranchNodeId,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt,
+    DateTimeOffset? CompletedAt,
+    DateTimeOffset? DeletedAt,
+    bool IsDeleted,
+    bool IsActive,
+    int Revision,
+    string ChangeType,
+    DateTimeOffset OccurredAt) : IIntegrationEvent;

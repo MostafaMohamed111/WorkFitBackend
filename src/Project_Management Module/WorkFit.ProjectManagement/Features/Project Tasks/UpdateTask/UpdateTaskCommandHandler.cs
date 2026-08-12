@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Features.Exceptions;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -10,13 +11,16 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
 {
     private readonly WorkFitProjectDbContext _context;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IMediator _mediator;
 
     public UpdateTaskCommandHandler(WorkFitProjectDbContext context,
-            ICurrentUserContext currentUser
+            ICurrentUserContext currentUser,
+            IMediator mediator
         )
     {
         _context = context;
         _currentUser = currentUser;
+        _mediator = mediator;
     }
 
     public async Task<Guid> Handle(UpdateTaskCommand command, CancellationToken ct)
@@ -36,6 +40,8 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
             task.ChangeStatus(command.Status.Value);
 
         await _context.SaveChangesAsync(ct);
+        var changeType = command.Status == Domain.Enums.TaskStatus.Done ? "Completed" : "Updated";
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, changeType, ct);
 
         return task.Id;
     }

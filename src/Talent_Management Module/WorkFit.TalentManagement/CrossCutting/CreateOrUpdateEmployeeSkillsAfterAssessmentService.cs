@@ -7,10 +7,14 @@ namespace WorkFit.TalentManagement.CrossCutting;
 internal class CreateOrUpdateEmployeeSkillsAfterAssessmentService : ICreateOrUpdateEmployeeSkillsAfterAssessmentService
 {
     private readonly TalentDbContext _db;
+    private readonly EmployeeIndexingStatePublisher _publisher;
 
-    public CreateOrUpdateEmployeeSkillsAfterAssessmentService(TalentDbContext db)
+    public CreateOrUpdateEmployeeSkillsAfterAssessmentService(
+        TalentDbContext db,
+        EmployeeIndexingStatePublisher publisher)
     {
         _db = db;
+        _publisher = publisher;
     }
 
     public async Task CreateOrUpdateAsync(Guid employeeId, Guid assessmentId, List<SkillDetails> skills, CancellationToken cancellationToken = default)
@@ -27,5 +31,6 @@ internal class CreateOrUpdateEmployeeSkillsAfterAssessmentService : ICreateOrUpd
         }
 
         await _db.SaveChangesAsync(cancellationToken);
+        await _publisher.PublishAsync(employee.Id, "SkillsUpdated", cancellationToken);
     }
 }

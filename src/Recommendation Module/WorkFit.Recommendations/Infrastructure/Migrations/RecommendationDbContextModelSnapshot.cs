@@ -87,6 +87,10 @@ namespace WorkFit.Recommendations.Infrastructure.Migrations
                     b.Property<Guid>("RecommendationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ScoreBreakdown")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTimeOffset?>("ReviewedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -101,7 +105,11 @@ namespace WorkFit.Recommendations.Infrastructure.Migrations
 
                     b.HasIndex("RecommendationId");
 
-                    b.HasIndex("RecommendationId", "Rank");
+                    b.HasIndex("RecommendationId", "EmployeeId")
+                        .IsUnique();
+
+                    b.HasIndex("RecommendationId", "Rank")
+                        .IsUnique();
 
                     b.ToTable("recommendation_candidates", "recommendation");
                 });

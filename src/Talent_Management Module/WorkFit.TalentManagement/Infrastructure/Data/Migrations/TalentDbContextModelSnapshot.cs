@@ -18,7 +18,7 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("talent")
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -142,10 +142,10 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EmployeeProfileId");
-
                     b.HasIndex("EmployeeProfileId", "SourceSystem")
                         .IsUnique();
+
+                    b.HasIndex("EmployeeProfileId");
 
                     b.HasIndex("SourceSystem", "ExternalAccountId")
                         .IsUnique();
@@ -278,6 +278,47 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
                     b.HasIndex("EmployeeSkillId");
 
                     b.ToTable("SkillConfidenceChanges", "talent");
+                });
+
+            modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.TaskAllocation", b =>
+                {
+                    b.Property<Guid>("TaskId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AllocationPercentage")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("EmployeeProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("StoryPoints")
+                        .HasColumnType("int");
+
+                    b.HasKey("TaskId");
+
+                    b.HasIndex("EmployeeProfileId");
+
+                    b.ToTable("TaskAllocations", "talent");
                 });
 
             modelBuilder.Entity("WorkFit.TalentManagement.Domain.Entities.Certification", b =>

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.Recommendations.Contracts.CreateRecommendationService;
+using WorkFit.Recommendations.CrossCutting;
 using WorkFit.Recommendations.Domain.Services;
 using WorkFit.Recommendations.Infrastructure.Data;
 using WorkFit.SharedKernel.DependencyInjection;
@@ -19,6 +21,8 @@ public sealed class RegisterRecommendationModuleServices : IRegisterModuleServic
             options.UseSqlServer(connectionString));
 
         services.AddScoped<IRecommendationScoringService, RecommendationScoringService>();
+        services.AddScoped<ICreateRecommendationService, CreateRecommendationService>();
+        services.AddHostedService<RecommendationDatabaseInitializer>();
 
         services.AddMediatorHandlers<ModuleMarker>();
     }

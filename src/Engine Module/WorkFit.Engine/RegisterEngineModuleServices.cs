@@ -26,6 +26,11 @@ public sealed class RegisterEngineModuleServices : IRegisterModuleServices
 
         services.AddHttpClient("EngineMistral", c => c.Timeout = TimeSpan.FromSeconds(120));
         services.AddHttpClient("EngineMistralEmbedding", c => c.Timeout = TimeSpan.FromSeconds(60));
+        services.AddHttpClient("EngineGeminiEmbedding", c =>
+        {
+            c.BaseAddress = new Uri("https://generativelanguage.googleapis.com/v1beta/");
+            c.Timeout = TimeSpan.FromSeconds(60);
+        });
 
         services.AddSingleton<CVProcessingChannel>();
         services.AddHostedService<BackgroundCVWorker>();
@@ -38,7 +43,7 @@ public sealed class RegisterEngineModuleServices : IRegisterModuleServices
         services.AddScoped<ICVParsePipeline, CVParsePipeline>();
 
         services.AddSingleton<IChatCompletionClient, MistralChatCompletionClient>();
-        services.AddSingleton<IEmbeddingClient, MistralEmbeddingClient>();
+        services.AddSingleton<IEmbeddingClient, GeminiEmbeddingClient>();
 
         services.AddMediatorHandlers<ModuleMarker>();
     }

@@ -13,6 +13,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Identity Module\WorkFit.Identity.Contracts\WorkFit.Identity.Contracts.csproj" />
     <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations.Contracts\WorkFit.Organizations.Contracts.csproj" />
+    <ProjectReference Include="..\..\Project_Management Module\WorkFit.ProjectManagement.Contracts\WorkFit.ProjectManagement.Contracts.csproj" />
+    <ProjectReference Include="..\..\RAG Module\WorkFit.Rag.Contracts\WorkFit.Rag.Contracts.csproj" />
+    <ProjectReference Include="..\..\Recommendation Module\WorkFit.Recommendations.Contracts\WorkFit.Recommendations.Contracts.csproj" />
+    <ProjectReference Include="..\..\Skills_Taxonomy_Module\WorkFit.Skills.Contracts\WorkFit.Skills.Contracts.csproj" />
+    <ProjectReference Include="..\..\Talent_Management Module\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
     <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
   </ItemGroup>
 

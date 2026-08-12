@@ -14,6 +14,7 @@ internal class DeveloperIdentityMappingConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.ExternalAccountId).IsRequired().HasMaxLength(255);
         builder.Property(x => x.ExternalDisplayName).IsRequired().HasMaxLength(255);
 
+        builder.HasIndex(x => x.EmployeeProfileId);
         builder.HasIndex(x => new { x.EmployeeProfileId, x.SourceSystem }).IsUnique();
         builder.HasIndex(x => new { x.SourceSystem, x.ExternalAccountId }).IsUnique();
     }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using WorkFit.CodeReview.Features.GitHubCodeReview;
 using WorkFit.Organizations.Features.OrganizationsMe;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
@@ -44,8 +45,9 @@ public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCom
         await _context.SaveChangesAsync(ct);
 
         await _mediator.Publish(
-            new TaskCompletedIntegrationEvent(task.Id, task.AssignedEmployeeId!.Value, task.AllocationPercentage),
+            new TaskCompletedIntegrationEvent(task.Id, task.AssignedEmployeeId, task.AllocationPercentage),
             ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Completed", ct);
 
         if (taskGitHub is not null &&
             !string.IsNullOrWhiteSpace(taskGitHub.GitHubRepositoryName) &&

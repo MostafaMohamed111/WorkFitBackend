@@ -13,13 +13,15 @@ internal class RecommendationCandidateConfiguration : IEntityTypeConfiguration<R
         builder.Property(x => x.EmployeeId).IsRequired();
         builder.Property(x => x.MatchScore).HasColumnType("decimal(5,2)");
         builder.Property(x => x.MatchReasoning).HasColumnType("nvarchar(max)");
+        builder.Property(x => x.ScoreBreakdown).HasColumnType("nvarchar(max)").IsRequired();
         builder.Property(x => x.AdditionalSkills).HasColumnType("nvarchar(max)");
         builder.Property(x => x.Rank).IsRequired();
-        
+
         builder.Property(x => x.Status).IsRequired().HasConversion<string>();
         builder.Property(x => x.ReviewedAt);
 
         builder.HasIndex(x => x.RecommendationId);
-        builder.HasIndex(x => new { x.RecommendationId, x.Rank });
+        builder.HasIndex(x => new { x.RecommendationId, x.Rank }).IsUnique();
+        builder.HasIndex(x => new { x.RecommendationId, x.EmployeeId }).IsUnique();
     }
-}
+}

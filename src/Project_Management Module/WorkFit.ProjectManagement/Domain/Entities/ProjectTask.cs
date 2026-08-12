@@ -25,6 +25,7 @@ public class ProjectTask : BaseEntity
     public string? GitHubBranchNodeId { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
+    public int Revision { get; private set; }
 
     public bool IsActive => Status != TaskStatus.Done && AllocationPercentage > 0;
 
@@ -53,6 +54,7 @@ public class ProjectTask : BaseEntity
         StoryPoints = storyPoints;
         AllocationPercentage = allocationPercentage;
         DueDate = dueDate;
+        Revision = 1;
     }
 
     public static ProjectTask Create(
@@ -88,7 +90,11 @@ public class ProjectTask : BaseEntity
         );
 
         if (assigneeId.HasValue)
-            task.Assign(assigneeId.Value, allocationPercentage);
+        {
+            if (assigneeId == Guid.Empty)
+                throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "AssigneeId");
+            task.AssignedEmployeeId = assigneeId;
+        }
 
         return task;
     }
@@ -103,7 +109,7 @@ public class ProjectTask : BaseEntity
                 "Allocation percentage must be between 0 and 100.");
 
         AllocationPercentage = allocationPercentage;
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void UpdateDetails(string? title, string? description, TaskPriority? priority,
@@ -125,7 +131,7 @@ public class ProjectTask : BaseEntity
             DueDate = dueDate.Value;
         }
 
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void ChangeStatus(TaskStatus newStatus)
@@ -133,19 +139,32 @@ public class ProjectTask : BaseEntity
         if (Status == TaskStatus.Done && newStatus != TaskStatus.Done)
             throw new TaskAlreadyDoneException(ModuleMarker.ModuleName);
 
+        if (newStatus == TaskStatus.Done)
+        {
+            Complete();
+            return;
+        }
+
         Status = newStatus;
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void Assign(Guid assigneeId, int? allocationPercentage)
     {
+        if (Status == TaskStatus.Done)
+            throw new TaskAlreadyDoneException(ModuleMarker.ModuleName);
+
         if (assigneeId == Guid.Empty)
             throw new FeildIsNullOrEmptyException(ModuleMarker.ModuleName, "ProjectTask", "AssigneeId");
-        if(allocationPercentage.HasValue)
-            SetAllocationPercentage(allocationPercentage.Value);
+        if (allocationPercentage.HasValue)
+        {
+            if (allocationPercentage < 0 || allocationPercentage > 100)
+                throw new ArgumentOutOfRangeException(nameof(allocationPercentage));
+            AllocationPercentage = allocationPercentage.Value;
+        }
 
         AssignedEmployeeId = assigneeId;
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void Complete()
@@ -155,7 +174,7 @@ public class ProjectTask : BaseEntity
 
         Status = TaskStatus.Done;
         CompletedAt = DateTimeOffset.UtcNow;
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void Delete()
@@ -168,7 +187,7 @@ public class ProjectTask : BaseEntity
 
         MarkDeleted();
         DeletedAt = DateTimeOffset.UtcNow;
-        MarkUpdated();
+        TouchMutation();
     }
 
     /// <summary>
@@ -179,18 +198,24 @@ public class ProjectTask : BaseEntity
     {
         SourceSystem      = sourceSystem;
         SourceReferenceId = sourceReferenceId;
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void SetGitHubBranchNodeId(string? nodeId)
     {
         GitHubBranchNodeId = string.IsNullOrWhiteSpace(nodeId) ? null : nodeId.Trim();
-        MarkUpdated();
+        TouchMutation();
     }
 
     public void SetGitHubBranchName(string? branchName)
     {
         GitHubBranchName = string.IsNullOrWhiteSpace(branchName) ? null : branchName.Trim();
+        TouchMutation();
+    }
+
+    private void TouchMutation()
+    {
+        Revision++;
         MarkUpdated();
     }
 }

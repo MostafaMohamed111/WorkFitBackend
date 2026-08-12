@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 using WorkFit.TalentManagement.Contracts.LookUpServices;
+using WorkFit.TalentManagement.Contracts.Indexing;
 using WorkFit.TalentManagement.Contracts.WriteServices.CreateEmployee;
 using WorkFit.TalentManagement.Contracts.WriteServices.CreateOrUpdateSkill;
 using WorkFit.TalentManagement.CrossCutting;
@@ -23,8 +24,11 @@ public sealed class RegisterTalentModuleServices : IRegisterModuleServices
 
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<IEmployeeLookUpService, EmployeeLookUpService>();
+        services.AddScoped<IEmployeeIndexingSnapshotService, EmployeeIndexingSnapshotService>();
+        services.AddScoped<EmployeeIndexingStatePublisher>();
         services.AddScoped<ICreateEmployeeService, CreateEmployeeService>();
         services.AddScoped<IGetOrCreateExternalEmployeeService, GetOrCreateExternalEmployeeService>();
         services.AddScoped<ICreateOrUpdateEmployeeSkillsAfterAssessmentService, CreateOrUpdateEmployeeSkillsAfterAssessmentService>();
+        services.AddHostedService<TalentDatabaseInitializer>();
     }
 }

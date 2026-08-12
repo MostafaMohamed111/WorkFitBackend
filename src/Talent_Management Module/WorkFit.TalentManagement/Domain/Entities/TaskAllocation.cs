@@ -1,31 +1,65 @@
-﻿
-//using WorkFit.SharedKernel.BaseEntity;
+namespace WorkFit.TalentManagement.Domain.Entities;
 
-//namespace WorkFit.TalentManagement.Domain.Entities;
+internal sealed class TaskAllocation
+{
+    public Guid TaskId { get; private set; }
+    public Guid? EmployeeProfileId { get; private set; }
+    public int AllocationPercentage { get; private set; }
+    public string Status { get; private set; } = default!;
+    public int? StoryPoints { get; private set; }
+    public DateTimeOffset? CompletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public int Revision { get; private set; }
+    public DateTimeOffset OccurredAt { get; private set; }
 
-//internal sealed class TaskAllocation : BaseEntity
-//{
-//    public Guid TaskId { get; private set; }
-//    public int AllocationPercentage { get; private set; }
-//    public DateOnly StartDate { get; private set; }
-//    public DateOnly EndDate { get; private set; }
-//    public bool IsActive
-//        => DateOnly.FromDateTime(DateTime.Now) >= StartDate && DateOnly.FromDateTime(DateTime.Now) <= EndDate;
+    private TaskAllocation() { }
 
-//    private TaskAllocation() { } // for EF
+    public static TaskAllocation Create(
+        Guid taskId,
+        Guid? employeeProfileId,
+        int allocationPercentage,
+        string status,
+        int? storyPoints,
+        DateTimeOffset? completedAt,
+        DateTimeOffset? deletedAt,
+        bool isDeleted,
+        int revision,
+        DateTimeOffset occurredAt)
+    {
+        var allocation = new TaskAllocation { TaskId = taskId };
+        allocation.Apply(employeeProfileId, allocationPercentage, status, storyPoints,
+            completedAt, deletedAt, isDeleted, revision, occurredAt);
+        return allocation;
+    }
 
-//    private TaskAllocation(Guid taskId, int allocationPercentage, DateOnly startDate, DateOnly endDate)
-//    {
-//        TaskId = taskId;
-//        AllocationPercentage = allocationPercentage;
-//        StartDate = startDate;
-//        EndDate = endDate;
-//    }
+    public void Apply(
+        Guid? employeeProfileId,
+        int allocationPercentage,
+        string status,
+        int? storyPoints,
+        DateTimeOffset? completedAt,
+        DateTimeOffset? deletedAt,
+        bool isDeleted,
+        int revision,
+        DateTimeOffset occurredAt)
+    {
+        EmployeeProfileId = employeeProfileId;
+        AllocationPercentage = allocationPercentage;
+        Status = status;
+        StoryPoints = storyPoints;
+        CompletedAt = completedAt;
+        DeletedAt = deletedAt;
+        IsDeleted = isDeleted;
+        Revision = revision;
+        OccurredAt = occurredAt;
+    }
 
-//    public static TaskAllocation Create(Guid taskId, int allocationPercentage, DateOnly startDate, DateOnly endDate)
-//    {
-//        // Validation is here
-
-//        return new TaskAllocation(taskId, allocationPercentage, startDate, endDate);
-//    }
-//}
+    public bool ContributesToAllocation =>
+        EmployeeProfileId.HasValue &&
+        AllocationPercentage > 0 &&
+        !IsDeleted &&
+        DeletedAt is null &&
+        CompletedAt is null &&
+        !string.Equals(Status, "Done", StringComparison.OrdinalIgnoreCase);
+}

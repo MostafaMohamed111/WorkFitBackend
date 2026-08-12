@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using WorkFit.CodeReview.Features.GitHubCodeReview;
 using WorkFit.Organizations.Features.OrganizationsMe;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -42,13 +43,6 @@ public sealed class TakeCompleteWithCodeReviewCommandHandler : IRequestHandler<T
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", task.ProjectId);
         }
 
-        task.Complete();
-        await _context.SaveChangesAsync(ct);
-
-        await _mediator.Publish(
-            new TaskCompletedIntegrationEvent(task.Id, task.AssignedEmployeeId!.Value, task.AllocationPercentage),
-            ct);
-
         if (!string.Equals(task.SourceSystem, SourceSystem.GitHub.ToString(), StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("This endpoint only supports GitHub-sourced tasks.");
@@ -70,6 +64,14 @@ public sealed class TakeCompleteWithCodeReviewCommandHandler : IRequestHandler<T
         {
             throw new InvalidOperationException("The organization is not connected to GitHub.");
         }
+
+        task.Complete();
+        await _context.SaveChangesAsync(ct);
+
+        await _mediator.Publish(
+            new TaskCompletedIntegrationEvent(task.Id, task.AssignedEmployeeId, task.AllocationPercentage),
+            ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Completed", ct);
 
         var reviewResult = await _mediator.Send(
             new ReviewTaskGitHubChangesCommand(

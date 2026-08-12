@@ -1,5 +1,6 @@
 ﻿using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.TalentManagement.CrossCutting;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
 namespace WorkFit.TalentManagement.Features.Employee.DeactivateEmployee;
@@ -7,8 +8,13 @@ namespace WorkFit.TalentManagement.Features.Employee.DeactivateEmployee;
 public sealed class DeactivateEmployeeCommandHandler : IRequestHandler<DeactivateEmployeeCommand>
 {
     private readonly TalentDbContext _context;
+    private readonly EmployeeIndexingStatePublisher _publisher;
 
-    public DeactivateEmployeeCommandHandler(TalentDbContext context) => _context = context;
+    public DeactivateEmployeeCommandHandler(TalentDbContext context, EmployeeIndexingStatePublisher publisher)
+    {
+        _context = context;
+        _publisher = publisher;
+    }
 
     public async Task Handle(DeactivateEmployeeCommand command, CancellationToken ct)
     {
@@ -23,5 +29,6 @@ public sealed class DeactivateEmployeeCommandHandler : IRequestHandler<Deactivat
         employee.DeactivateEmployee();
 
         await _context.SaveChangesAsync(ct);
+        await _publisher.PublishAsync(employee.Id, "Deactivated", ct);
     }
 }

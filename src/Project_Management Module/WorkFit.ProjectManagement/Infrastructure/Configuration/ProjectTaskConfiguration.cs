@@ -16,6 +16,11 @@ public class ProjectTaskConfiguration
 
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.Revision)
+               .HasDefaultValue(1)
+               .IsRequired()
+               .IsConcurrencyToken();
+
         builder.Property(x => x.Title)
                .HasMaxLength(500)
                .IsRequired();
