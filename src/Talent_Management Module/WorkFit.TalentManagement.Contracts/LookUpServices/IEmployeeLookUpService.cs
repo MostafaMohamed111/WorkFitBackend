@@ -8,6 +8,10 @@ public interface IEmployeeLookUpService
         Guid id,
         CancellationToken cancellationToken = default);
 
+    Task<EmployeeDetailsDto?> GetEmployeeByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
     Task<List<EmployeeDetailsDto>> GetAllEmployeesAsync(
         CancellationToken cancellationToken = default);
 }
