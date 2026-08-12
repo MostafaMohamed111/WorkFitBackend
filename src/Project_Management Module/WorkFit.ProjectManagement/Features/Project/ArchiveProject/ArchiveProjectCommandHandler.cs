@@ -1,5 +1,6 @@
 ﻿
 
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -35,8 +36,23 @@ public sealed class ArchiveProjectCommandHandler : IRequestHandler<ArchiveProjec
         // Archiving cascades: assignments are soft-ended (is_active = FALSE) by the
         // repository/infrastructure layer; tasks are retained untouched per spec.
         project.Archive(actorId);
+        await _projectRepository.AddActivityLogAsync(project.ActivityLogs.Last(), cancellationToken);
 
-        await _projectRepository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _projectRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            var entityName = exception.Entries.FirstOrDefault()?.Metadata.ClrType.Name
+                ?? nameof(Domain.Entities.Project);
+
+            throw new ConcurrencyConflictException(
+                ModuleMarker.ModuleName,
+                entityName,
+                request.Id,
+                exception);
+        }
 
         return project.Id;
     }

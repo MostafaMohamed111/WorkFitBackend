@@ -21,7 +21,8 @@ public sealed class UpdateProjectStatusEndpoint : Endpoint<UpdateProjectStatusRe
         Description(b => b
             .Produces<Guid>(200)
             .ProducesProblem(400)
-            .Produces(404));
+            .Produces(404)
+            .Produces(409));
 
     }
 
