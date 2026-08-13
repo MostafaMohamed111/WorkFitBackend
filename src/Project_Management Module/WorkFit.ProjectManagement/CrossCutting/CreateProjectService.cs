@@ -24,7 +24,7 @@ internal sealed class CreateProjectService : ICreateProjectService
         }
 
         var project = await _dbContext.Projects
-            .FirstOrDefaultAsync(p => p.SourceSystem == sourceSystem && p.SourceReferenceId == dto.SourceReferenceId, cancellationToken);
+            .FirstOrDefaultAsync(p => p.OrganizationId == dto.OrganizationId && p.SourceSystem == sourceSystem && p.SourceReferenceId == dto.SourceReferenceId, cancellationToken);
 
         if (project is null)
         {
@@ -36,7 +36,7 @@ internal sealed class CreateProjectService : ICreateProjectService
                 description: dto.Description,
                 startDate: null,
                 endDate: null,
-                teamLeaderId: null, // external projects might not have team leader initially
+                teamLeaderId: dto.TeamLeaderId,
                 status: status,
                 sourceSystem: sourceSystem,
                 sourceReferenceId: dto.SourceReferenceId
@@ -47,6 +47,10 @@ internal sealed class CreateProjectService : ICreateProjectService
         else
         {
             project.UpdateDetails(dto.Name, dto.Description, project.EndDate);
+            if (dto.TeamLeaderId.HasValue && dto.TeamLeaderId.Value != Guid.Empty)
+            {
+                project.AssignTeamLeader(dto.TeamLeaderId.Value);
+            }
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);

@@ -35,7 +35,8 @@ public sealed class ConnectGitHubIdentityCommandHandler : IRequestHandler<Connec
 
         var existingMapping = await _db.IdentityMappings
             .FirstOrDefaultAsync(
-                m => m.SourceSystem == ExternalSourceSystems.GitHub &&
+                m => m.OrganizationId == employee.OrganizationId &&
+                     m.SourceSystem == ExternalSourceSystems.GitHub &&
                      m.ExternalAccountId == accountId,
                 cancellationToken);
 
@@ -58,6 +59,7 @@ public sealed class ConnectGitHubIdentityCommandHandler : IRequestHandler<Connec
         {
             _db.IdentityMappings.Add(
                 DeveloperIdentityMapping.Create(
+                    employee.OrganizationId,
                     employee.Id,
                     ExternalSourceSystems.GitHub,
                     accountId,

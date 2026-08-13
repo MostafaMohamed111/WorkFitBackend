@@ -9,21 +9,30 @@ namespace WorkFit.ProjectManagement.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "GitHubRepositoryName",
-                schema: "ProjectManagement",
-                table: "projects",
-                type: "nvarchar(100)",
-                maxLength: 100,
-                nullable: true);
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns 
+                    WHERE object_id = OBJECT_ID(N'[ProjectManagement].[projects]') 
+                    AND name = N'GitHubRepositoryName'
+                )
+                BEGIN
+                    ALTER TABLE [ProjectManagement].[projects] ADD [GitHubRepositoryName] nvarchar(100) NULL;
+                END
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "GitHubRepositoryName",
-                schema: "ProjectManagement",
-                table: "projects");
+            migrationBuilder.Sql(@"
+                IF EXISTS (
+                    SELECT 1 FROM sys.columns 
+                    WHERE object_id = OBJECT_ID(N'[ProjectManagement].[projects]') 
+                    AND name = N'GitHubRepositoryName'
+                )
+                BEGIN
+                    ALTER TABLE [ProjectManagement].[projects] DROP COLUMN [GitHubRepositoryName];
+                END
+            ");
         }
     }
 }

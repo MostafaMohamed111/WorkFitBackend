@@ -102,9 +102,8 @@ public sealed class CVParsePipeline : ICVParsePipeline
 
             // Phase D: Create / resolve EmployeeProfile (status=PendingReview via factory default).
             // ExternalAccountId: use file hash so future re-uploads of the same CV are idempotent.
-            var employeeProfileId = await _getOrCreateEmployee.GetOrCreateAsync(
+            var employeeResolution = await _getOrCreateEmployee.GetOrCreateAsync(
                 organizationId: job.OrganizationId,
-                userId: PendingUserId,
                 sourceSystem: ExternalSourceSystem,
                 externalAccountId: job.FileHash,
                 externalDisplayName: parsed.Name ?? job.FileName,
@@ -112,6 +111,7 @@ public sealed class CVParsePipeline : ICVParsePipeline
                 jobTitle: parsed.JobTitle ?? "Unknown",
                 linkedInUrl: parsed.LinkedInUrl,
                 cancellationToken: ct);
+            var employeeProfileId = employeeResolution.EmployeeProfileId;
 
             // Phase E: Persist parsed JSON on the job for downstream consumers (Assessment module will read it).
             var payload = new

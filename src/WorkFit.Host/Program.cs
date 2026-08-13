@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using WorkFit.Host.ExtentionMethods;
 using WorkFit.Host.GlobalExceptionHandler;
 
-
 namespace WorkFit.Host
 {
     public class Program
@@ -19,6 +18,23 @@ namespace WorkFit.Host
             var assembliesToScan = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "WorkFit.*.dll")
                 .Select(Assembly.LoadFrom)
                 .ToArray();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularFrontend", policy =>
+                {
+                    policy.WithOrigins(
+                            "http://localhost:4200",
+                            "https://localhost:4200",
+                            "http://localhost:4201",
+                            "https://localhost:4201"
+                          )
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
             builder.Services.AddControllers();
             builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
@@ -30,6 +46,7 @@ namespace WorkFit.Host
                                      s.Version = "v1";
                                  };
                              });
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -42,7 +59,6 @@ namespace WorkFit.Host
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
-
 
                         RoleClaimType = ClaimTypes.Role
                     };
@@ -61,12 +77,12 @@ namespace WorkFit.Host
 
             app.UseExceptionHandler();
 
+            app.UseCors("AllowAngularFrontend");
 
             // Configure the HTTP request pipeline.
             app.UseHttpsRedirection();
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -74,7 +90,6 @@ namespace WorkFit.Host
             app.MapControllers();
             app.UseFastEndpoints()
                .UseSwaggerGen();
-
 
             // seed roles
             using (var scope = app.Services.CreateScope())

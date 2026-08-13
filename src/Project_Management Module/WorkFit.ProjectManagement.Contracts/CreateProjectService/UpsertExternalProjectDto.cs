@@ -5,5 +5,6 @@ public sealed record UpsertExternalProjectDto(
     string SourceSystem,
     string SourceReferenceId,
     string Name,
-    string? Description
+    string? Description,
+    Guid? TeamLeaderId = null
 );

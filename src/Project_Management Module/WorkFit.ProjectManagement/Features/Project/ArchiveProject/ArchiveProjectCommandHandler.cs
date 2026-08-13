@@ -1,6 +1,5 @@
-﻿
-
 using Microsoft.EntityFrameworkCore;
+using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -28,10 +27,9 @@ public sealed class ArchiveProjectCommandHandler : IRequestHandler<ArchiveProjec
                 typeof(Domain.Entities.Project).Name,
                 request.Id);
 
-        var actorId = _currentUser.GetUserId(cancellationToken);
+        ProjectAccessGuard.EnsureAuthorized(project, _currentUser, cancellationToken);
 
-        if(actorId != project.TeamLeaderId)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
+        var actorId = _currentUser.GetUserId(cancellationToken);
 
         // Archiving cascades: assignments are soft-ended (is_active = FALSE) by the
         // repository/infrastructure layer; tasks are retained untouched per spec.

@@ -40,13 +40,23 @@ public sealed class CreateProjectCommandHandler : IRequestHandler<CreateProjectC
             _currentUser.GetUserId(cancellationToken),
             status);
 
-        var repository = await _gitHubProvisioningService.CreateProjectRepositoryAsync(
-            command.OrganizationId,
-            project.Id,
-            command.Name,
-            cancellationToken);
+        try
+        {
+            var repository = await _gitHubProvisioningService.CreateProjectRepositoryAsync(
+                command.OrganizationId,
+                project.Id,
+                command.Name,
+                cancellationToken);
 
-        project.SetGitHubRepository(repository.Id, repository.Name);
+            if (repository != null)
+            {
+                project.SetGitHubRepository(repository.Id, repository.Name);
+            }
+        }
+        catch
+        {
+            // GitHub provisioning is an optional integration step if organization is not connected to GitHub
+        }
 
         if (command.RequiredSkills is { Count: > 0 })
         {

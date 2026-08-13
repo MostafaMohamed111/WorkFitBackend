@@ -1,8 +1,9 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
+
 public sealed class UpdateTaskEndPoint : Endpoint<UpdateTaskRequest, Guid>
 {
     private readonly IMediator _mediator;
@@ -12,7 +13,7 @@ public sealed class UpdateTaskEndPoint : Endpoint<UpdateTaskRequest, Guid>
     {
         Put("/api/tasks/{id}");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
     }
 
     public override async Task HandleAsync(UpdateTaskRequest req, CancellationToken ct)

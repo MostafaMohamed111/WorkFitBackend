@@ -8,21 +8,30 @@ namespace WorkFit.ProjectManagement.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "Revision",
-                schema: "ProjectManagement",
-                table: "tasks",
-                type: "int",
-                nullable: false,
-                defaultValue: 1);
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns 
+                    WHERE object_id = OBJECT_ID(N'[ProjectManagement].[tasks]') 
+                    AND name = N'Revision'
+                )
+                BEGIN
+                    ALTER TABLE [ProjectManagement].[tasks] ADD [Revision] int NOT NULL DEFAULT 1;
+                END
+            ");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Revision",
-                schema: "ProjectManagement",
-                table: "tasks");
+            migrationBuilder.Sql(@"
+                IF EXISTS (
+                    SELECT 1 FROM sys.columns 
+                    WHERE object_id = OBJECT_ID(N'[ProjectManagement].[tasks]') 
+                    AND name = N'Revision'
+                )
+                BEGIN
+                    ALTER TABLE [ProjectManagement].[tasks] DROP COLUMN [Revision];
+                END
+            ");
         }
     }
 }
