@@ -106,6 +106,6 @@ public sealed class LocalDocumentFileStorage : IFileStorage
 
     private static string ResolveDefaultRoot(string contentRoot) =>
         OperatingSystem.IsWindows()
-            ? Path.GetFullPath(@"C:\expatzi-storage\documents")
-            : Path.Combine(contentRoot, "expatzi-storage", "documents");
+            ? Path.GetFullPath(@"C:\workfit-storage\documents")
+            : Path.Combine(contentRoot, "workfit-storage", "documents");
 }

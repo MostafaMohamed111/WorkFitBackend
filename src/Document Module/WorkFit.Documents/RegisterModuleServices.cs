@@ -1,6 +1,8 @@
 using WorkFit.Documents.Contracts;
 using WorkFit.Documents.Contracts.AttachDocumentService;
+using WorkFit.Documents.Contracts.DocumentContentService;
 using WorkFit.Documents.Contracts.DocumentLookUpService;
+using WorkFit.Documents.Contracts.TemporaryUploadService;
 using WorkFit.Documents.CrossCutting;
 using WorkFit.Documents.Infrastructure.Abstractions;
 using WorkFit.Documents.Infrastructure.BackgroundWorkers;
@@ -29,6 +31,8 @@ internal sealed class RegisterModuleServices : IRegisterModuleServices
         );
 
         services.AddScoped<IDocumentLookUpService, DocumentLookUpService>();
+        services.AddScoped<ICreateTemporaryDocumentService, CreateTemporaryDocumentService>();
+        services.AddScoped<IDocumentContentService, DocumentContentService>();
 
         services
             .AddOptions<LocalDocumentFileStorageOptions>()
