@@ -39,6 +39,88 @@ public sealed class Recommendation : BaseEntity
         return rec;
     }
 
+    public static Recommendation CreateRanked(
+        Guid taskId,
+        Guid createdById,
+        IReadOnlyList<Guid> requiredSkillIds,
+        IReadOnlyList<RankedCandidateInput> candidateInputs)
+    {
+        ArgumentNullException.ThrowIfNull(requiredSkillIds);
+        ArgumentNullException.ThrowIfNull(candidateInputs);
+
+        if (taskId == Guid.Empty)
+            throw new ArgumentException("Task ID must not be empty.", nameof(taskId));
+
+        if (createdById == Guid.Empty)
+            throw new ArgumentException("Creator ID must not be empty.", nameof(createdById));
+
+        if (requiredSkillIds.Any(id => id == Guid.Empty))
+            throw new ArgumentException("Required skill IDs must not be empty.", nameof(requiredSkillIds));
+
+        if (requiredSkillIds.Count != requiredSkillIds.Distinct().Count())
+            throw new ArgumentException("Required skill IDs must be unique.", nameof(requiredSkillIds));
+
+        if (candidateInputs.Count == 0)
+            throw new ArgumentException("At least one candidate is required.", nameof(candidateInputs));
+
+        if (candidateInputs.Any(candidate => candidate.EmployeeId == Guid.Empty))
+            throw new ArgumentException("Employee IDs must not be empty.", nameof(candidateInputs));
+
+        if (candidateInputs.Select(candidate => candidate.EmployeeId).Distinct().Count() != candidateInputs.Count)
+            throw new ArgumentException("Employee IDs must be unique.", nameof(candidateInputs));
+
+        if (candidateInputs.Select(candidate => candidate.Rank).Distinct().Count() != candidateInputs.Count)
+            throw new ArgumentException("Candidate ranks must be unique.", nameof(candidateInputs));
+
+        var expectedRanks = Enumerable.Range(1, candidateInputs.Count);
+        if (!candidateInputs.Select(candidate => candidate.Rank).Order().SequenceEqual(expectedRanks))
+            throw new ArgumentException("Candidate ranks must be contiguous and start at 1.", nameof(candidateInputs));
+
+        if (candidateInputs.Any(candidate => candidate.Score is < 0 or > 100))
+            throw new ArgumentOutOfRangeException(nameof(candidateInputs), "Candidate scores must be between 0 and 100.");
+
+        foreach (var candidate in candidateInputs)
+        {
+            if (string.IsNullOrWhiteSpace(candidate.Reasoning))
+                throw new ArgumentException("Candidate reasoning must not be empty.", nameof(candidateInputs));
+
+            ArgumentNullException.ThrowIfNull(candidate.ScoreBreakdown);
+
+            if (candidate.ScoreBreakdown.Any(component => string.IsNullOrWhiteSpace(component.Name)))
+                throw new ArgumentException("Score component names must not be empty.", nameof(candidateInputs));
+
+            if (candidate.ScoreBreakdown
+                .Select(component => component.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count() != candidate.ScoreBreakdown.Count)
+            {
+                throw new ArgumentException("Score component names must be unique per candidate.", nameof(candidateInputs));
+            }
+
+            if (candidate.ScoreBreakdown.Any(component => component.Score is < 0 or > 100))
+                throw new ArgumentOutOfRangeException(nameof(candidateInputs), "Score components must be between 0 and 100.");
+        }
+
+        var recommendation = new Recommendation
+        {
+            TaskId = taskId,
+            CreatedBy = createdById,
+            RequiredSkillsSnapshot = JsonSerializer.Serialize(requiredSkillIds)
+        };
+
+        recommendation._candidates.AddRange(candidateInputs
+            .OrderBy(candidate => candidate.Rank)
+            .Select(candidate => RecommendationCandidate.CreateRanked(
+                recommendation.Id,
+                candidate.EmployeeId,
+                candidate.Score,
+                candidate.Reasoning.Trim(),
+                candidate.Rank,
+                JsonSerializer.Serialize(candidate.ScoreBreakdown))));
+
+        return recommendation;
+    }
+
     public void ApproveCandidate(Guid employeeId, Guid reviewedBy)
     {
         if (reviewedBy != CreatedBy)
@@ -77,3 +159,12 @@ public sealed class Recommendation : BaseEntity
             ?? throw new CandidateNotPartOfRecommendationException(Id, employeeId);
     }
 }
+
+public sealed record RankedCandidateInput(
+    Guid EmployeeId,
+    int Rank,
+    decimal Score,
+    string Reasoning,
+    IReadOnlyList<ScoreComponentInput> ScoreBreakdown);
+
+public sealed record ScoreComponentInput(string Name, decimal Score);

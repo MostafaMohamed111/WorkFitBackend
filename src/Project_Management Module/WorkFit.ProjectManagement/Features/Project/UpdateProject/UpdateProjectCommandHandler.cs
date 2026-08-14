@@ -33,11 +33,30 @@ public sealed class UpdateProjectCommandHandler : IRequestHandler<UpdateProjectC
 
         if (request.RequiredSkills is not null)
         {
-            var requiredSkills = request.RequiredSkills
-                .Select(s => ProjectRequiredSkill.Create(project.Id, s.SkillId, s.Level.ToSkillLevel(), s.Priority))
-                .ToList();
+            var requestedSkills = request.RequiredSkills
+                .GroupBy(s => s.SkillId)
+                .ToDictionary(group => group.Key, group => group.Last());
 
-            project.ReplaceRequiredSkills(requiredSkills);
+            foreach (var existingSkill in project.RequiredSkills.ToList())
+            {
+                if (requestedSkills.Remove(existingSkill.SkillId, out var requestedSkill))
+                {
+                    existingSkill.Update(requestedSkill.Level.ToSkillLevel(), requestedSkill.Priority);
+                }
+                else
+                {
+                    project.RequiredSkills.Remove(existingSkill);
+                }
+            }
+
+            foreach (var requestedSkill in requestedSkills.Values)
+            {
+                project.RequiredSkills.Add(ProjectRequiredSkill.Create(
+                    project.Id,
+                    requestedSkill.SkillId,
+                    requestedSkill.Level.ToSkillLevel(),
+                    requestedSkill.Priority));
+            }
         }
 
         await _projectRepository.SaveChangesAsync(cancellationToken);

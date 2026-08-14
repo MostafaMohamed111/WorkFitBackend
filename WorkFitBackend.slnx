@@ -28,6 +28,10 @@
     <Project Path="src/Recommendation Module/WorkFit.Recommendations.Contracts/WorkFit.Recommendations.Contracts.csproj" />
     <Project Path="src/Recommendation Module/WorkFit.Recommendations/WorkFit.Recommendations.csproj" />
   </Folder>
+  <Folder Name="/src/RAG Module/">
+    <Project Path="src/RAG Module/WorkFit.Rag.Contracts/WorkFit.Rag.Contracts.csproj" />
+    <Project Path="src/RAG Module/WorkFit.Rag/WorkFit.Rag.csproj" />
+  </Folder>
   <Folder Name="/src/Skills_Taxonomy_Module/">
     <Project Path="src/Skills_Taxonomy_Module/WorkFit.Skills.Contracts/WorkFit.Skills.Contracts.csproj" />
     <Project Path="src/Skills_Taxonomy_Module/WorkFit.Skills/WorkFit.Skills.csproj" />
@@ -58,5 +62,8 @@
   <Folder Name="/src/Engine Module/">
     <Project Path="src/Engine Module/WorkFit.Engine.Contracts/WorkFit.Engine.Contracts.csproj" />
     <Project Path="src/Engine Module/WorkFit.Engine/WorkFit.Engine.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorkFit.Rag.Tests/WorkFit.Rag.Tests.csproj" />
   </Folder>
 </Solution>

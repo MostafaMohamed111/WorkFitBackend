@@ -4,16 +4,19 @@ using WorkFit.ProjectManagement.Contracts.CreateProjectTaskService;
 using WorkFit.ProjectManagement.Domain.Entities;
 using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Infrastructure;
+using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.CrossCutting;
 
 internal sealed class CreateProjectTaskService : ICreateProjectTaskService
 {
     private readonly WorkFitProjectDbContext _dbContext;
+    private readonly IMediator _mediator;
 
-    public CreateProjectTaskService(WorkFitProjectDbContext dbContext)
+    public CreateProjectTaskService(WorkFitProjectDbContext dbContext, IMediator mediator)
     {
         _dbContext = dbContext;
+        _mediator = mediator;
     }
 
     public async Task<Guid> UpsertExternalTaskAsync(UpsertExternalTaskDto dto, CancellationToken cancellationToken = default)
@@ -30,7 +33,8 @@ internal sealed class CreateProjectTaskService : ICreateProjectTaskService
         var task = await _dbContext.ProjectTasks
             .FirstOrDefaultAsync(t => t.SourceSystem == sourceSystem.ToString() && t.SourceReferenceId == dto.SourceReferenceId, cancellationToken);
 
-        if (task is null)
+        var wasCreated = task is null;
+        if (wasCreated)
         {
             task = ProjectTask.Create(
                 projectId: dto.ProjectId,
@@ -63,7 +67,9 @@ internal sealed class CreateProjectTaskService : ICreateProjectTaskService
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return task.Id;
+        if (wasCreated)
+            await ProjectTaskStateEventPublisher.PublishAsync(_dbContext, _mediator, task!, "ExternalCreated", cancellationToken);
+        return task!.Id;
     }
 
     private static void ApplyTaskStatus(ProjectTask task, string statusName)

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Organizations.Contracts.OrganizationGitHub;
 using WorkFit.Organizations.Contracts.OrganizationServices;
 using WorkFit.Organizations.CrossModule.CreateOrganization;
+using WorkFit.Organizations.CrossModule.GetOrganizationId;
 using WorkFit.Organizations.Infrastructure.Data;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
@@ -22,5 +23,6 @@ public sealed class RegisterOrganizationModuleServices : IRegisterModuleServices
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<ICreateOrganizationService, CreateOrganizationCommandHandler>();
         services.AddScoped<IGitHubOrganizationInstallationLookupService, OrganizationGitHubInstallationLookupService>();
+        services.AddScoped<IGetOrganizationIdService, GetOrganizationIdService>();
     }
 }

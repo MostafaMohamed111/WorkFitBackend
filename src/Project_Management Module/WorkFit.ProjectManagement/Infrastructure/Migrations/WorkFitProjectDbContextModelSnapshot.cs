@@ -201,6 +201,12 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("SourceReferenceId")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -239,7 +245,10 @@ namespace WorkFit.ProjectManagement.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("tasks", "ProjectManagement");
+                    b.ToTable("tasks", "ProjectManagement", t =>
+                        {
+                            t.HasTrigger("TR_tasks");
+                        });
                 });
 
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.TaskGitHub", b =>

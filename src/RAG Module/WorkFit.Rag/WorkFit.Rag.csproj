@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WorkFit.Rag.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Engine Module\WorkFit.Engine.Contracts\WorkFit.Engine.Contracts.csproj" />
+    <ProjectReference Include="..\..\Project_Management Module\WorkFit.ProjectManagement.Contracts\WorkFit.ProjectManagement.Contracts.csproj" />
+    <ProjectReference Include="..\..\Talent_Management Module\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
+    <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
+    <ProjectReference Include="..\WorkFit.Rag.Contracts\WorkFit.Rag.Contracts.csproj" />
+  </ItemGroup>
+</Project>

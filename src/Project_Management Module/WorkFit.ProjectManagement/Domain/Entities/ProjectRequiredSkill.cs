@@ -30,4 +30,14 @@ public class ProjectRequiredSkill : BaseEntity
             Priority = priority
         };
     }
+
+    public void Update(SkillLevel level, int priority)
+    {
+        if (priority is < 1 or > 5)
+            throw new ArgumentOutOfRangeException(nameof(priority), "Priority must be between 1 and 5.");
+
+        Level = level;
+        Priority = priority;
+        MarkUpdated();
+    }
 }

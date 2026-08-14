@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Features.Exceptions;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -11,12 +12,15 @@ public sealed class DeleteTaskCommandHandler : IRequestHandler<DeleteTaskCommand
 {
     private readonly WorkFitProjectDbContext _context;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IMediator _mediator;
 
     public DeleteTaskCommandHandler(WorkFitProjectDbContext context,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        IMediator mediator)
     {
         _context = context;
         _currentUser = currentUser;
+        _mediator = mediator;
     }
 
     public async Task Handle(DeleteTaskCommand command, CancellationToken ct)
@@ -32,6 +36,7 @@ public sealed class DeleteTaskCommandHandler : IRequestHandler<DeleteTaskCommand
         task.Delete(); 
 
         await _context.SaveChangesAsync(ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Deleted", ct);
 
     }
 }

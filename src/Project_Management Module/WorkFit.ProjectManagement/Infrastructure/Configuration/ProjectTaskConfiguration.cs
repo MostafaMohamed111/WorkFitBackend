@@ -12,9 +12,18 @@ public class ProjectTaskConfiguration
     {
         // Mark the table as trigger-backed so EF does not rely on rowcount-based
         // concurrency checks that can fail when SQL Server triggers are present.
-        builder.ToTable("tasks", tb => tb.HasTrigger("TR_tasks"));
+        builder.ToTable("tasks", tb =>
+        {
+            tb.HasTrigger("TR_tasks");
+            tb.UseSqlOutputClause(false);
+        });
 
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Revision)
+               .HasDefaultValue(1)
+               .IsRequired()
+               .IsConcurrencyToken();
 
         builder.Property(x => x.Title)
                .HasMaxLength(500)

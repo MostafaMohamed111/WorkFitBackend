@@ -50,7 +50,20 @@ internal sealed class EmployeeProfile : BaseEntity
             Status = EmployeeProfileStatus.PendingReview
         };
     }
-    public void DeactivateEmployee() => Status = EmployeeProfileStatus.Inactive;
+    public void ActivateEmployee()
+    {
+        if (Status == EmployeeProfileStatus.Inactive)
+            throw new InvalidOperationException("An inactive employee profile cannot be activated.");
+
+        Status = EmployeeProfileStatus.Active;
+        MarkUpdated();
+    }
+
+    public void DeactivateEmployee()
+    {
+        Status = EmployeeProfileStatus.Inactive;
+        MarkUpdated();
+    }
 
     public void UpdateEmployeePersonalData(string? newName, string? jobTitle, string? newBio = null, string? newLinkedInUrl = null)
     {

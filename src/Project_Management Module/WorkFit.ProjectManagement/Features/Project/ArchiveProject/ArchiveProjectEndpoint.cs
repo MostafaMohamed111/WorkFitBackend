@@ -21,7 +21,8 @@ public sealed class ArchiveProjectEndpoint : EndpointWithoutRequest<Guid>
         Roles("TeamLeader");
         Description(b => b
             .Produces<Guid>(200)
-            .Produces(404));
+            .Produces(404)
+            .Produces(409));
     }
 
     public override async Task HandleAsync( CancellationToken ct)

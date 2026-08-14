@@ -14,6 +14,7 @@ public class TalentDbContext : DbContext
     internal DbSet<Certification> Certifications => Set<Certification>();
     internal DbSet<SkillConfidenceChange> SkillConfidenceChanges => Set<SkillConfidenceChange>();
     internal DbSet<DeveloperIdentityMapping> IdentityMappings => Set<DeveloperIdentityMapping>();
+    internal DbSet<TaskAllocation> TaskAllocations => Set<TaskAllocation>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

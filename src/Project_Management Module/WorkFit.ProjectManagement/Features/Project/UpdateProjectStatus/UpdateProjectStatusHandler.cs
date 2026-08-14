@@ -1,4 +1,5 @@
-﻿using WorkFit.ProjectManagement.Features.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
@@ -38,8 +39,23 @@ public sealed class UpdateProjectStatusHandler : IRequestHandler<UpdateProjectSt
 
         // project.status_changed also notifies all active project members (handled
         // by the notification service subscribed to project_activity_logs inserts).
+        await _projectRepository.AddActivityLogAsync(project.ActivityLogs.Last(), cancellationToken);
 
-        await _projectRepository.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _projectRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            var entityName = exception.Entries.FirstOrDefault()?.Metadata.ClrType.Name
+                ?? nameof(Domain.Entities.Project);
+
+            throw new ConcurrencyConflictException(
+                ModuleMarker.ModuleName,
+                entityName,
+                command.Id,
+                exception);
+        }
 
         return project.Id;
     }

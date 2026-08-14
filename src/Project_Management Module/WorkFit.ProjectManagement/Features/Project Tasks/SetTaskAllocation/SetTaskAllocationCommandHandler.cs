@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
 using WorkFit.ProjectManagement.Features.Exceptions;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -38,8 +39,23 @@ public sealed class SetTaskAllocationCommandHandler : IRequestHandler<SetTaskAll
         if(actorId != task.CreatedById)
             throw new UnAuthorizedTeamLeadAccessException(actorId);
 
+        if (command.AllocationPercentage == 0)
+            throw new FeatureException(
+                ModuleMarker.ModuleName,
+                "ASSIGNED_TASK_REQUIRES_ALLOCATION",
+                "An assigned task must have a positive allocation percentage.",
+                "Set a positive allocation percentage for the assigned task.");
+
+        await TaskAllocationCapacityValidator.ValidateAsync(
+            _context,
+            task.AssignedEmployeeId.Value,
+            command.AllocationPercentage,
+            task.Id,
+            ct);
+
         task.SetAllocationPercentage(command.AllocationPercentage);
         await _context.SaveChangesAsync(ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "AllocationUpdated", ct);
 
         if (task.IsActive)
         {

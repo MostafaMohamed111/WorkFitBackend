@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
 using WorkFit.ProjectManagement.Features.Exceptions;
+using WorkFit.ProjectManagement.CrossCutting;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -36,9 +37,28 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
         if(actorId != project.TeamLeaderId)
             throw new UnAuthorizedTeamLeadAccessException(actorId);
 
+        var existingTask = project.Tasks.FirstOrDefault(t => t.Id == command.TaskId)
+            ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
+        var proposedAllocation = command.AllocationPercentage ?? existingTask.AllocationPercentage;
+
+        if (proposedAllocation == 0)
+            throw new FeatureException(
+                ModuleMarker.ModuleName,
+                "ASSIGNED_TASK_REQUIRES_ALLOCATION",
+                "An assigned task must have a positive allocation percentage.",
+                "Set a positive allocation percentage when assigning the task.");
+
+        await TaskAllocationCapacityValidator.ValidateAsync(
+            _context,
+            command.AssigneeId,
+            proposedAllocation,
+            existingTask.Id,
+            ct);
+
         var task = project.AssignEmployeeForTask(command.TaskId, command.AssigneeId, command.AllocationPercentage);
 
         await _context.SaveChangesAsync(ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Assigned", ct);
 
        
         await _mediator.Publish(new TaskAssignedIntegrationEvent(

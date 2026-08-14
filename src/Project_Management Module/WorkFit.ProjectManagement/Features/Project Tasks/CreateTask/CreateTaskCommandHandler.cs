@@ -16,15 +16,18 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
     private readonly WorkFitProjectDbContext _context;
     private readonly ICurrentUserContext _currentUser;
     private readonly IGitHubProjectProvisioningService _gitHubProvisioningService;
+    private readonly IMediator _mediator;
 
     public CreateTaskCommandHandler(
         WorkFitProjectDbContext context,
         ICurrentUserContext currentUser,
-        IGitHubProjectProvisioningService gitHubProvisioningService)
+        IGitHubProjectProvisioningService gitHubProvisioningService,
+        IMediator mediator)
     {
         _context = context;
         _currentUser = currentUser;
         _gitHubProvisioningService = gitHubProvisioningService;
+        _mediator = mediator;
     }
 
     public async Task<Guid> Handle(CreateTaskCommand command, CancellationToken ct)
@@ -49,6 +52,23 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
 
         if (taskExists)
             throw new InvalidOperationException($"Task '{command.Title}' already exists for project '{command.ProjectId}'.");
+
+        if (command.AssigneeId.HasValue && command.AllocationPercentage == 0)
+            throw new FeatureException(
+                ModuleMarker.ModuleName,
+                "ASSIGNED_TASK_REQUIRES_ALLOCATION",
+                "An assigned task must have a positive allocation percentage.",
+                "Set a positive allocation percentage for the assigned task.");
+
+        if (command.AssigneeId.HasValue)
+        {
+            await TaskAllocationCapacityValidator.ValidateAsync(
+                _context,
+                command.AssigneeId.Value,
+                command.AllocationPercentage,
+                excludedTaskId: null,
+                ct);
+        }
 
         var task = ProjectTask.Create(
             command.ProjectId,
@@ -78,6 +98,7 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         await _context.ProjectTasks.AddAsync(task, ct);
 
         await _context.SaveChangesAsync(ct);
+        await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Created", ct);
 
         return task.Id;
     }

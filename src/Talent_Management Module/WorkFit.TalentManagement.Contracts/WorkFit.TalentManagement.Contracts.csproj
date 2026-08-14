@@ -14,4 +14,8 @@
     <None Include="Dtos\EmployeeSkillDetailsDto.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
+  </ItemGroup>
+
 </Project>

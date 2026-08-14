@@ -23,6 +23,14 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
         return employee is null ? null : Map(employee);
     }
 
+    public async Task<EmployeeDetailsDto?> GetEmployeeByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var employee = await LoadEmployeesQuery()
+            .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
+
+        return employee is null ? null : Map(employee);
+    }
+
     public async Task<List<EmployeeDetailsDto>> GetAllEmployeesAsync(CancellationToken cancellationToken = default)
     {
         var employees = await LoadEmployeesQuery()

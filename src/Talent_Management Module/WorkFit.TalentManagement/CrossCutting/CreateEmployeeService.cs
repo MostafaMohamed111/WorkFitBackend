@@ -8,10 +8,12 @@ namespace WorkFit.TalentManagement.CrossCutting;
 internal sealed class CreateEmployeeService : ICreateEmployeeService
 {
     private readonly TalentDbContext _db;
+    private readonly EmployeeIndexingStatePublisher _publisher;
 
-    public CreateEmployeeService(TalentDbContext db)
+    public CreateEmployeeService(TalentDbContext db, EmployeeIndexingStatePublisher publisher)
     {
         _db = db;
+        _publisher = publisher;
     }
 
     public async Task<Guid> CreateEmployeeAsync(EmployeeDetails details, CancellationToken cancellationToken = default)
@@ -33,6 +35,7 @@ internal sealed class CreateEmployeeService : ICreateEmployeeService
             details.hireDate);
         _db.EmployeeProfiles.Add(employee);
         await _db.SaveChangesAsync(cancellationToken);
+        await _publisher.PublishAsync(employee.Id, "Created", cancellationToken);
         
         return employee.Id;
     }

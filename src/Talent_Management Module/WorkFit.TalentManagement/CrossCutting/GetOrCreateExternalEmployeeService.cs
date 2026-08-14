@@ -8,10 +8,12 @@ namespace WorkFit.TalentManagement.CrossCutting;
 internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalEmployeeService
 {
     private readonly TalentDbContext _db;
+    private readonly EmployeeIndexingStatePublisher _publisher;
 
-    public GetOrCreateExternalEmployeeService(TalentDbContext db)
+    public GetOrCreateExternalEmployeeService(TalentDbContext db, EmployeeIndexingStatePublisher publisher)
     {
         _db = db;
+        _publisher = publisher;
     }
 
     public async Task<Guid> GetOrCreateAsync(
@@ -35,6 +37,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
             {
                 mappedEmployee.UpdateEmployeePersonalData(mappedEmployee.Name, mappedEmployee.JobTitle, mappedEmployee.Bio, linkedInUrl);
                 await _db.SaveChangesAsync(cancellationToken);
+                await _publisher.PublishAsync(mappedEmployee.Id, "Updated", cancellationToken);
             }
             return existingMapping.EmployeeProfileId;
         }
@@ -53,6 +56,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
                 existingEmployee.UpdateEmployeePersonalData(existingEmployee.Name, existingEmployee.JobTitle, existingEmployee.Bio, linkedInUrl);
             }
             await _db.SaveChangesAsync(cancellationToken);
+            await _publisher.PublishAsync(existingEmployee.Id, "Updated", cancellationToken);
             return existingEmployee.Id;
         }
 
@@ -62,6 +66,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
         
         await _db.EmployeeProfiles.AddAsync(employee, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
+        await _publisher.PublishAsync(employee.Id, "Created", cancellationToken);
 
         return employee.Id;
     }

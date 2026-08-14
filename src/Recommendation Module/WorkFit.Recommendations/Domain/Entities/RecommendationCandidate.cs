@@ -10,6 +10,7 @@ public sealed class RecommendationCandidate : BaseEntity
     public Guid EmployeeId { get; private set; }
     public decimal MatchScore { get; private set; }
     public string MatchReasoning { get; private set; } = default!;
+    public string ScoreBreakdown { get; private set; } = "[]";
     public int Rank { get; private set; }
     public string AdditionalSkills { get; private set; } = "[]";
     
@@ -33,6 +34,25 @@ public sealed class RecommendationCandidate : BaseEntity
             MatchReasoning = matchReasoning,
             Rank = rank,
             AdditionalSkills = additionalSkills,
+            Status = CandidateStatus.Pending
+        };
+
+    internal static RecommendationCandidate CreateRanked(
+        Guid recommendationId,
+        Guid employeeId,
+        decimal score,
+        string matchReasoning,
+        int rank,
+        string scoreBreakdown)
+        => new()
+        {
+            RecommendationId = recommendationId,
+            EmployeeId = employeeId,
+            MatchScore = score,
+            MatchReasoning = matchReasoning,
+            ScoreBreakdown = scoreBreakdown,
+            Rank = rank,
+            AdditionalSkills = "[]",
             Status = CandidateStatus.Pending
         };
 

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 using WorkFit.Skills.Contracts;
+using WorkFit.Skills.Contracts.SkillLookUp;
 using WorkFit.Skills.Features;
 using WorkFit.Skills.Infrastructure.Data;
 using WorkFit.Skills.Infrastructure.Similarity;
@@ -20,6 +21,7 @@ public sealed class RegisterSkillsModuleServices : IRegisterModuleServices
         services.AddMediatorHandlers<ModuleMarker>();
 
         services.AddScoped<ISkillCatalog, SkillCatalogService>();
+        services.AddScoped<ISkillLookUpService, SkillLookUpService>();
         services.AddScoped<ISkillSimilarityService, NoOpSkillSimilarityService>();
     }
 }

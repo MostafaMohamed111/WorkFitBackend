@@ -12,7 +12,7 @@ public sealed class UpdateTaskEndPoint : Endpoint<UpdateTaskRequest, Guid>
     {
         Put("/api/tasks/{id}");
         Options(x => x.WithTags("Project Management"));
-        AllowAnonymous();
+        Roles("TeamLeader");
     }
 
     public override async Task HandleAsync(UpdateTaskRequest req, CancellationToken ct)
