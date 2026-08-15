@@ -26,6 +26,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, string>
         var user = await _userManager.FindByEmailAsync(command.Email)
             ?? throw new UserWithThisEmailDoesntExistException(command.Email);
 
+        if (!await _userManager.CheckPasswordAsync(user, command.Password))
+            throw new UnauthorizedAccessException("Invalid email or password.");
+
         var token = await _jwtTokenGenerator.GenerateTokenAsync(user);
 
         return token;

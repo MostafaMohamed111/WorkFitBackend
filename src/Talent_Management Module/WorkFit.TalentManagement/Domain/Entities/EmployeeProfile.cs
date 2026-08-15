@@ -147,7 +147,7 @@ internal sealed class EmployeeProfile : BaseEntity
         var existing = _identityMappings.FirstOrDefault(m => m.SourceSystem == sourceSystem && m.ExternalAccountId == externalAccountId);
         if (existing == null)
         {
-            _identityMappings.Add(DeveloperIdentityMapping.Create(Id, sourceSystem, externalAccountId, externalDisplayName));
+            _identityMappings.Add(DeveloperIdentityMapping.Create(OrganizationId, Id, sourceSystem, externalAccountId, externalDisplayName));
             MarkUpdated();
         }
         else
@@ -164,4 +164,16 @@ internal sealed class EmployeeProfile : BaseEntity
         => _identityMappings.Any(m =>
             m.SourceSystem == ExternalSourceSystems.GitHub &&
             m.ExternalAccountId == externalAccountId);
+
+    public void LinkUser(Guid userId, string displayName, string email)
+    {
+        if (userId == Guid.Empty) throw new ArgumentException("User id is required.", nameof(userId));
+        if (UserId != Guid.Empty && UserId != userId)
+            throw new InvalidOperationException("Employee profile is already linked to another user.");
+
+        UserId = userId;
+        Name = string.IsNullOrWhiteSpace(displayName) ? Name : displayName.Trim();
+        Email = email.Trim();
+        ActivateEmployee();
+    }
 }

@@ -18,7 +18,7 @@ namespace WorkFit.ProjectManagement.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("ProjectManagement")
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -126,6 +126,35 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.ToTable("project_activity_logs", "ProjectManagement");
                 });
 
+            modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.ProjectMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeProfileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "EmployeeProfileId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectMembers", "ProjectManagement");
+                });
+
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.ProjectRequiredSkill", b =>
                 {
                     b.Property<Guid>("Id")
@@ -191,6 +220,14 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.Property<DateOnly?>("DueDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("GitHubBranchName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("GitHubBranchNodeId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -208,14 +245,6 @@ namespace WorkFit.ProjectManagement.Migrations
                         .HasDefaultValue(1);
 
                     b.Property<string>("SourceReferenceId")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("GitHubBranchName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("GitHubBranchNodeId")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -249,6 +278,8 @@ namespace WorkFit.ProjectManagement.Migrations
                         {
                             t.HasTrigger("TR_tasks");
                         });
+
+                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
 
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.TaskGitHub", b =>
@@ -305,6 +336,17 @@ namespace WorkFit.ProjectManagement.Migrations
                     b.Navigation("Project");
                 });
 
+            modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.ProjectMember", b =>
+                {
+                    b.HasOne("WorkFit.ProjectManagement.Domain.Entities.Project", "Project")
+                        .WithMany("Members")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.ProjectRequiredSkill", b =>
                 {
                     b.HasOne("WorkFit.ProjectManagement.Domain.Entities.Project", "Project")
@@ -339,6 +381,8 @@ namespace WorkFit.ProjectManagement.Migrations
             modelBuilder.Entity("WorkFit.ProjectManagement.Domain.Entities.Project", b =>
                 {
                     b.Navigation("ActivityLogs");
+
+                    b.Navigation("Members");
 
                     b.Navigation("RequiredSkills");
 

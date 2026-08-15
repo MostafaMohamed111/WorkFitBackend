@@ -60,6 +60,7 @@ internal sealed class RegisterModuleServices : IRegisterModuleServices
                 "Check for bad environment overrides (e.g. empty Documents__TemporaryUploadCleanup__IntervalWhenIdle).")
             .ValidateOnStart();
 
+        services.AddHostedService<DocumentDatabaseInitializer>();
         services.AddSingleton<IHostedService, TemporaryUploadOrphanCleanupBackgroundService>();
 
         services.AddMediatorHandlers<ModuleMarker>();

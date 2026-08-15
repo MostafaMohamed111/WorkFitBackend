@@ -7,7 +7,7 @@ public sealed record ExternalDeveloperDto(
     /// <summary>Unique account identifier in the source system (e.g. Jira accountId).</summary>
     string SourceAccountId,
     string DisplayName,
-    string Email,
+    string? Email,
     /// <summary>Job title if available from the provider; null otherwise.</summary>
     string? JobTitle,
 

@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -12,12 +12,11 @@ public sealed class DeleteTaskEndPoint : EndpointWithoutRequest
         _mediator = mediator;
     }
 
-
     public override void Configure()
     {
         Delete("/api/tasks/{id}");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
     }
 
     public override async Task HandleAsync(CancellationToken ct)

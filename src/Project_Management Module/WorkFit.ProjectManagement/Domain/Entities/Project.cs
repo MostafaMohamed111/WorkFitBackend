@@ -1,4 +1,4 @@
-﻿using WorkFit.ProjectManagement.Domain.Enums;
+using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Domain.Exceptions;
 using WorkFit.SharedKernel.BaseEntity;
 
@@ -31,6 +31,9 @@ public class Project : BaseEntity
 
     private readonly List<Guid> _assignedEmployees = new ();
     public IReadOnlyCollection<Guid> AssignedEmployees => _assignedEmployees;
+
+    private readonly List<ProjectMember> _members = new();
+    public IReadOnlyCollection<ProjectMember> Members => _members;
 
     private readonly List<ProjectActivityLog> _activityLogs = new List<ProjectActivityLog>();
     public IReadOnlyCollection<ProjectActivityLog> ActivityLogs => _activityLogs;
@@ -117,6 +120,12 @@ public class Project : BaseEntity
             EndDate = endDate;
         }
 
+        MarkUpdated();
+    }
+
+    public void AssignTeamLeader(Guid teamLeaderId)
+    {
+        TeamLeaderId = teamLeaderId;
         MarkUpdated();
     }
 

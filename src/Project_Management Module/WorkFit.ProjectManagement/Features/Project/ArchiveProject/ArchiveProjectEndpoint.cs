@@ -1,5 +1,4 @@
-﻿using FastEndpoints;
-
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -18,14 +17,14 @@ public sealed class ArchiveProjectEndpoint : EndpointWithoutRequest<Guid>
     {
         Put("/api/projects/{id}/archive");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Description(b => b
             .Produces<Guid>(200)
             .Produces(404)
             .Produces(409));
     }
 
-    public override async Task HandleAsync( CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
         var projectId = Route<Guid>("id");
         var result = await _mediator.Send(new ArchiveProjectCommand(projectId), ct);

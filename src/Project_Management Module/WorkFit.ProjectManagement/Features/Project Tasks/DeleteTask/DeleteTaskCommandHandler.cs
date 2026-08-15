@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WorkFit.ProjectManagement.Features.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.CrossCutting;
+using WorkFit.ProjectManagement.Features.Common;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -29,14 +30,15 @@ public sealed class DeleteTaskCommandHandler : IRequestHandler<DeleteTaskCommand
         if (task is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
 
-        var actorId = _currentUser.GetUserId(ct);
-        if (actorId != task.CreatedById)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
+        var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == task.ProjectId, ct);
+        if (project is not null)
+        {
+            ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
+        }
 
-        task.Delete(); 
+        task.Delete();
 
         await _context.SaveChangesAsync(ct);
         await ProjectTaskStateEventPublisher.PublishAsync(_context, _mediator, task, "Deleted", ct);
-
     }
 }

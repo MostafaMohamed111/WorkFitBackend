@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -13,19 +13,30 @@ namespace WorkFit.Documents.Infrastructure.Data.Migrations
             migrationBuilder.EnsureSchema(
                 name: "document");
 
-            migrationBuilder.RenameTable(
-                name: "Documents",
-                newName: "Documents",
-                newSchema: "document");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[document].[Documents]', N'U') IS NULL
+BEGIN
+    IF OBJECT_ID(N'[dbo].[Documents]', N'U') IS NOT NULL
+    BEGIN
+        ALTER SCHEMA [document] TRANSFER [dbo].[Documents];
+    END
+    ELSE IF OBJECT_ID(N'[Documents]', N'U') IS NOT NULL
+    BEGIN
+        ALTER SCHEMA [document] TRANSFER [Documents];
+    END
+END
+");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameTable(
-                name: "Documents",
-                schema: "document",
-                newName: "Documents");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[document].[Documents]', N'U') IS NOT NULL AND OBJECT_ID(N'[dbo].[Documents]', N'U') IS NULL
+BEGIN
+    ALTER SCHEMA [dbo] TRANSFER [document].[Documents];
+END
+");
         }
     }
 }

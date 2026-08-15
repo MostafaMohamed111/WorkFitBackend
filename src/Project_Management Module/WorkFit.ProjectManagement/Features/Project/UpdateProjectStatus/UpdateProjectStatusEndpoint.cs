@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -17,20 +17,17 @@ public sealed class UpdateProjectStatusEndpoint : Endpoint<UpdateProjectStatusRe
     {
         Put("/api/projects/{id}/status");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Description(b => b
             .Produces<Guid>(200)
             .ProducesProblem(400)
             .Produces(404)
             .Produces(409));
-
     }
 
     public override async Task HandleAsync(UpdateProjectStatusRequest req, CancellationToken ct)
     {
         var result = await _mediator.Send(new UpdateProjectStatusCommand(req.Id, req.Status), ct);
-
- 
 
         await Send.OkAsync(result, ct);
     }

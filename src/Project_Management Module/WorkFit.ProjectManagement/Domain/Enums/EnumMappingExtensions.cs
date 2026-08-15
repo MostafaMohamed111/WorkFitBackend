@@ -1,9 +1,9 @@
-﻿using WorkFit.ProjectManagement.Domain.Enums;
+using WorkFit.ProjectManagement.Domain.Enums;
 
 namespace WorkFit.ProjectManagement.Features.Common;
 
 /// <summary>
-/// Maps domain enums to/from the snake_case string values used on the wire
+/// Maps domain enums to/from the string values used on the wire
 /// (e.g. ProjectStatus.OnHold <-> "on_hold"), matching Module 5 API contracts.
 /// </summary>
 public static class EnumMappingExtensions
@@ -22,7 +22,7 @@ public static class EnumMappingExtensions
     {
         "planning" => ProjectStatus.Planning,
         "active" => ProjectStatus.Active,
-        "on_hold" => ProjectStatus.OnHold,
+        "on_hold" or "onhold" or "on hold" => ProjectStatus.OnHold,
         "completed" => ProjectStatus.Completed,
         "cancelled" => ProjectStatus.Cancelled,
         _ => throw new ArgumentException($"Unknown project status '{value}'.", nameof(value))

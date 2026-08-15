@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.ICurrentUser;
@@ -20,6 +20,7 @@ internal sealed class GetProjectsForTeamLeadQueryHandler : IRequestHandler<GetPr
     public async Task<IReadOnlyList<ProjectListItemDto>> Handle(GetProjectsForTeamLeadQuery querry, CancellationToken cancellationToken)
     {
         var teamLeadId = _currentUserContext.GetUserId();
+
         var projects = await _context.Projects.AsNoTracking()
             .Include(p => p.Tasks)
             .Where(p => p.TeamLeaderId == teamLeadId)

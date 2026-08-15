@@ -9,71 +9,100 @@ namespace WorkFit.CodeReview.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "code_review_log",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExecutionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Organization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Repository = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Branch = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    CommitSha = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PullRequestNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    OverallScore = table.Column<int>(type: "int", nullable: false),
-                    Risk = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Summary = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
-                    ErrorMessage = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
-                    LoggedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_code_review_log", x => x.Id);
-                });
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[code_review_log]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [code_review_log] (
+        [Id] uniqueidentifier NOT NULL,
+        [ExecutionId] nvarchar(100) NOT NULL,
+        [Organization] nvarchar(200) NOT NULL,
+        [Repository] nvarchar(200) NOT NULL,
+        [Branch] nvarchar(200) NOT NULL,
+        [CommitSha] nvarchar(100) NOT NULL,
+        [PullRequestNumber] nvarchar(50) NOT NULL,
+        [OverallScore] int NOT NULL,
+        [Risk] nvarchar(50) NOT NULL,
+        [Status] nvarchar(20) NOT NULL,
+        [Summary] nvarchar(4000) NOT NULL,
+        [ErrorMessage] nvarchar(4000) NOT NULL,
+        [LoggedAt] datetime2 NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [IsDeleted] bit NOT NULL,
+        CONSTRAINT [PK_code_review_log] PRIMARY KEY ([Id])
+    );
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'ExecutionId')
+        ALTER TABLE [code_review_log] ADD [ExecutionId] nvarchar(100) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Organization')
+        ALTER TABLE [code_review_log] ADD [Organization] nvarchar(200) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Repository')
+        ALTER TABLE [code_review_log] ADD [Repository] nvarchar(200) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Branch')
+        ALTER TABLE [code_review_log] ADD [Branch] nvarchar(200) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'CommitSha')
+        ALTER TABLE [code_review_log] ADD [CommitSha] nvarchar(100) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'PullRequestNumber')
+        ALTER TABLE [code_review_log] ADD [PullRequestNumber] nvarchar(50) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'OverallScore')
+        ALTER TABLE [code_review_log] ADD [OverallScore] int NOT NULL DEFAULT 0;
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Risk')
+        ALTER TABLE [code_review_log] ADD [Risk] nvarchar(50) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Status')
+        ALTER TABLE [code_review_log] ADD [Status] nvarchar(20) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'Summary')
+        ALTER TABLE [code_review_log] ADD [Summary] nvarchar(4000) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'ErrorMessage')
+        ALTER TABLE [code_review_log] ADD [ErrorMessage] nvarchar(4000) NOT NULL DEFAULT N'';
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'LoggedAt')
+        ALTER TABLE [code_review_log] ADD [LoggedAt] datetime2 NOT NULL DEFAULT GETUTCDATE();
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'CreatedAt')
+        ALTER TABLE [code_review_log] ADD [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE();
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'UpdatedAt')
+        ALTER TABLE [code_review_log] ADD [UpdatedAt] datetime2 NULL;
+    IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'[code_review_log]') AND name = N'IsDeleted')
+        ALTER TABLE [code_review_log] ADD [IsDeleted] bit NOT NULL DEFAULT 0;
+END
 
-            migrationBuilder.CreateTable(
-                name: "repo_metadata_cache",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CacheKey = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Organization = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Repository = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    DefaultBranch = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    MetadataJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CachedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_repo_metadata_cache", x => x.Id);
-                });
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_code_review_log_ExecutionId' AND object_id = OBJECT_ID(N'[code_review_log]'))
+BEGIN
+    CREATE INDEX [IX_code_review_log_ExecutionId] ON [code_review_log] ([ExecutionId]);
+END
 
-            migrationBuilder.CreateIndex(
-                name: "IX_code_review_log_ExecutionId",
-                table: "code_review_log",
-                column: "ExecutionId");
+IF OBJECT_ID(N'[repo_metadata_cache]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [repo_metadata_cache] (
+        [Id] uniqueidentifier NOT NULL,
+        [CacheKey] nvarchar(300) NOT NULL,
+        [Organization] nvarchar(200) NOT NULL,
+        [Repository] nvarchar(200) NOT NULL,
+        [DefaultBranch] nvarchar(200) NOT NULL,
+        [MetadataJson] nvarchar(max) NOT NULL,
+        [CachedAt] datetime2 NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [IsDeleted] bit NOT NULL,
+        CONSTRAINT [PK_repo_metadata_cache] PRIMARY KEY ([Id])
+    );
+END
 
-            migrationBuilder.CreateIndex(
-                name: "IX_repo_metadata_cache_CacheKey",
-                table: "repo_metadata_cache",
-                column: "CacheKey",
-                unique: true);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_repo_metadata_cache_CacheKey' AND object_id = OBJECT_ID(N'[repo_metadata_cache]'))
+BEGIN
+    CREATE UNIQUE INDEX [IX_repo_metadata_cache_CacheKey] ON [repo_metadata_cache] ([CacheKey]);
+END
+");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "code_review_log");
-
-            migrationBuilder.DropTable(
-                name: "repo_metadata_cache");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[code_review_log]', N'U') IS NOT NULL
+    DROP TABLE [code_review_log];
+IF OBJECT_ID(N'[repo_metadata_cache]', N'U') IS NOT NULL
+    DROP TABLE [repo_metadata_cache];
+");
         }
     }
 }

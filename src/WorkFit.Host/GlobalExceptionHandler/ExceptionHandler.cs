@@ -15,6 +15,7 @@ internal sealed class ExceptionHandler : IExceptionHandler
             ConcurrencyConflictException ex => (StatusCodes.Status409Conflict, ex.Code, ex.Message, ex.UserFriendlyMessage),
             DomainException ex => (StatusCodes.Status400BadRequest, ex.Code, ex.Message, ex.UserFriendlyMessage),
             FeatureException ex => (StatusCodes.Status400BadRequest, ex.Code, ex.Message, ex.UserFriendlyMessage),
+            UnauthorizedAccessException ex => (StatusCodes.Status403Forbidden, "FORBIDDEN", ex.Message, "You are not allowed to perform this operation."),
             _ => (StatusCodes.Status500InternalServerError, "INTERNAL_SERVER_ERROR", exception.Message, "Please try again later.")
         };
 

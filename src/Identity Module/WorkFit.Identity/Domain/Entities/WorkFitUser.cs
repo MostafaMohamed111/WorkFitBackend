@@ -22,4 +22,10 @@ public sealed class WorkFitUser : IdentityUser<Guid>
         Email = email;
         UserName = email;    
     }
+
+    public WorkFitUser(Guid id, string email, string displayName) : this(email, displayName)
+    {
+        if (id == Guid.Empty) throw new ArgumentException("User id is required.", nameof(id));
+        Id = id;
+    }
 }

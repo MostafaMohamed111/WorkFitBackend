@@ -8,6 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="FastEndpoints" Version="8.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.9">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +25,7 @@
     <ProjectReference Include="..\..\Recommendation Module\WorkFit.Recommendations.Contracts\WorkFit.Recommendations.Contracts.csproj" />
     <ProjectReference Include="..\..\Skills_Taxonomy_Module\WorkFit.Skills.Contracts\WorkFit.Skills.Contracts.csproj" />
     <ProjectReference Include="..\..\Talent_Management Module\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
+    <ProjectReference Include="..\..\WorkFit_Integration Module\WorkFit.Integration.Contracts\WorkFit.Integration.Contracts.csproj" />
     <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
   </ItemGroup>
 
