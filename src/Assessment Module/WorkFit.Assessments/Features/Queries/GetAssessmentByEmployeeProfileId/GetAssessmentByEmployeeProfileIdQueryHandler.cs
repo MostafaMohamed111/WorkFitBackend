@@ -25,7 +25,9 @@ internal sealed class GetAssessmentByEmployeeProfileIdQueryHandler : IRequestHan
     public async Task<AssessmentDto> Handle(GetAssessmentByEmployeeProfileIdQuery query, CancellationToken cancellationToken = default)
     {
         var assessment = await _context.Assessments.AsNoTracking()
-            .FirstOrDefaultAsync(a => a.EmployeeProfileId == query.EmployeeProfileId, cancellationToken)
+            .FirstOrDefaultAsync(a => a.EmployeeProfileId == query.EmployeeProfileId 
+            && a.Status == Domain.Enums.AssessmentStatus.Pending
+            , cancellationToken)
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), query.EmployeeProfileId);
 
         assessment.ValidateAuthority(_currentUserContext.GetUserId());

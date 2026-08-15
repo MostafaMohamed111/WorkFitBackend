@@ -13,15 +13,14 @@ public sealed class GetEmployeesEndpoint
 
     public override void Configure()
     {
-        Get("/api/employees");
-        Roles("Admin", "HR", "OrganizationOwner");
+        Get("/api/employees/{orgId}");
+        Roles("TeamLeader", "OrganizationOwner");
         Options(x => x.WithTags("Talent Management"));
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var orgId = Guid.Parse(User.FindFirst("OrgId")!.Value);
-
+        var orgId = Route<Guid>("orgId");
         var result = await _mediator.Send(new GetEmployeesQuery(orgId), ct);
 
         await Send.OkAsync(result, ct);
