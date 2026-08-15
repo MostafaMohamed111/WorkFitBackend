@@ -66,12 +66,16 @@ public sealed class GenerateEmployeeRecommendationCommandHandler
             command.TaskId,
             cancellationToken);
 
-        if (task.TeamLeaderId != currentUserId)
+        var callerRoles = _currentUserContext.GetRoles(cancellationToken);
+        if (task.TeamLeaderId != currentUserId &&
+            !callerRoles.Contains("OrganizationOwner") &&
+            !callerRoles.Contains("Admin") &&
+            !callerRoles.Contains("SuperAdmin"))
         {
             throw new ForbiddenAccessException(
                 ModuleMarker.ModuleName,
                 "Task recommendation",
-                "Only the project's team leader can generate recommendations for this task.");
+                "Only the project's team leader or organization owner can generate recommendations for this task.");
         }
 
         if (!task.IsActive || task.IsDeleted || task.AssignedEmployeeId.HasValue ||

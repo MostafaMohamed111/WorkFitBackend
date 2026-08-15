@@ -39,10 +39,22 @@ internal sealed class EmployeeLookUpService : IEmployeeLookUpService
         return employees.Select(Map).ToList();
     }
 
+    public async Task<List<EmployeeDetailsDto>> GetEmployeesByOrganizationIdAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken = default)
+    {
+        var employees = await LoadEmployeesQuery()
+            .Where(employee => employee.OrganizationId == organizationId)
+            .ToListAsync(cancellationToken);
+
+        return employees.Select(Map).ToList();
+    }
+
     private IQueryable<EmployeeProfile> LoadEmployeesQuery()
     {
         return _db.EmployeeProfiles
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(e => e.EmployeeSkills)
                 .ThenInclude(s => s.ConfidenceChanges)
                     .ThenInclude(c => c.ConfidenceEvidences)

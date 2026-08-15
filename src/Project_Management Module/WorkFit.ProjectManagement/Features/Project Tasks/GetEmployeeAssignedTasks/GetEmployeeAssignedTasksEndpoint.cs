@@ -38,27 +38,46 @@ public sealed class GetEmployeeAssignedTasksEndpoint : EndpointWithoutRequest<Li
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var employeeId = Route<Guid>("employeeId");
+        var employeeIdRoute = Route<string>("employeeId");
+        if (string.IsNullOrEmpty(employeeIdRoute) || !Guid.TryParse(employeeIdRoute, out var employeeId))
+        {
+            await Send.OkAsync(new List<DeveloperTaskDto>(), ct);
+            return;
+        }
 
-        var tasks = await (from t in _context.ProjectTasks.AsNoTracking()
-                           join p in _context.Projects.AsNoTracking() on t.ProjectId equals p.Id
-                           where t.AssignedEmployeeId == employeeId
-                           orderby t.UpdatedAt descending
-                           select new DeveloperTaskDto(
-                               t.Id,
-                               p.Id,
-                               p.Name,
-                               t.Title,
-                               t.Description,
-                               (int)t.Status,
-                               t.Status.ToString(),
-                               (int)t.Priority,
-                               t.Priority.ToString(),
-                               t.DueDate,
-                               t.StoryPoints ?? 0,
-                               t.CreatedById
-                           )).ToListAsync(ct);
+        var tasks = await _context.ProjectTasks
+            .AsNoTracking()
+            .Where(t => t.AssignedEmployeeId == employeeId)
+            .OrderByDescending(t => t.UpdatedAt)
+            .ToListAsync(ct);
 
-        await Send.OkAsync(tasks, ct);
+        if (tasks.Count == 0)
+        {
+            await Send.OkAsync(new List<DeveloperTaskDto>(), ct);
+            return;
+        }
+
+        var projectIds = tasks.Select(t => t.ProjectId).Distinct().ToList();
+        var projects = await _context.Projects
+            .AsNoTracking()
+            .Where(p => projectIds.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
+
+        var result = tasks.Select(t => new DeveloperTaskDto(
+            t.Id,
+            t.ProjectId,
+            projects.TryGetValue(t.ProjectId, out var pName) ? pName : "Project",
+            t.Title,
+            t.Description,
+            (int)t.Status,
+            t.Status.ToString(),
+            (int)t.Priority,
+            t.Priority.ToString(),
+            t.DueDate,
+            t.StoryPoints ?? 0,
+            t.CreatedById
+        )).ToList();
+
+        await Send.OkAsync(result, ct);
     }
 }

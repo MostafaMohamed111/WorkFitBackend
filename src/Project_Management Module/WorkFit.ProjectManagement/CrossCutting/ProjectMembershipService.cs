@@ -36,9 +36,18 @@ internal sealed class ProjectMembershipService : IProjectMembershipService
 
     public async Task<IReadOnlyList<Guid>> GetMemberIdsAsync(
         Guid projectId,
-        CancellationToken cancellationToken = default) =>
-        await _db.ProjectMembers.AsNoTracking()
+        CancellationToken cancellationToken = default)
+    {
+        var explicitMemberIds = await _db.ProjectMembers.AsNoTracking()
             .Where(member => member.ProjectId == projectId)
             .Select(member => member.EmployeeProfileId)
             .ToListAsync(cancellationToken);
+
+        var taskAssigneeIds = await _db.ProjectTasks.AsNoTracking()
+            .Where(t => t.ProjectId == projectId && t.AssignedEmployeeId.HasValue)
+            .Select(t => t.AssignedEmployeeId!.Value)
+            .ToListAsync(cancellationToken);
+
+        return explicitMemberIds.Concat(taskAssigneeIds).Distinct().ToList();
+    }
 }

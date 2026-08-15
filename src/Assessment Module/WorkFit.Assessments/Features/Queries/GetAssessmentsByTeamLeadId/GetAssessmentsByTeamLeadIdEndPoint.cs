@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.Assessments.Features.Queries.Dtos;
 using WorkFit.SharedKernel.MediatorContract;
@@ -17,8 +17,8 @@ internal sealed class GetAssessmentsByTeamLeadIdEndPoint : EndpointWithoutReques
 
     public override void Configure()
     {
-        Get("api/assessment/teamlead/{TeamLeadId:guid}");
-        Roles("TeamLead");
+        Get("/api/assessment/teamlead/{TeamLeadId:guid}");
+        Roles("TeamLeader", "TeamLead", "Employee", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Assessment"));
     }
 

@@ -5,6 +5,8 @@ using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 using Microsoft.EntityFrameworkCore;
 using WorkFit.WorkFlow.Invitations;
+using WorkFit.Rag.Contracts.Agent;
+using WorkFit.WorkFlow.Features.AgentChat;
 
 namespace WorkFit.WorkFlow
 {
@@ -18,6 +20,7 @@ namespace WorkFit.WorkFlow
             services.Configure<InvitationEmailOptions>(configuration.GetSection("DeveloperInvitations:Email"));
             services.AddScoped<InvitationEmailSender>();
             services.AddScoped<InvitationService>();
+            services.AddScoped<IAgentChatService, AgentChatService>();
         }
     }
 }

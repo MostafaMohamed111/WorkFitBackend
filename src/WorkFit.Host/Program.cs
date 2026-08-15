@@ -80,7 +80,9 @@ namespace WorkFit.Host
 
             app.UseExceptionHandler();
 
-            // Place CORS at top of pipeline before Routing, Auth, or Controllers to handle preflight OPTIONS requests
+            app.UseRouting();
+
+            // Place CORS after UseRouting and before Auth/Endpoints to handle preflight OPTIONS requests
             app.UseCors("AllowAngularFrontend");
 
             // Configure the HTTP request pipeline.

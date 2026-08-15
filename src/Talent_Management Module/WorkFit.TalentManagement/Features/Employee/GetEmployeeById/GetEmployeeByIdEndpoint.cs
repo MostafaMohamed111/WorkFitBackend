@@ -1,30 +1,32 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 
-public sealed class GetEmployeeByUserIdEndPoint : Endpoint<GetEmployeeByIdRequest, EmployeeDetailsDto>
+public sealed class GetEmployeeByIdEndPoint : EndpointWithoutRequest<EmployeeDetailsDto>
 {
     private readonly IMediator _mediator;
 
-    public GetEmployeeByUserIdEndPoint(IMediator mediator)
+    public GetEmployeeByIdEndPoint(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     public override void Configure()
     {
-        Get("/api/talent-management/employees/{id}");
-        Roles("TeamLeader", "OrganizationOwner", "SuperAdmin", "Employee");
+        Get("/api/talent-management/employees/{id:guid}");
+        Roles("TeamLeader", "OrganizationOwner");
         Options(x => x.WithTags("Talent Management"));
     }
 
-    public override async Task HandleAsync(GetEmployeeByIdRequest req, CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
-        var query = new GetEmployeeByIdCommand(req.Id);
+       var empId = Route<Guid>("id");
+        var query = new GetEmployeeByIdCommand(empId);
         var result = await _mediator.Send(query, ct);
-
         await Send.OkAsync(result, cancellation: ct);
+     
+       
     }
 }

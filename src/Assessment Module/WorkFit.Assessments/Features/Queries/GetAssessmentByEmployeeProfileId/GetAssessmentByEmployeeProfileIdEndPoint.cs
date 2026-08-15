@@ -17,7 +17,7 @@ internal sealed class GetAssessmentByEmployeeProfileIdEndPoint : EndpointWithout
     public override void Configure()
     {
         Get("/api/assessment/employee-profile/{EmployeeProfileId:guid}");
-        Roles("TeamLead", "Employee");
+        Roles("TeamLeader", "TeamLead", "Employee", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Assessment"));
     }
 

@@ -1,4 +1,4 @@
-﻿
+
 using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
@@ -19,7 +19,7 @@ internal sealed class GetProjectsForTeamLeadEndPoint : Endpoint<GetProjectsForTe
     public override void Configure()
     {
         Get("/api/projects/teamLead");
-        Roles("TeamLeader");
+        Roles("TeamLeader", "Employee", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Project Management"));
     }
 
