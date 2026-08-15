@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Assessment Module\WorkFit.Assessments.Contracts\WorkFit.Assessments.Contracts.csproj" />
+    <ProjectReference Include="..\..\Document Module\WorkFit.Documents.Contracts\WorkFit.Documents.Contracts.csproj" />
+    <ProjectReference Include="..\..\Engine Module\WorkFit.Engine.Contracts\WorkFit.Engine.Contracts.csproj" />
     <ProjectReference Include="..\..\Identity Module\WorkFit.Identity.Contracts\WorkFit.Identity.Contracts.csproj" />
     <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations.Contracts\WorkFit.Organizations.Contracts.csproj" />
     <ProjectReference Include="..\..\Project_Management Module\WorkFit.ProjectManagement.Contracts\WorkFit.ProjectManagement.Contracts.csproj" />

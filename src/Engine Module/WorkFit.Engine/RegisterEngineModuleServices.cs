@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Engine.Contracts.AI;
+using WorkFit.Engine.Contracts.CVParsing;
 using WorkFit.Engine.Infrastructure.AI;
 using WorkFit.Engine.Infrastructure.CVParsing;
 using WorkFit.Engine.Infrastructure.Data;
 using WorkFit.Engine.Infrastructure.Extraction;
-using WorkFit.Engine.Infrastructure.Options;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 
@@ -20,7 +20,6 @@ public sealed class RegisterEngineModuleServices : IRegisterModuleServices
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.Configure<AIOptions>(configuration.GetSection("AI"));
-        services.Configure<CVParsingOptions>(configuration.GetSection("CVParsing"));
 
         services.AddDbContext<EngineDbContext>(options => options.UseSqlServer(connectionString));
 
@@ -32,15 +31,12 @@ public sealed class RegisterEngineModuleServices : IRegisterModuleServices
             c.Timeout = TimeSpan.FromSeconds(60);
         });
 
-        services.AddSingleton<CVProcessingChannel>();
-        services.AddHostedService<BackgroundCVWorker>();
-
         services.AddScoped<ICVTextExtractor, PdfTextExtractor>();
         services.AddScoped<ICVTextExtractor, DocxTextExtractor>();
         services.AddScoped<CVTextExtractorAggregator>();
         services.AddScoped<ICVLLMParser, CVLLMParser>();
         services.AddScoped<ICVSkillNormalizer, CVSkillNormalizer>();
-        services.AddScoped<ICVParsePipeline, CVParsePipeline>();
+        services.AddScoped<IParseCVDocumentsService, ParseCVDocumentsService>();
 
         services.AddSingleton<IChatCompletionClient, MistralChatCompletionClient>();
         services.AddSingleton<IEmbeddingClient, GeminiEmbeddingClient>();

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Identity.AuthServices.Jwt;
 using WorkFit.Identity.Contracts.IdentityServices;
+using WorkFit.Identity.CrossModule.RegisterEmployee;
 using WorkFit.Identity.CrossModule.RegisterOrganization;
 using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Infrastructure.Data;
@@ -32,6 +33,7 @@ public sealed class RegisterIdentityModuleServices : IRegisterModuleServices
         services.AddScoped<JwtTokenGenerator>();
         services.AddScoped<ICreateOrganizationUserService, RegisterOrganizationCommandHandler>();
         services.AddScoped<IEmployeeAccountProvisioningService, EmployeeAccountProvisioningService>();
+        services.AddScoped<ICreateEmployeeUserService, RegisterEmployeeUserService>();
     }
 
 }
