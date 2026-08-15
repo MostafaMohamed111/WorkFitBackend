@@ -10,7 +10,6 @@ namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 public sealed class GetEmployeeByIdCommandHandler
     : IRequestHandler<GetEmployeeByUserIdCommand, EmployeeDetailsDto>
 {
-
     private readonly TalentDbContext _db;
     private readonly ICurrentUserContext _currentUser;
 
@@ -24,6 +23,8 @@ public sealed class GetEmployeeByIdCommandHandler
     public async Task<EmployeeDetailsDto> Handle(GetEmployeeByUserIdCommand request, CancellationToken cancellationToken = default)
     {
         var callerUserId = _currentUser.GetUserId(cancellationToken);
+        var roles = _currentUser.GetRoles(cancellationToken);
+        var isAuthorizedRole = roles.Any(r => r is "SuperAdmin" or "Admin" or "OrganizationOwner" or "TeamLeader");
 
         var callerEmployee = await _db.EmployeeProfiles
             .FirstOrDefaultAsync(e => (e.UserId == callerUserId || e.Id == callerUserId) && !e.IsDeleted, cancellationToken);
@@ -33,12 +34,12 @@ public sealed class GetEmployeeByIdCommandHandler
             .FirstOrDefaultAsync(e => (e.Id == request.EmployeeId || e.UserId == request.EmployeeId) && !e.IsDeleted, cancellationToken)
             ?? throw new EntityNotFoundException("TalentManagement", nameof(EmployeeProfile), request.EmployeeId);
 
-        // موجودة، بس من Organization مختلفة تماماً — Forbidden مش NotFound
-        if (callerEmployee != null && employee.OrganizationId != callerEmployee.OrganizationId)
+        if (!isAuthorizedRole && callerEmployee != null && employee.OrganizationId != callerEmployee.OrganizationId)
+        {
             throw new ForbiddenAccessException("TalentManagement", nameof(EmployeeProfile),
                 "This employee belongs to a different organization.");
+        }
 
-        
         return new EmployeeDetailsDto(
             employee.Id,
             employee.OrganizationId,

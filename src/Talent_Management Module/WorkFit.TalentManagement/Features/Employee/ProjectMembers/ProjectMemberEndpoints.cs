@@ -66,7 +66,6 @@ public sealed class GetProjectMembersEndpoint : EndpointWithoutRequest<List<Proj
             .AsNoTracking()
             .Where(employee =>
                 memberIds.Contains(employee.Id) &&
-                employee.OrganizationId == scope.OrganizationId &&
                 !employee.IsDeleted)
             .OrderBy(employee => employee.Name)
             .Select(employee => new ProjectMemberDto(
