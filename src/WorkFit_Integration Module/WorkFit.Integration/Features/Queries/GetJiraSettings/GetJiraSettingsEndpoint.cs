@@ -16,7 +16,7 @@ public sealed class GetJiraSettingsEndpoint : Endpoint<GetJiraSettingsRequest, J
     public override void Configure()
     {
         Get("/api/integration/{OrganizationId}/jira-settings");
-        Roles("Admin"); // Applied security role
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Integration"));
     }
 

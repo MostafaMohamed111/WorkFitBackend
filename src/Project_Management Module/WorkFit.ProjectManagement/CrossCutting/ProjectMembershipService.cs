@@ -16,6 +16,14 @@ internal sealed class ProjectMembershipService : IProjectMembershipService
             .Select(p => new ProjectInvitationScope(p.Id, p.OrganizationId, p.TeamLeaderId))
             .SingleOrDefaultAsync(cancellationToken);
 
+    public Task<bool> IsTeamLeaderInOrganizationAsync(
+        Guid teamLeaderId,
+        Guid organizationId,
+        CancellationToken cancellationToken = default) =>
+        _db.Projects.AsNoTracking().AnyAsync(
+            p => p.TeamLeaderId == teamLeaderId && p.OrganizationId == organizationId,
+            cancellationToken);
+
     public async Task AddMemberAsync(Guid projectId, Guid employeeProfileId, Guid organizationId, CancellationToken cancellationToken = default)
     {
         var validProject = await _db.Projects.AnyAsync(p => p.Id == projectId && p.OrganizationId == organizationId, cancellationToken);
@@ -25,4 +33,12 @@ internal sealed class ProjectMembershipService : IProjectMembershipService
         _db.ProjectMembers.Add(ProjectMember.Create(projectId, employeeProfileId));
         await _db.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Guid>> GetMemberIdsAsync(
+        Guid projectId,
+        CancellationToken cancellationToken = default) =>
+        await _db.ProjectMembers.AsNoTracking()
+            .Where(member => member.ProjectId == projectId)
+            .Select(member => member.EmployeeProfileId)
+            .ToListAsync(cancellationToken);
 }

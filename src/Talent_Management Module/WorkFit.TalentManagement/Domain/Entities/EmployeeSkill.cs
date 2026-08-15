@@ -1,8 +1,8 @@
-﻿using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class EmployeeSkill : BaseEntity
+public sealed class EmployeeSkill : BaseEntity
 {
     public Guid EmployeeProfileId { get; private set; }
     public Guid SkillId { get; private set; } // ref to skills module

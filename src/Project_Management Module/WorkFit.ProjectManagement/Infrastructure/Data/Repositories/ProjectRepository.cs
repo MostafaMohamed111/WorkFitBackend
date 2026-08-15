@@ -25,11 +25,16 @@ public sealed class ProjectRepository : IProjectRepository
     {
         IQueryable<Project> query = _context.Projects
             .AsNoTracking()
-            .Include(x => x.Tasks);
+            .Include(x => x.Tasks)
+            .Include(x => x.Members);
 
         if (Enum.TryParse<ProjectStatus>(status, true, out var projectStatus))
         {
             query = query.Where(x => x.Status == projectStatus);
+        }
+        else
+        {
+            query = query.Where(x => x.Status != ProjectStatus.Cancelled);
         }
 
         if (organizationId.HasValue)
@@ -47,7 +52,7 @@ public sealed class ProjectRepository : IProjectRepository
             x.Status,
             x.StartDate,
             x.EndDate,
-            x.AssignedEmployees.Count(),
+            x.Members.Count,
             x.Tasks.Count))
             .ToListAsync(ct);
     }

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
@@ -29,7 +29,7 @@ public sealed class GetProjectTasksQueryHandler : IRequestHandler<GetProjectTask
 
         return await tasksQuery
             .Select(t => new TaskListItemDto(t.Id, t.Title, t.TaskType, t.Status, t.Priority,
-                t.AssignedEmployeeId, t.StoryPoints, t.DueDate, t.CompletedAt))
+                t.AssignedEmployeeId, t.CreatedById, t.StoryPoints, t.DueDate, t.CompletedAt))
             .ToListAsync(ct);
     }
 }

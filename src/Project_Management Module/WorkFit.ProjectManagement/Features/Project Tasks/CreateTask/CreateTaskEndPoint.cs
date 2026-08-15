@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -13,7 +13,7 @@ public sealed class CreateTaskEndPoint : Endpoint<CreateTaskRequest, Guid>
     {
         Put("/api/projects/{id}/tasks");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
     }
 
     public override async Task HandleAsync(CreateTaskRequest req, CancellationToken ct)

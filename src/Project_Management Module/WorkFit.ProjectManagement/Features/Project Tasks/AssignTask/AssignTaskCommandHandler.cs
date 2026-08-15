@@ -6,6 +6,7 @@ using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.ProjectManagement.Features.Common;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.AssignTask;
 
@@ -33,9 +34,7 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
             .FirstOrDefaultAsync(p => p.Id == command.ProjectId, ct)
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Domain.Entities.Project).Name, command.ProjectId);
 
-        var actorId = _currentUser.GetUserId(ct);
-        if(actorId != project.TeamLeaderId)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
+        ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
 
         var existingTask = project.Tasks.FirstOrDefault(t => t.Id == command.TaskId)
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
@@ -47,6 +46,16 @@ public sealed class AssignTaskCommandHandler : IRequestHandler<AssignTaskCommand
                 "ASSIGNED_TASK_REQUIRES_ALLOCATION",
                 "An assigned task must have a positive allocation percentage.",
                 "Set a positive allocation percentage when assigning the task.");
+
+        var isProjectMember = await _context.ProjectMembers.AsNoTracking().AnyAsync(
+            member => member.ProjectId == command.ProjectId && member.EmployeeProfileId == command.AssigneeId,
+            ct);
+        if (!isProjectMember)
+            throw new FeatureException(
+                ModuleMarker.ModuleName,
+                "ASSIGNEE_NOT_PROJECT_MEMBER",
+                "The selected employee is not a member of this project.",
+                "Add the employee to this project before assigning the task.");
 
         await TaskAllocationCapacityValidator.ValidateAsync(
             _context,

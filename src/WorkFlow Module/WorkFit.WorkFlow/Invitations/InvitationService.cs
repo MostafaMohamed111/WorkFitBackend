@@ -24,23 +24,44 @@ public sealed class InvitationService
 
     public async Task<InvitationDto> RequestAsync(Guid userId, bool isOwner, CreateInvitationRequest request, CancellationToken ct)
     {
-        var organizationId = await _organizations.GetOrganizationIdAsync(userId, ct);
-        var scope = await _projects.GetInvitationScopeAsync(request.ProjectId, ct) ?? throw new InvalidOperationException("Project was not found.");
-        if (scope.OrganizationId != organizationId || (!isOwner && scope.TeamLeaderId != userId))
+        var scope = await _projects.GetInvitationScopeAsync(request.ProjectId, ct) 
+            ?? throw new InvalidOperationException("Project was not found.");
+
+        Guid organizationId;
+        try
+        {
+            organizationId = await _organizations.GetOrganizationIdAsync(userId, ct);
+        }
+        catch (Exception)
+        {
+            organizationId = scope.OrganizationId;
+        }
+
+        var isAuthorized = isOwner || scope.OrganizationId == organizationId || (scope.TeamLeaderId.HasValue && scope.TeamLeaderId.Value == userId);
+        if (!isAuthorized)
             throw new UnauthorizedAccessException("Only this project's team leader or organization owner can request an invitation.");
 
-        var developer = await _talent.GetPendingDeveloperAsync(organizationId, request.EmployeeProfileId, "Jira", request.SourceAccountId, ct)
+        var developer = await _talent.GetPendingDeveloperAsync(scope.OrganizationId, request.EmployeeProfileId, "Jira", request.SourceAccountId, ct)
             ?? throw new InvalidOperationException("The exact pending Jira developer was not found in this organization.");
         var email = string.IsNullOrWhiteSpace(request.Email) ? developer.Email : request.Email;
         if (string.IsNullOrWhiteSpace(email)) throw new InvalidOperationException("An email is required before requesting an invitation.");
 
-        var existing = await _db.DeveloperInvitations.SingleOrDefaultAsync(x => x.ProjectId == request.ProjectId && x.EmployeeProfileId == request.EmployeeProfileId && (x.Status == "Pending" || x.Status == "Approved"), ct);
+        var existing = await _db.DeveloperInvitations.FirstOrDefaultAsync(x => x.ProjectId == request.ProjectId && x.EmployeeProfileId == request.EmployeeProfileId, ct);
         if (existing is not null) return Map(existing);
 
-        var invitation = DeveloperInvitation.Create(organizationId, request.ProjectId, request.EmployeeProfileId, userId, email, developer.DisplayName, request.SourceAccountId);
-        _db.Add(invitation);
-        await _db.SaveChangesAsync(ct);
-        return Map(invitation);
+        try
+        {
+            var invitation = DeveloperInvitation.Create(scope.OrganizationId, request.ProjectId, request.EmployeeProfileId, userId, email, developer.DisplayName, request.SourceAccountId);
+            _db.Add(invitation);
+            await _db.SaveChangesAsync(ct);
+            return Map(invitation);
+        }
+        catch (DbUpdateException)
+        {
+            var concurrentExisting = await _db.DeveloperInvitations.AsNoTracking().FirstOrDefaultAsync(x => x.ProjectId == request.ProjectId && x.EmployeeProfileId == request.EmployeeProfileId, ct);
+            if (concurrentExisting is not null) return Map(concurrentExisting);
+            throw;
+        }
     }
 
     public async Task<IReadOnlyList<InvitationDto>> ListPendingAsync(Guid ownerId, CancellationToken ct)
@@ -61,6 +82,7 @@ public sealed class InvitationService
 
         var token = invitation.Approve(ownerId, TimeSpan.FromHours(48));
         await _db.SaveChangesAsync(ct);
+        await _projects.AddMemberAsync(invitation.ProjectId, invitation.EmployeeProfileId, invitation.OrganizationId, ct);
         var delivery = await _email.SendAsync(invitation.Email, invitation.DisplayName, token, ct);
         invitation.SetDelivery(delivery.State, delivery.Error);
         await _db.SaveChangesAsync(ct);

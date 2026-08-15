@@ -2,7 +2,7 @@ using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class DeveloperIdentityMapping : BaseEntity
+public sealed class DeveloperIdentityMapping : BaseEntity
 {
     public Guid OrganizationId { get; private set; }
     public Guid EmployeeProfileId { get; private set; }

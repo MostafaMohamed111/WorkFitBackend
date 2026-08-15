@@ -31,10 +31,16 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
         if (task is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
 
-        var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == task.ProjectId, ct);
-        if (project is not null)
+        var actorId = _currentUser.GetUserId(ct);
+        var isAssignedDeveloper = (task.AssignedEmployeeId.HasValue && task.AssignedEmployeeId.Value == actorId) || (task.CreatedById == actorId);
+
+        if (!isAssignedDeveloper)
         {
-            ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == task.ProjectId, ct);
+            if (project is not null)
+            {
+                ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
+            }
         }
 
         task.UpdateDetails(command.Title, command.Description, command.Priority, command.StoryPoints, command.DueDate);

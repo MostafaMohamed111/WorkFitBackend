@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.Features.Common;
 using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
@@ -29,9 +29,8 @@ public sealed class UpdateProjectStatusHandler : IRequestHandler<UpdateProjectSt
                     command.Id
                 );
 
+        ProjectAccessGuard.EnsureAuthorized(project, _currentUser, cancellationToken);
         var actorId = _currentUser.GetUserId(cancellationToken);
-        if(actorId != project.TeamLeaderId)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
         // Project.ChangeStatus enforces the allowed transition graph and throws
         // InvalidOperationException on an illegal transition (e.g. completed -> active).

@@ -151,18 +151,20 @@ public class Project : BaseEntity
 
     public void ChangeStatus(Guid teamLeaderId, ProjectStatus newStatus)
     {
+        if (Status == newStatus) return;
+
         if (!Status.CanTransitionToInternal(newStatus))
             throw new InvalidOperationException($"Cannot transition project from '{Status}' to '{newStatus}'.");
         var beforeStatus = Status;
         Status = newStatus;
         var log = ProjectActivityLog.Create(
-        Id,
-        teamLeaderId,
-        ActivityActions.ProjectStatusChanged,
-        ActivityEntityType.Project,
-        Id,
-        beforeState: $"{{\"status\":\"{beforeStatus.ToString()}\"}}",
-        afterState: $"{{\"status\":\"{Status.ToString()}\"}}");
+            Id,
+            teamLeaderId,
+            ActivityActions.ProjectStatusChanged,
+            ActivityEntityType.Project,
+            Id,
+            beforeState: $"{{\"status\":\"{beforeStatus.ToString()}\"}}",
+            afterState: $"{{\"status\":\"{Status.ToString()}\"}}");
 
         _activityLogs.Add(log);
         MarkUpdated();
@@ -173,7 +175,6 @@ public class Project : BaseEntity
     /// </summary>
     public void Archive(Guid teamLead)
     {
-
         var log = ProjectActivityLog.Create(
             Id,
             teamLead,
@@ -186,17 +187,17 @@ public class Project : BaseEntity
         MarkUpdated();
     }
 
-    // creating a task is done through the project aggregate root to ensure that the task is always associated with a valid project.
-    public ProjectTask CreateTask(Guid projectId,
-       string title,
-       string? description,
-       TaskType taskType,
-       TaskPriority priority,
-       Guid createdById,
-       Guid? assigneeId,
-       int? storyPoints,
-       DateOnly? dueDate,
-       int allocationPercentage)
+    public ProjectTask CreateTask(
+        Guid projectId,
+        string title,
+        string? description,
+        TaskType taskType,
+        TaskPriority priority,
+        Guid createdById,
+        Guid? assigneeId,
+        int? storyPoints,
+        DateOnly? dueDate,
+        int allocationPercentage)
     {
         if (projectId != Id)
             throw new InvalidProjectForCreatingTaskDomainException(projectId);
@@ -213,15 +214,14 @@ public class Project : BaseEntity
             allocationPercentage: allocationPercentage
         );
 
-        if(Tasks.Any(t => t.Title == title))
+        if (Tasks.Any(t => t.Title == title))
             throw new TaskAlreadyCreatedForProjectDomainException(title);
         if (assigneeId.HasValue)
-            if(!AssignedEmployees.Contains(assigneeId.Value))
+            if (!AssignedEmployees.Contains(assigneeId.Value))
                 _assignedEmployees.Add(assigneeId.Value);
-        
+
         _tasks.Add(task);
         return task;
-
     }
 
     public ProjectTask AssignEmployeeForTask(Guid taskId, Guid EmployeeId, int? allocationPercentage)
@@ -231,14 +231,12 @@ public class Project : BaseEntity
             throw new TaskNotFoundForProjectDomainException(taskId, Id);
 
         task.Assign(EmployeeId, allocationPercentage);
-        return task;    
+        return task;
     }
 }
 
 file static class ProjectStatusInternalExtensions
 {
-    // Mirrors WorkFit.ProjectManagement.Features.Common.EnumMappingExtensions.CanTransitionTo,
-    // kept internal to the domain layer so Project stays free of a Features-layer dependency.
     public static bool CanTransitionToInternal(this ProjectStatus current, ProjectStatus target)
     {
         if (current == target) return false;

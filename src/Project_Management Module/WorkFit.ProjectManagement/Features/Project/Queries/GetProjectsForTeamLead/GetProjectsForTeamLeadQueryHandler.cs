@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using WorkFit.Organizations.Contracts.OrganizationServices;
 using WorkFit.ProjectManagement.Features.Project.Queries.Dtos;
+using WorkFit.ProjectManagement.Domain.Enums;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
@@ -10,20 +12,50 @@ internal sealed class GetProjectsForTeamLeadQueryHandler : IRequestHandler<GetPr
 {
     private readonly WorkFitProjectDbContext _context;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly IGetOrganizationIdService _organizations;
 
-    public GetProjectsForTeamLeadQueryHandler(WorkFitProjectDbContext context, ICurrentUserContext currentUserContext)
+    public GetProjectsForTeamLeadQueryHandler(
+        WorkFitProjectDbContext context,
+        ICurrentUserContext currentUserContext,
+        IGetOrganizationIdService organizations)
     {
         _context = context;
         _currentUserContext = currentUserContext;
+        _organizations = organizations;
     }
 
     public async Task<IReadOnlyList<ProjectListItemDto>> Handle(GetProjectsForTeamLeadQuery querry, CancellationToken cancellationToken)
     {
         var teamLeadId = _currentUserContext.GetUserId();
 
-        var projects = await _context.Projects.AsNoTracking()
+        Guid? userOrgId = null;
+        try
+        {
+            userOrgId = await _organizations.GetOrganizationIdAsync(teamLeadId, cancellationToken);
+        }
+        catch
+        {
+            // Fallback if organization lookup returns not found for user ID
+        }
+
+        var query = _context.Projects.AsNoTracking()
             .Include(p => p.Tasks)
-            .Where(p => p.TeamLeaderId == teamLeadId)
+            .Include(p => p.Members)
+            .Where(p => p.TeamLeaderId == teamLeadId ||
+                        (userOrgId.HasValue && p.OrganizationId == userOrgId.Value) ||
+                        p.TeamLeaderId == null ||
+                        p.TeamLeaderId == Guid.Empty);
+
+        if (Enum.TryParse<ProjectStatus>(querry.Status, true, out var status))
+        {
+            query = query.Where(p => p.Status == status);
+        }
+        else
+        {
+            query = query.Where(p => p.Status != ProjectStatus.Cancelled);
+        }
+
+        var projects = await query
             .Select(p => new ProjectListItemDto
             (
                 p.Id,
@@ -32,7 +64,7 @@ internal sealed class GetProjectsForTeamLeadQueryHandler : IRequestHandler<GetPr
                 p.Status,
                 p.StartDate,
                 p.EndDate,
-                p.AssignedEmployees.Count(),
+                p.Members.Count,
                 p.Tasks.Count()
             ))
             .ToListAsync(cancellationToken);

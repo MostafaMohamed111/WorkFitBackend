@@ -8,9 +8,14 @@ public sealed class CreateInvitationEndpoint : Endpoint<CreateInvitationRequest,
     private readonly InvitationService _service;
     private readonly ICurrentUserContext _current;
     public CreateInvitationEndpoint(InvitationService service, ICurrentUserContext current) { _service = service; _current = current; }
-    public override void Configure() { Post("/api/developer-invitations"); Roles("TeamLeader", "OrganizationOwner"); }
-    public override async Task HandleAsync(CreateInvitationRequest req, CancellationToken ct) =>
-        await Send.OkAsync(await _service.RequestAsync(_current.GetUserId(ct), _current.GetRoles(ct).Contains("OrganizationOwner"), req, ct), ct);
+    public override void Configure() { Post("/api/developer-invitations"); Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin"); }
+    public override async Task HandleAsync(CreateInvitationRequest req, CancellationToken ct)
+    {
+        var roles = _current.GetRoles(ct);
+        var isOwner = roles.Any(r => r is "OrganizationOwner" or "Admin" or "SuperAdmin");
+        var result = await _service.RequestAsync(_current.GetUserId(ct), isOwner, req, ct);
+        await Send.OkAsync(result, ct);
+    }
 }
 
 public sealed class ListPendingInvitationsEndpoint : EndpointWithoutRequest<IReadOnlyList<InvitationDto>>

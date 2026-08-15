@@ -1,8 +1,8 @@
-﻿
+
 
 namespace WorkFit.TalentManagement.Domain.Enums;
 
-internal enum EmployeeProfileStatus
+public enum EmployeeProfileStatus
 {
     PendingReview,
     Active,

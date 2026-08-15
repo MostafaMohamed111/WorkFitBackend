@@ -6,7 +6,7 @@ using WorkFit.TalentManagement.Domain.Exceptions;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class EmployeeProfile : BaseEntity
+public sealed class EmployeeProfile : BaseEntity
 {
    
     // Cross-module references (IDs only)
