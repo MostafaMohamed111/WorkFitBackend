@@ -97,7 +97,7 @@ namespace WorkFit.Host
                .UseSwaggerGen();
 
             // seed roles and demo organization accounts
-            WorkFit.Host.Seeding.DemoDataSeeder.SeedDemoDataAsync(app.Services).GetAwaiter().GetResult();
+            //WorkFit.Host.Seeding.DemoDataSeeder.SeedDemoDataAsync(app.Services).GetAwaiter().GetResult();
 
             app.Run();
         }
