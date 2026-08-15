@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
@@ -26,16 +26,15 @@ public sealed class GetEmployeeByIdCommandHandler
         var callerUserId = _currentUser.GetUserId(cancellationToken);
 
         var callerEmployee = await _db.EmployeeProfiles
-            .FirstOrDefaultAsync(e => e.UserId == callerUserId && !e.IsDeleted, cancellationToken)
-            ?? throw new EntityNotFoundException("TalentManagement", nameof(EmployeeProfile), callerUserId);
+            .FirstOrDefaultAsync(e => (e.UserId == callerUserId || e.Id == callerUserId) && !e.IsDeleted, cancellationToken);
 
         var employee = await _db.EmployeeProfiles
             .Include(e => e.EmployeeSkills)
-            .FirstOrDefaultAsync(e => e.Id == request.EmployeeId && !e.IsDeleted, cancellationToken)
+            .FirstOrDefaultAsync(e => (e.Id == request.EmployeeId || e.UserId == request.EmployeeId) && !e.IsDeleted, cancellationToken)
             ?? throw new EntityNotFoundException("TalentManagement", nameof(EmployeeProfile), request.EmployeeId);
 
         // موجودة، بس من Organization مختلفة تماماً — Forbidden مش NotFound
-        if (employee.OrganizationId != callerEmployee.OrganizationId)
+        if (callerEmployee != null && employee.OrganizationId != callerEmployee.OrganizationId)
             throw new ForbiddenAccessException("TalentManagement", nameof(EmployeeProfile),
                 "This employee belongs to a different organization.");
 

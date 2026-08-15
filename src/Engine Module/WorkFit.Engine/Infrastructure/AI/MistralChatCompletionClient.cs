@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using WorkFit.Engine.Contracts.AI;
@@ -12,7 +13,8 @@ public sealed class MistralChatCompletionClient : IChatCompletionClient
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     private readonly IHttpClientFactory _httpClientFactory;
@@ -57,7 +59,10 @@ public sealed class MistralChatCompletionClient : IChatCompletionClient
             using var resp = await client.SendAsync(req, cancellationToken);
             var bodyText = await resp.Content.ReadAsStringAsync(cancellationToken);
             if (!resp.IsSuccessStatusCode)
-                throw new HttpRequestException($"Mistral {(int)resp.StatusCode} ({resp.StatusCode}). {bodyText}");
+                throw new HttpRequestException(
+                    $"Mistral {(int)resp.StatusCode} ({resp.StatusCode}). {bodyText}",
+                    null,
+                    resp.StatusCode);
 
             using var doc = JsonDocument.Parse(bodyText);
             var content = ExtractMessageContent(doc.RootElement);
@@ -99,7 +104,19 @@ public sealed class MistralChatCompletionClient : IChatCompletionClient
         throw last ?? new InvalidOperationException("Mistral request failed.");
     }
 
-    private static bool IsTransient(Exception ex) => ex is HttpRequestException or TaskCanceledException;
+    private static bool IsTransient(Exception ex)
+    {
+        if (ex is TaskCanceledException)
+        {
+            return true;
+        }
+
+        return ex is HttpRequestException http &&
+            (http.StatusCode is null ||
+             http.StatusCode == System.Net.HttpStatusCode.RequestTimeout ||
+             http.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+             (int)http.StatusCode >= 500);
+    }
 
     private static string ExtractMessageContent(JsonElement root)
     {

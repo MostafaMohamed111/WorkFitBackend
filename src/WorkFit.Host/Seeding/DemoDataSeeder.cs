@@ -60,33 +60,93 @@ internal static class DemoDataSeeder
             await orgDb.SaveChangesAsync();
         }
 
-        // 3. Seed Owner Email Aliases (owner@teamleader.com, owner@owner.com, Owner@Owner.com)
+        // 3. Seed Owner Email Aliases
         var ownerEmails = new[] { "owner@teamleader.com", "owner@owner.com", "Owner@Owner.com" };
         foreach (var email in ownerEmails)
         {
-            await EnsureUserWithRoleAsync(userManager, talentDb, org.Id, email, "Organization Owner", "Organization Owner", "OrganizationOwner", password);
+            await EnsureUserWithRoleAsync(
+                userManager,
+                talentDb,
+                org.Id,
+                email,
+                "Organization Owner",
+                "Organization Owner",
+                "Organization Owner Bio",
+                [],
+                "OrganizationOwner",
+                password);
         }
 
-        // 4. Seed Team Leader Email Aliases (teamleader@teamleader.com, karim@teamleader.com, Karim@teamleader.com)
+        // 4. Seed Team Leader Email Aliases
         var teamLeaderEmails = new[] { "teamleader@teamleader.com", "karim@teamleader.com", "Karim@teamleader.com" };
         foreach (var email in teamLeaderEmails)
         {
-            await EnsureUserWithRoleAsync(userManager, talentDb, org.Id, email, "Team Leader", "Team Lead", "TeamLeader", password);
+            await EnsureUserWithRoleAsync(
+                userManager,
+                talentDb,
+                org.Id,
+                email,
+                "Team Leader",
+                "Team Lead",
+                "Team Leader managing projects and employee recommendations",
+                [],
+                "TeamLeader",
+                password);
         }
 
-        // 5. Seed Test Organization Developers
+        // 5. Seed 5 Developers with Distinct Skill Sets for Testing AI Recommendation
         var testEmployees = new[]
         {
-            ("dev1@teamleader.com", "John Developer", "Senior Frontend Engineer"),
-            ("dev2@teamleader.com", "Sarah Jenkins", "Backend .NET Developer"),
-            ("dev3@teamleader.com", "Michael Smith", "Full Stack Engineer"),
-            ("dev4@teamleader.com", "Emily Davis", "UI/UX Developer"),
-            ("dev5@teamleader.com", "Alex Johnson", "DevOps Specialist")
+            (
+                "dev1@teamleader.com",
+                "John Angular",
+                "Senior Frontend Engineer",
+                "Expert Frontend Developer specializing in Angular 19, TypeScript, RxJS, NgRx, and web components.",
+                new[] { ("Angular", 95), ("TypeScript", 90), ("RxJS", 88), ("Tailwind CSS", 85), ("HTML5", 92) }
+            ),
+            (
+                "dev2@teamleader.com",
+                "Sarah Dotnet",
+                "Backend .NET Architect",
+                "Architect specializing in ASP.NET Core, C#, EF Core, SQL Server, Clean Architecture, and REST APIs.",
+                new[] { ("C#", 95), ("ASP.NET Core", 95), ("EF Core", 90), ("SQL Server", 90), ("Clean Architecture", 92) }
+            ),
+            (
+                "dev3@teamleader.com",
+                "Michael Cloud",
+                "Senior DevOps & Cloud Engineer",
+                "Specialist in Docker, Kubernetes, CI/CD Pipelines, Azure deployment, and Infrastructure as Code.",
+                new[] { ("Docker", 95), ("Kubernetes", 90), ("CI/CD Pipelines", 92), ("Azure", 88), ("Terraform", 85) }
+            ),
+            (
+                "dev4@teamleader.com",
+                "Emily Davis",
+                "UI/UX Developer & Designer",
+                "Senior UI/UX Developer and Designer specialized in UI/UX Design, Figma, Wireframing, Prototyping, User Research, Design Systems, and HTML/CSS.",
+                new[] { ("UI/UX Design", 95), ("Figma", 95), ("Wireframing", 90), ("Prototyping", 92), ("User Research", 88), ("Design Systems", 90) }
+            ),
+            (
+                "dev5@teamleader.com",
+                "Alex Test",
+                "Lead QA Automation Engineer",
+                "QA Automation expert specialized in Playwright, Cypress, Selenium, End-to-End Testing, and API testing.",
+                new[] { ("Playwright", 95), ("Cypress", 90), ("Selenium", 88), ("QA Automation", 92), ("API Testing", 90) }
+            )
         };
 
-        foreach (var (empEmail, empName, empTitle) in testEmployees)
+        foreach (var (empEmail, empName, empTitle, empBio, empSkills) in testEmployees)
         {
-            await EnsureUserWithRoleAsync(userManager, talentDb, org.Id, empEmail, empName, empTitle, "Employee", password);
+            await EnsureUserWithRoleAsync(
+                userManager,
+                talentDb,
+                org.Id,
+                empEmail,
+                empName,
+                empTitle,
+                empBio,
+                empSkills,
+                "Employee",
+                password);
         }
     }
 
@@ -97,6 +157,8 @@ internal static class DemoDataSeeder
         string email,
         string name,
         string title,
+        string bio,
+        (string name, int score)[] skills,
         string roleName,
         string password)
     {
@@ -122,20 +184,67 @@ internal static class DemoDataSeeder
 
         if (user is not null)
         {
-            var profile = await talentDb.EmployeeProfiles.FirstOrDefaultAsync(x => x.UserId == user.Id || x.Email == email);
+            var profile = await talentDb.EmployeeProfiles
+                .Include(p => p.EmployeeSkills)
+                .FirstOrDefaultAsync(x => x.UserId == user.Id || x.Email == email);
+
             if (profile is null)
             {
                 profile = EmployeeProfile.Create(orgId, user.Id, email, name, title);
                 profile.ActivateEmployee();
                 talentDb.EmployeeProfiles.Add(profile);
-                await talentDb.SaveChangesAsync();
             }
             else
             {
                 var entry = talentDb.Entry(profile);
                 entry.Property("OrganizationId").CurrentValue = orgId;
                 profile.ActivateEmployee();
+            }
+
+            var nameProp = typeof(EmployeeProfile).GetProperty(nameof(EmployeeProfile.Name));
+            nameProp?.SetValue(profile, name);
+
+            var titleProp = typeof(EmployeeProfile).GetProperty(nameof(EmployeeProfile.JobTitle));
+            titleProp?.SetValue(profile, title);
+
+            var bioProp = typeof(EmployeeProfile).GetProperty(nameof(EmployeeProfile.Bio));
+            bioProp?.SetValue(profile, bio);
+
+            if (skills.Length > 0)
+            {
+                foreach (var (skillName, score) in skills)
+                {
+                    var existingSkill = profile.EmployeeSkills.FirstOrDefault(s => string.Equals(s.SkillName, skillName, StringComparison.OrdinalIgnoreCase));
+                    if (existingSkill is null)
+                    {
+                        profile.AddOrUpdateEmployeeSkill(
+                            Guid.NewGuid(),
+                            Guid.NewGuid(),
+                            skillName,
+                            score,
+                            $"Verified skill in {skillName}",
+                            "System Seed");
+                    }
+                    else
+                    {
+                        profile.AddOrUpdateEmployeeSkill(
+                            existingSkill.SkillId,
+                            existingSkill.Id,
+                            skillName,
+                            score,
+                            $"Updated skill in {skillName}",
+                            "System Seed");
+                    }
+                }
+            }
+
+            try
+            {
                 await talentDb.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Concurrency safe
             }
         }
     }

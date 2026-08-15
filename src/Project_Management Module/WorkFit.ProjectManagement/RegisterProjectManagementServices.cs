@@ -14,6 +14,7 @@ using WorkFit.Organizations.Contracts.OrganizationGitHub;
 using WorkFit.ProjectManagement.Infrastructure.Data;
 using Microsoft.Extensions.Hosting;
 using WorkFit.ProjectManagement.Contracts.Membership;
+using WorkFit.ProjectManagement.Contracts.Agent;
 
 namespace WorkFit.ProjectManagement;
 
@@ -33,6 +34,7 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
         services.AddScoped<ICreateProjectService, CreateProjectService>();
         services.AddScoped<ICreateProjectTaskService, CreateProjectTaskService>();
         services.AddScoped<IProjectMembershipService, ProjectMembershipService>();
+        services.AddScoped<IAgentProjectContextService, AgentProjectContextService>();
         services.AddScoped<IGitHubProjectProvisioningService, GitHubProjectProvisioningService>();
         services.AddHostedService<ProjectManagementDatabaseInitializer>();
     }

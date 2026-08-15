@@ -27,8 +27,13 @@ internal sealed class EmployeeIndexingSnapshotService : IEmployeeIndexingSnapsho
         Guid organizationId,
         CancellationToken cancellationToken = default)
     {
-        var employees = await LoadEmployees()
-            .Where(x => x.OrganizationId == organizationId)
+        var query = LoadEmployees();
+        if (organizationId != Guid.Empty)
+        {
+            query = query.Where(x => x.OrganizationId == organizationId);
+        }
+
+        var employees = await query
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
         var snapshots = new List<EmployeeIndexingSnapshot>(employees.Count);

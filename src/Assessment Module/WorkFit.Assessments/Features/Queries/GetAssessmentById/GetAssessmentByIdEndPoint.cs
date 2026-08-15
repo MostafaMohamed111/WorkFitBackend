@@ -1,4 +1,4 @@
-﻿
+
 
 using FastEndpoints;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +18,7 @@ internal class GetAssessmentByIdEndPoint : EndpointWithoutRequest<AssessmentDto>
     public override void Configure()
     {
         Get("/api/assessment/{Id:guid}");
-        Roles("TeamLead","Employee");
+        Roles("TeamLeader", "TeamLead", "Employee", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Assessment"));
     }
     public override async Task HandleAsync(CancellationToken ct)

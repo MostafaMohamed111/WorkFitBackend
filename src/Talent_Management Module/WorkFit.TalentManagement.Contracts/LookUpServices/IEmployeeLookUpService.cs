@@ -14,4 +14,8 @@ public interface IEmployeeLookUpService
 
     Task<List<EmployeeDetailsDto>> GetAllEmployeesAsync(
         CancellationToken cancellationToken = default);
+
+    Task<List<EmployeeDetailsDto>> GetEmployeesByOrganizationIdAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken = default);
 }

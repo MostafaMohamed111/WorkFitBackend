@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -15,7 +15,7 @@ public sealed class GetEmployeeByIdEndPoint : Endpoint<GetEmployeeByIdRequest, E
 
     public override void Configure()
     {
-        Get("/api/talent-management/employees/{id}");
+        Get("/api/employees/{id}", "/api/talent-management/employees/{id}");
         Roles("TeamLeader", "OrganizationOwner", "SuperAdmin", "Employee");
         Options(x => x.WithTags("Talent Management"));
     }

@@ -35,7 +35,16 @@ public sealed class TemporaryUploadOrphanCleanupBackgroundService : BackgroundSe
         }
 
         if (opts.InitialDelay > TimeSpan.Zero)
-            await Task.Delay(opts.InitialDelay, stoppingToken).ConfigureAwait(false);
+        {
+            try
+            {
+                await Task.Delay(opts.InitialDelay, stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+        }
 
         while (!stoppingToken.IsCancellationRequested)
         {

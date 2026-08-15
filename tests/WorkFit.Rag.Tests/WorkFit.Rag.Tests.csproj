@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\RAG Module\WorkFit.Rag.Contracts\WorkFit.Rag.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Talent_Management Module\WorkFit.TalentManagement.Contracts\WorkFit.TalentManagement.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Engine Module\WorkFit.Engine.Contracts\WorkFit.Engine.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Engine Module\WorkFit.Engine\WorkFit.Engine.csproj" />
     <ProjectReference Include="..\..\src\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
     <ProjectReference Include="..\..\src\WorkFlow Module\WorkFit.WorkFlow\WorkFit.WorkFlow.csproj" />
   </ItemGroup>
