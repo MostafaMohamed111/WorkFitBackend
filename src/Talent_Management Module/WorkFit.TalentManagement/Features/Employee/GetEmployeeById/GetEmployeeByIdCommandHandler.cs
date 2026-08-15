@@ -8,7 +8,7 @@ using WorkFit.TalentManagement.Infrastructure.Data;
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 
 public sealed class GetEmployeeByIdCommandHandler
-    : IRequestHandler<GetEmployeeByUserIdCommand, EmployeeDetailsDto>
+    : IRequestHandler<GetEmployeeByIdCommand, EmployeeDetailsDto>
 {
 
     private readonly TalentDbContext _db;
@@ -21,7 +21,7 @@ public sealed class GetEmployeeByIdCommandHandler
         _currentUser = currentUser;
     }
 
-    public async Task<EmployeeDetailsDto> Handle(GetEmployeeByUserIdCommand request, CancellationToken cancellationToken = default)
+    public async Task<EmployeeDetailsDto> Handle(GetEmployeeByIdCommand request, CancellationToken cancellationToken = default)
     {
         var callerUserId = _currentUser.GetUserId(cancellationToken);
 

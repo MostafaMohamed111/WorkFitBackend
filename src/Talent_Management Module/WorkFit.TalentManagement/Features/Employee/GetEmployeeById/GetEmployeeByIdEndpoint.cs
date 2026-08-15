@@ -22,7 +22,7 @@ public sealed class GetEmployeeByUserIdEndPoint : Endpoint<GetEmployeeByIdReques
 
     public override async Task HandleAsync(GetEmployeeByIdRequest req, CancellationToken ct)
     {
-        var query = new GetEmployeeByUserIdCommand(req.Id);
+        var query = new GetEmployeeByIdCommand(req.Id);
         var result = await _mediator.Send(query, ct);
 
         await Send.OkAsync(result, cancellation: ct);

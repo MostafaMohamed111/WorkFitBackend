@@ -4,6 +4,7 @@ using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Domain.Entities;
 using WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
+using WorkFit.TalentManagement.Features.Employee.GetEmployeeUserById;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeByUserId;

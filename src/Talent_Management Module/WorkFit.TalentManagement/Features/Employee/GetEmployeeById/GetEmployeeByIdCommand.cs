@@ -2,6 +2,6 @@
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployeeById;
 
-public sealed record GetEmployeeByUserIdCommand(Guid EmployeeId) : IRequest<EmployeeDetailsDto>;
+public sealed record GetEmployeeByIdCommand(Guid EmployeeId) : IRequest<EmployeeDetailsDto>;
 
 

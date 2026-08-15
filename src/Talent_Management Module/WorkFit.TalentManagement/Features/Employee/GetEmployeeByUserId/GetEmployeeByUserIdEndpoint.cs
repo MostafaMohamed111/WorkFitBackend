@@ -19,7 +19,7 @@ public sealed class GetEmployeeByUserIdEndPoint : EndpointWithoutRequest<Employe
 
     public override void Configure()
     {
-        Get("/api/talent-management/employees/");
+        Get("/api/talent-management/employees/user");
         Roles("TeamLeader", "OrganizationOwner", "SuperAdmin", "Employee");
         Options(x => x.WithTags("Talent Management"));
     }
