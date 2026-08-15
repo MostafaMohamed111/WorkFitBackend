@@ -13,6 +13,7 @@ public sealed class DeleteJiraSettingsEndpoint : Endpoint<DeleteJiraSettingsRequ
     public override void Configure()
     {
         Delete("/api/integration/{OrganizationId}/jira-settings");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Integration"));
     }
 

@@ -16,6 +16,7 @@ public sealed class UpsertJiraSettingsEndpoint : Endpoint<UpsertJiraSettingsRequ
     public override void Configure()
     {
         Put("/api/integration/{OrganizationId}/jira-settings");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Integration"));
     }
 

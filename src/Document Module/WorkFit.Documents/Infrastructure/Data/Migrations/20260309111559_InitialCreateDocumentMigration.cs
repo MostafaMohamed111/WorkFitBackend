@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,30 +11,31 @@ namespace WorkFit.Documents.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Documents",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StorageKey = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Size = table.Column<long>(type: "bigint", nullable: false),
-                    Source = table.Column<int>(type: "int", nullable: false),
-                    DocumentType = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Documents", x => x.Id);
-                });
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[document].[Documents]', N'U') IS NULL AND OBJECT_ID(N'[dbo].[Documents]', N'U') IS NULL AND OBJECT_ID(N'[Documents]', N'U') IS NULL
+BEGIN
+    CREATE TABLE [Documents] (
+        [Id] uniqueidentifier NOT NULL,
+        [StorageKey] nvarchar(max) NOT NULL,
+        [FileName] nvarchar(max) NOT NULL,
+        [ContentType] nvarchar(max) NOT NULL,
+        [Size] bigint NOT NULL,
+        [Source] int NOT NULL,
+        [DocumentType] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_Documents] PRIMARY KEY ([Id])
+    );
+END
+");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Documents");
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'[dbo].[Documents]', N'U') IS NOT NULL
+    DROP TABLE [dbo].[Documents];
+");
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class ConfidenceEvidence : BaseEntity
+public sealed class ConfidenceEvidence : BaseEntity
 { 
     public Guid SkillConfidenceChangeId { get; private set; }
     public string Source { get; private set; } = default!; // GitHub / Jira / Manual

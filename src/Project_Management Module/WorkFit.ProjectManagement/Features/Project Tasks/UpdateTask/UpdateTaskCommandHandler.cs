@@ -1,12 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WorkFit.ProjectManagement.Features.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.ProjectManagement.CrossCutting;
+using WorkFit.ProjectManagement.Features.Common;
+using WorkFit.ProjectManagement.Features.Exceptions;
 using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.UpdateTask;
+
 public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, Guid>
 {
     private readonly WorkFitProjectDbContext _context;
@@ -30,9 +32,16 @@ public sealed class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "ProjectTask", command.TaskId);
 
         var actorId = _currentUser.GetUserId(ct);
+        var isAssignedDeveloper = (task.AssignedEmployeeId.HasValue && task.AssignedEmployeeId.Value == actorId) || (task.CreatedById == actorId);
 
-        if (actorId != task.CreatedById)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
+        if (!isAssignedDeveloper)
+        {
+            var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == task.ProjectId, ct);
+            if (project is not null)
+            {
+                ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
+            }
+        }
 
         task.UpdateDetails(command.Title, command.Description, command.Priority, command.StoryPoints, command.DueDate);
 

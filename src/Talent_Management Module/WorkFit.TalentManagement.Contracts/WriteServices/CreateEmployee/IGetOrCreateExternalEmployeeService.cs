@@ -7,9 +7,8 @@ public interface IGetOrCreateExternalEmployeeService
     /// If found, returns the internal EmployeeProfile ID.
     /// If not found, creates a new EmployeeProfile (with optional email), creates the mapping, and returns the ID.
     /// </summary>
-    Task<Guid> GetOrCreateAsync(
+    Task<ExternalEmployeeResolution> GetOrCreateAsync(
         Guid organizationId,
-        Guid userId,
         string sourceSystem,
         string externalAccountId,
         string externalDisplayName,
@@ -18,3 +17,8 @@ public interface IGetOrCreateExternalEmployeeService
         string? linkedInUrl = null,
         CancellationToken cancellationToken = default);
 }
+
+public sealed record ExternalEmployeeResolution(
+    Guid EmployeeProfileId,
+    bool IsPending,
+    bool IsLinked);

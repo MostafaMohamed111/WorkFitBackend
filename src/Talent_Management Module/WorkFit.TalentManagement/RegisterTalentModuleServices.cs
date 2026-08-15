@@ -7,6 +7,7 @@ using WorkFit.TalentManagement.Contracts.LookUpServices;
 using WorkFit.TalentManagement.Contracts.Indexing;
 using WorkFit.TalentManagement.Contracts.WriteServices.CreateEmployee;
 using WorkFit.TalentManagement.Contracts.WriteServices.CreateOrUpdateSkill;
+using WorkFit.TalentManagement.Contracts.Invitations;
 using WorkFit.TalentManagement.CrossCutting;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
@@ -28,6 +29,7 @@ public sealed class RegisterTalentModuleServices : IRegisterModuleServices
         services.AddScoped<EmployeeIndexingStatePublisher>();
         services.AddScoped<ICreateEmployeeService, CreateEmployeeService>();
         services.AddScoped<IGetOrCreateExternalEmployeeService, GetOrCreateExternalEmployeeService>();
+        services.AddScoped<IDeveloperInvitationTalentService, DeveloperInvitationTalentService>();
         services.AddScoped<ICreateOrUpdateEmployeeSkillsAfterAssessmentService, CreateOrUpdateEmployeeSkillsAfterAssessmentService>();
         services.AddHostedService<TalentDatabaseInitializer>();
     }

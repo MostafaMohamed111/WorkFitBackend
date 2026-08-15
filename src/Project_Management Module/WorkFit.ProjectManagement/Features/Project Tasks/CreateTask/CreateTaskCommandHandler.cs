@@ -7,6 +7,7 @@ using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.ProjectManagement.Features.Common;
 using TaskType = WorkFit.ProjectManagement.Domain.Enums.TaskType;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.CreateTask;
@@ -37,21 +38,20 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
         if (project is null)
             throw new EntityNotFoundException(ModuleMarker.ModuleName, "Project", command.ProjectId);
 
-        if (!project.GitHubRepositoryId.HasValue)
-        {
-            throw new InvalidOperationException("The project does not have a GitHub repository provisioned yet.");
-        }
+        ProjectAccessGuard.EnsureAuthorized(project, _currentUser, ct);
 
         var actorId = _currentUser.GetUserId(ct);
-        if(actorId != project.TeamLeaderId)
-            throw new UnAuthorizedTeamLeadAccessException(actorId);
 
         var taskExists = await _context.ProjectTasks
             .AsNoTracking()
             .AnyAsync(t => t.ProjectId == command.ProjectId && t.Title == command.Title, ct);
 
         if (taskExists)
-            throw new InvalidOperationException($"Task '{command.Title}' already exists for project '{command.ProjectId}'.");
+            throw new FeatureException(
+                ModuleMarker.ModuleName,
+                "PROJECTTASK_ENTITY_ALREADY_EXISTS",
+                $"Task '{command.Title}' already exists for project '{command.ProjectId}'.",
+                $"A task named '{command.Title}' already exists in this project.");
 
         if (command.AssigneeId.HasValue && command.AllocationPercentage == 0)
             throw new FeatureException(
@@ -62,6 +62,16 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
 
         if (command.AssigneeId.HasValue)
         {
+            var isProjectMember = await _context.ProjectMembers.AsNoTracking().AnyAsync(
+                member => member.ProjectId == command.ProjectId && member.EmployeeProfileId == command.AssigneeId.Value,
+                ct);
+            if (!isProjectMember)
+                throw new FeatureException(
+                    ModuleMarker.ModuleName,
+                    "ASSIGNEE_NOT_PROJECT_MEMBER",
+                    "The selected employee is not a member of this project.",
+                    "Add the employee to this project before assigning a task.");
+
             await TaskAllocationCapacityValidator.ValidateAsync(
                 _context,
                 command.AssigneeId.Value,
@@ -82,18 +92,31 @@ public sealed class CreateTaskCommandHandler : IRequestHandler<CreateTaskCommand
             command.DueDate,
             command.AllocationPercentage);
 
-        var branch = await _gitHubProvisioningService.CreateTaskBranchAsync(
-            project.OrganizationId,
-            project.Id,
-            project.GitHubRepositoryName,
-            project.Name,
-            command.Title,
-            task.Id,
-            ct);
+        if (project.GitHubRepositoryId.HasValue && !string.IsNullOrWhiteSpace(project.GitHubRepositoryName))
+        {
+            try
+            {
+                var branch = await _gitHubProvisioningService.CreateTaskBranchAsync(
+                    project.OrganizationId,
+                    project.Id,
+                    project.GitHubRepositoryName,
+                    project.Name,
+                    command.Title,
+                    task.Id,
+                    ct);
 
-        task.SetSource(SourceSystem.GitHub.ToString(), branch.Name);
-        task.SetGitHubBranchName(branch.Name);
-        task.SetGitHubBranchNodeId(branch.NodeId);
+                if (branch != null)
+                {
+                    task.SetSource(SourceSystem.GitHub.ToString(), branch.Name);
+                    task.SetGitHubBranchName(branch.Name);
+                    task.SetGitHubBranchNodeId(branch.NodeId);
+                }
+            }
+            catch (Exception)
+            {
+                // GitHub branch creation is optional; log and proceed with task creation.
+            }
+        }
 
         await _context.ProjectTasks.AddAsync(task, ct);
 

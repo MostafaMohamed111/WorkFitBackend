@@ -132,6 +132,9 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("SourceSystem")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -142,12 +145,12 @@ namespace WorkFit.TalentManagement.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmployeeProfileId");
+
                     b.HasIndex("EmployeeProfileId", "SourceSystem")
                         .IsUnique();
 
-                    b.HasIndex("EmployeeProfileId");
-
-                    b.HasIndex("SourceSystem", "ExternalAccountId")
+                    b.HasIndex("OrganizationId", "SourceSystem", "ExternalAccountId")
                         .IsUnique();
 
                     b.ToTable("IdentityMappings", "talent");

@@ -1,8 +1,8 @@
-﻿using WorkFit.SharedKernel.BaseEntity;
+using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class Certification : BaseEntity
+public sealed class Certification : BaseEntity
 {
     public Guid DocumentId { get; private set; } // ref for the doc module
     public Guid EmployeeProfileId { get; private set; }

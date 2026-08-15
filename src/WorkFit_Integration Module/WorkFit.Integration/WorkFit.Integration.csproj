@@ -22,6 +22,7 @@
 
     <!-- Integration abstractions + DTOs (sibling project in same module folder) -->
     <ProjectReference Include="..\WorkFit.Integration.Contracts\WorkFit.Integration.Contracts.csproj" />
+    <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations.Contracts\WorkFit.Organizations.Contracts.csproj" />
 
     <!-- Module contracts we write into -->
     <ProjectReference Include="..\..\Project_Management Module\WorkFit.ProjectManagement.Contracts\WorkFit.ProjectManagement.Contracts.csproj" />

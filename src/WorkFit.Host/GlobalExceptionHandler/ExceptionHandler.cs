@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.Exceptions.DomainExceptions;
 
@@ -15,6 +15,9 @@ internal sealed class ExceptionHandler : IExceptionHandler
             ConcurrencyConflictException ex => (StatusCodes.Status409Conflict, ex.Code, ex.Message, ex.UserFriendlyMessage),
             DomainException ex => (StatusCodes.Status400BadRequest, ex.Code, ex.Message, ex.UserFriendlyMessage),
             FeatureException ex => (StatusCodes.Status400BadRequest, ex.Code, ex.Message, ex.UserFriendlyMessage),
+            UnauthorizedAccessException ex => (StatusCodes.Status403Forbidden, "FORBIDDEN", ex.Message, "You are not allowed to perform this operation."),
+            InvalidOperationException ex => (StatusCodes.Status400BadRequest, "INVALID_OPERATION", ex.Message, ex.Message),
+            ArgumentException ex => (StatusCodes.Status400BadRequest, "INVALID_ARGUMENT", ex.Message, ex.Message),
             _ => (StatusCodes.Status500InternalServerError, "INTERNAL_SERVER_ERROR", exception.Message, "Please try again later.")
         };
 

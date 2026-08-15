@@ -6,6 +6,8 @@ using WorkFit.Integration.Infrastructure.Data;
 using WorkFit.Integration.Infrastructure.Providers.Jira;
 using WorkFit.ProjectManagement.Contracts.CreateProjectService;
 using WorkFit.ProjectManagement.Contracts.CreateProjectTaskService;
+using WorkFit.ProjectManagement.Contracts.Membership;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.Skills.Contracts;
 using WorkFit.Skills.Contracts.Dtos;
@@ -22,6 +24,8 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
     private readonly ISkillCatalog _skillCatalog;
     private readonly IGetOrCreateExternalEmployeeService _getOrCreateExternalEmployee;
     private readonly ICreateOrUpdateEmployeeSkillsAfterAssessmentService _updateSkills;
+    private readonly IProjectMembershipService _membershipService;
+    private readonly ICurrentUserContext _currentUserContext;
     private readonly ILogger<SyncIntegrationCommandHandler> _logger;
 
     private static readonly Guid SystemAssessmentId = new("00000000-0000-0000-0000-000000000001");
@@ -33,6 +37,8 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         ISkillCatalog skillCatalog,
         IGetOrCreateExternalEmployeeService getOrCreateExternalEmployee,
         ICreateOrUpdateEmployeeSkillsAfterAssessmentService updateSkills,
+        IProjectMembershipService membershipService,
+        ICurrentUserContext currentUserContext,
         ILogger<SyncIntegrationCommandHandler> logger)
     {
         _provider = provider;
@@ -41,6 +47,8 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         _skillCatalog = skillCatalog;
         _getOrCreateExternalEmployee = getOrCreateExternalEmployee;
         _updateSkills = updateSkills;
+        _membershipService = membershipService;
+        _currentUserContext = currentUserContext;
         _logger = logger;
     }
 
@@ -61,14 +69,17 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         // ── 1. Developers + skill signals ─────────────────────────────────────
         var developers = await _provider.FetchDeveloperProfilesAsync(cancellationToken);
         var accountIdToEmployeeId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var developerResolutions = new Dictionary<string, ExternalEmployeeResolution>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var dev in developers)
         {
             try
             {
-                var empId = await SyncDeveloperAsync(dev, request.OrganizationId, cancellationToken);
+                var resolution = await SyncDeveloperAsync(dev, request.OrganizationId, cancellationToken);
+                var empId = resolution.EmployeeProfileId;
                 developersSynced++;
                 accountIdToEmployeeId[dev.SourceAccountId] = empId;
+                developerResolutions[dev.SourceAccountId] = resolution;
 
                 if (dev.SkillSignals.Count > 0)
                 {
@@ -87,6 +98,7 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         // ── 2. Projects ───────────────────────────────────────────────────────
         var externalProjects = await _provider.FetchProjectsAsync(cancellationToken);
         var projectKeyToId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var unknownDevelopers = new List<UnknownDeveloperDto>();
 
         foreach (var ext in externalProjects)
         {
@@ -134,6 +146,33 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
                     errors.Add(msg);
                 }
             }
+
+            // ── 4. Automatically add already accepted/mapped developers to ProjectMembers ──
+            foreach (var (accountId, resolution) in developerResolutions)
+            {
+                if (!resolution.IsPending && resolution.EmployeeProfileId != Guid.Empty)
+                {
+                    try
+                    {
+                        await _membershipService.AddMemberAsync(projectId, resolution.EmployeeProfileId, request.OrganizationId, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to auto-add accepted developer {EmpId} to project {ProjectId}", resolution.EmployeeProfileId, projectId);
+                    }
+                }
+            }
+
+            // ── 5. Add unmapped / pending developers to unknownDevelopers list ──
+            foreach (var group in externalTasks.Where(t => !string.IsNullOrWhiteSpace(t.AssigneeAccountId)).GroupBy(t => t.AssigneeAccountId!, StringComparer.OrdinalIgnoreCase))
+            {
+                if (!developerResolutions.TryGetValue(group.Key, out var resolution) || !resolution.IsPending) continue;
+                var developer = developers.FirstOrDefault(d => string.Equals(d.SourceAccountId, group.Key, StringComparison.OrdinalIgnoreCase));
+                if (developer != null)
+                {
+                    unknownDevelopers.Add(new UnknownDeveloperDto(resolution.EmployeeProfileId, projectId, developer.SourceAccountId, developer.DisplayName, developer.Email, group.Count(), "NotRequested"));
+                }
+            }
         }
 
         var result = new SyncResult(
@@ -144,7 +183,8 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
             skillsSynced,
             errors.Count,
             errors.AsReadOnly(),
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            unknownDevelopers);
 
         _logger.LogInformation(
             "Integration sync completed. Projects={P}, Tasks={T}, Developers={D}, Skills={S}, Errors={E}",
@@ -158,12 +198,14 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         Guid organizationId,
         CancellationToken ct)
     {
+        var currentUserId = _currentUserContext.GetUserId(ct);
         var dto = new UpsertExternalProjectDto(
             OrganizationId: organizationId,
             SourceSystem: _provider.ProviderName,
             SourceReferenceId: ext.SourceKey,
             Name: Truncate(ext.Name, 100)!,
-            Description: Truncate(ext.Description, 500)
+            Description: Truncate(ext.Description, 500),
+            TeamLeaderId: currentUserId != Guid.Empty ? currentUserId : null
         );
 
         return await _createProjectService.UpsertExternalProjectAsync(dto, ct);
@@ -204,24 +246,19 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
         await _createTaskService.UpsertExternalTaskAsync(dto, ct);
     }
 
-    private async Task<Guid> SyncDeveloperAsync(
+    private async Task<ExternalEmployeeResolution> SyncDeveloperAsync(
         ExternalDeveloperDto dev,
         Guid organizationId,
         CancellationToken ct)
     {
-        var deterministicUserId = DeterministicGuid(dev.SourceAccountId);
-
-        var empId = await _getOrCreateExternalEmployee.GetOrCreateAsync(
+        return await _getOrCreateExternalEmployee.GetOrCreateAsync(
             organizationId: organizationId,
-            userId: deterministicUserId,
             sourceSystem: _provider.ProviderName,
             externalAccountId: dev.SourceAccountId,
             externalDisplayName: dev.DisplayName,
             email: dev.Email,
             jobTitle: dev.JobTitle ?? "Software Engineer",
             cancellationToken: ct);
-
-        return empId;
     }
 
     private async Task<int> SyncSkillSignalsAsync(
@@ -259,12 +296,4 @@ internal sealed class SyncIntegrationCommandHandler : IRequestHandler<SyncIntegr
 
     private static string? Truncate(string? s, int max) =>
         s is null ? null : s.Length <= max ? s : s[..max];
-
-    private static Guid DeterministicGuid(string input)
-    {
-        using var md5 = System.Security.Cryptography.MD5.Create();
-        var hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
-        return new Guid(hash);
-    }
 }
-

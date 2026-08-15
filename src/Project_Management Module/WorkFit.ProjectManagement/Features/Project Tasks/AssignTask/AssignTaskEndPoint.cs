@@ -16,7 +16,7 @@ public sealed class AssignTaskEndPoint : Endpoint<AssignTaskRequest, Guid>
     {
         Put("/api/tasks/{id}/assign");
         Options(x => x.WithTags("Project Management"));
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
     }
 
     public override async Task HandleAsync(AssignTaskRequest req, CancellationToken ct)

@@ -1,4 +1,4 @@
-﻿using WorkFit.ProjectManagement.Domain.Enums;
+using WorkFit.ProjectManagement.Domain.Enums;
 using TaskStatus = WorkFit.ProjectManagement.Domain.Enums.TaskStatus;
 
 namespace WorkFit.ProjectManagement.Features.Project_Tasks.GetProjectTasks;
@@ -10,6 +10,7 @@ public sealed record TaskListItemDto(
     TaskStatus Status,
     TaskPriority Priority,
     Guid? AssigneeId,
+    Guid? CreatedById,
     int? StoryPoints,
     DateOnly? DueDate,
     DateTimeOffset? CompletedAt

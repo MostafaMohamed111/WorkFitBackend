@@ -10,6 +10,7 @@ using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Infrastructure.Data;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
+using WorkFit.Identity.CrossModule;
 
 namespace WorkFit.Identity;
 
@@ -31,6 +32,7 @@ public sealed class RegisterIdentityModuleServices : IRegisterModuleServices
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<JwtTokenGenerator>();
         services.AddScoped<ICreateOrganizationUserService, RegisterOrganizationCommandHandler>();
+        services.AddScoped<IEmployeeAccountProvisioningService, EmployeeAccountProvisioningService>();
         services.AddScoped<ICreateEmployeeUserService, RegisterEmployeeUserService>();
     }
 

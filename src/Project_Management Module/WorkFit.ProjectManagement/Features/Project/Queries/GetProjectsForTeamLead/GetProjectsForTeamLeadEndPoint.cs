@@ -6,7 +6,7 @@ using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.ProjectManagement.Features.Project.Queries.GetProjectsForTeamLead;
 
-internal sealed class GetProjectsForTeamLeadEndPoint : EndpointWithoutRequest<IReadOnlyList<ProjectListItemDto>>
+internal sealed class GetProjectsForTeamLeadEndPoint : Endpoint<GetProjectsForTeamLeadRequest, IReadOnlyList<ProjectListItemDto>>
 {
     private readonly IMediator _mediator;
 
@@ -23,9 +23,9 @@ internal sealed class GetProjectsForTeamLeadEndPoint : EndpointWithoutRequest<IR
         Options(x => x.WithTags("Project Management"));
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetProjectsForTeamLeadRequest req, CancellationToken ct)
     {
-        var query = new GetProjectsForTeamLeadQuery();
+        var query = new GetProjectsForTeamLeadQuery(req.Status);
         var projects = await _mediator.Send(query, ct);
         await Send.OkAsync(projects, ct);
     }

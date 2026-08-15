@@ -1,10 +1,10 @@
-﻿
+
 
 using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class SkillConfidenceChange : BaseEntity
+public sealed class SkillConfidenceChange : BaseEntity
 {
     public Guid EmployeeSkillId { get; private set; }
     public Guid AssessmentId { get; private set; }

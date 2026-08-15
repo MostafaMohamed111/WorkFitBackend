@@ -1,6 +1,9 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
+using WorkFit.TalentManagement.Infrastructure.Data;
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployees;
 
@@ -8,8 +11,18 @@ public sealed class GetEmployeesEndpoint
     : EndpointWithoutRequest<List<EmployeeListItemDto>>
 {
     private readonly IMediator _mediator;
+    private readonly ICurrentUserContext _currentUserContext;
+    private readonly TalentDbContext _context;
 
-    public GetEmployeesEndpoint(IMediator mediator) => _mediator = mediator;
+    public GetEmployeesEndpoint(
+        IMediator mediator,
+        ICurrentUserContext currentUserContext,
+        TalentDbContext context)
+    {
+        _mediator = mediator;
+        _currentUserContext = currentUserContext;
+        _context = context;
+    }
 
     public override void Configure()
     {

@@ -8,7 +8,7 @@ public class TalentDbContext : DbContext
     public TalentDbContext(DbContextOptions<TalentDbContext> options)
         : base(options) { }
 
-    internal DbSet<EmployeeProfile> EmployeeProfiles => Set<EmployeeProfile>();
+    public DbSet<EmployeeProfile> EmployeeProfiles => Set<EmployeeProfile>();
     internal DbSet<EmployeeSkill> EmployeeSkills => Set<EmployeeSkill>();
     internal DbSet<ConfidenceEvidence> SkillEvidences => Set<ConfidenceEvidence>();
     internal DbSet<Certification> Certifications => Set<Certification>();

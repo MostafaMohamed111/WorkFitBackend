@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
 using WorkFit.SharedKernel.MediatorContract;
 
@@ -16,7 +16,7 @@ public sealed class CreateProjectEndpoint : Endpoint<CreateProjectRequest, Guid>
     public override void Configure()
     {
         Post("/api/projects");
-        Roles("TeamLeader");
+        Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Project Management"));
         Description(static b => b
             .Produces<Guid>(200)

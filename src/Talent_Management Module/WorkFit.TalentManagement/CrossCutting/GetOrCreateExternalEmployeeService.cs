@@ -16,9 +16,8 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
         _publisher = publisher;
     }
 
-    public async Task<Guid> GetOrCreateAsync(
+    public async Task<ExternalEmployeeResolution> GetOrCreateAsync(
         Guid organizationId, 
-        Guid userId,
         string sourceSystem, 
         string externalAccountId, 
         string externalDisplayName, 
@@ -28,7 +27,7 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
         CancellationToken cancellationToken = default)
     {
         var existingMapping = await _db.IdentityMappings
-            .FirstOrDefaultAsync(m => m.SourceSystem == sourceSystem && m.ExternalAccountId == externalAccountId, cancellationToken);
+            .FirstOrDefaultAsync(m => m.OrganizationId == organizationId && m.SourceSystem == sourceSystem && m.ExternalAccountId == externalAccountId, cancellationToken);
 
         if (existingMapping != null)
         {
@@ -39,35 +38,16 @@ internal sealed class GetOrCreateExternalEmployeeService : IGetOrCreateExternalE
                 await _db.SaveChangesAsync(cancellationToken);
                 await _publisher.PublishAsync(mappedEmployee.Id, "Updated", cancellationToken);
             }
-            return existingMapping.EmployeeProfileId;
+            return new(existingMapping.EmployeeProfileId, mappedEmployee?.UserId == Guid.Empty, mappedEmployee?.UserId != Guid.Empty);
         }
 
-        
-        // If userId is Guid.Empty (anonymous upload), do not look up or share an existing employee by Guid.Empty.
-        var existingEmployee = userId == Guid.Empty ? null : await _db.EmployeeProfiles
-            .Include(e => e.IdentityMappings)
-            .FirstOrDefaultAsync(e => e.UserId == userId, cancellationToken);
-
-        if (existingEmployee != null)
-        {
-            existingEmployee.AddExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
-            if (!string.IsNullOrWhiteSpace(linkedInUrl) && string.IsNullOrWhiteSpace(existingEmployee.LinkedInUrl))
-            {
-                existingEmployee.UpdateEmployeePersonalData(existingEmployee.Name, existingEmployee.JobTitle, existingEmployee.Bio, linkedInUrl);
-            }
-            await _db.SaveChangesAsync(cancellationToken);
-            await _publisher.PublishAsync(existingEmployee.Id, "Updated", cancellationToken);
-            return existingEmployee.Id;
-        }
-
-        
-        var employee = EmployeeProfile.Create(organizationId, userId, email, externalDisplayName, jobTitle, linkedInUrl: linkedInUrl);
+        var employee = EmployeeProfile.Create(organizationId, Guid.Empty, email, externalDisplayName, jobTitle, linkedInUrl: linkedInUrl);
         employee.AddExternalIdentity(sourceSystem, externalAccountId, externalDisplayName);
         
         await _db.EmployeeProfiles.AddAsync(employee, cancellationToken);
         await _db.SaveChangesAsync(cancellationToken);
         await _publisher.PublishAsync(employee.Id, "Created", cancellationToken);
 
-        return employee.Id;
+        return new(employee.Id, true, false);
     }
 }

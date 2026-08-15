@@ -2,8 +2,9 @@ using WorkFit.SharedKernel.BaseEntity;
 
 namespace WorkFit.TalentManagement.Domain.Entities;
 
-internal sealed class DeveloperIdentityMapping : BaseEntity
+public sealed class DeveloperIdentityMapping : BaseEntity
 {
+    public Guid OrganizationId { get; private set; }
     public Guid EmployeeProfileId { get; private set; }
     public string SourceSystem { get; private set; } = default!;
     public string ExternalAccountId { get; private set; } = default!;
@@ -15,11 +16,14 @@ internal sealed class DeveloperIdentityMapping : BaseEntity
     private DeveloperIdentityMapping() { }
 
     internal static DeveloperIdentityMapping Create(
+        Guid organizationId,
         Guid employeeProfileId,
         string sourceSystem,
         string externalAccountId,
         string externalDisplayName)
     {
+        if (organizationId == Guid.Empty)
+            throw new ArgumentException("Organization id is required.", nameof(organizationId));
         if (employeeProfileId == Guid.Empty)
             throw new ArgumentException("Employee profile id is required.", nameof(employeeProfileId));
         if (string.IsNullOrWhiteSpace(sourceSystem))
@@ -31,6 +35,7 @@ internal sealed class DeveloperIdentityMapping : BaseEntity
 
         return new DeveloperIdentityMapping
         {
+            OrganizationId = organizationId,
             EmployeeProfileId = employeeProfileId,
             SourceSystem = sourceSystem,
             ExternalAccountId = externalAccountId,

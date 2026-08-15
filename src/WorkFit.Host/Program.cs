@@ -8,7 +8,6 @@ using System.Text.Json.Serialization;
 using WorkFit.Host.ExtentionMethods;
 using WorkFit.Host.GlobalExceptionHandler;
 
-
 namespace WorkFit.Host
 {
     public class Program
@@ -19,6 +18,26 @@ namespace WorkFit.Host
             var assembliesToScan = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "WorkFit.*.dll")
                 .Select(Assembly.LoadFrom)
                 .ToArray();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularFrontend", policy =>
+                {
+                    policy.WithOrigins(
+                            "http://localhost:11428",
+                            "https://localhost:11428",
+                            "http://localhost:4200",
+                            "https://localhost:4200",
+                            "http://localhost:4201",
+                            "https://localhost:4201"
+                          )
+                          .SetIsOriginAllowed(_ => true)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             builder.Services.RegisterModules(builder.Configuration, assembliesToScan);
             builder.Services.AddControllers();
             builder.Services.AddFastEndpoints(o => o.Assemblies = assembliesToScan)
@@ -30,6 +49,7 @@ namespace WorkFit.Host
                                      s.Version = "v1";
                                  };
                              });
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -42,7 +62,6 @@ namespace WorkFit.Host
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
-
 
                         RoleClaimType = ClaimTypes.Role
                     };
@@ -61,12 +80,12 @@ namespace WorkFit.Host
 
             app.UseExceptionHandler();
 
+            // Place CORS at top of pipeline before Routing, Auth, or Controllers to handle preflight OPTIONS requests
+            app.UseCors("AllowAngularFrontend");
 
             // Configure the HTTP request pipeline.
-            app.UseHttpsRedirection();
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -75,26 +94,8 @@ namespace WorkFit.Host
             app.UseFastEndpoints()
                .UseSwaggerGen();
 
-
-            // seed roles
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var roleManager = services.GetRequiredService<Microsoft.AspNetCore.Identity.RoleManager<Identity.Domain.Entities.WorkFitRole>>();
-                string[] roleNames = { "SuperAdmin", "Admin", "OrganizationOwner", "Employee", "TeamLeader" };
-                foreach (var roleName in roleNames)
-                {
-                    var roleExists = roleManager.RoleExistsAsync(roleName).Result;
-                    if (!roleExists)
-                    {
-                        var result = roleManager.CreateAsync(new Identity.Domain.Entities.WorkFitRole(roleName)).Result;
-                        if (!result.Succeeded)
-                        {
-                            throw new Exception($"Failed to create role '{roleName}': {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                        }
-                    }
-                }
-            }
+            // seed roles and demo organization accounts
+            WorkFit.Host.Seeding.DemoDataSeeder.SeedDemoDataAsync(app.Services).GetAwaiter().GetResult();
 
             app.Run();
         }

@@ -19,6 +19,7 @@ public class WorkFitProjectDbContext : DbContext
     public DbSet<ProjectActivityLog> ProjectActivityLogs { get; set; }
 
     public DbSet<ProjectRequiredSkill> ProjectRequiredSkills { get; set; }
+    public DbSet<ProjectMember> ProjectMembers { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -11,12 +11,22 @@ public sealed record SyncResult(
     int SkillSignalsSynced,
     int Errors,
     IReadOnlyList<string> ErrorMessages,
-    DateTimeOffset SyncedAt
+    DateTimeOffset SyncedAt,
+    IReadOnlyList<UnknownDeveloperDto> UnknownDevelopers
 )
 {
     public bool HasErrors => Errors > 0;
 
     public static SyncResult Empty(string providerName) =>
-        new(providerName, 0, 0, 0, 0, 0, [], DateTimeOffset.UtcNow);
+        new(providerName, 0, 0, 0, 0, 0, [], DateTimeOffset.UtcNow, []);
 }
+
+public sealed record UnknownDeveloperDto(
+    Guid EmployeeProfileId,
+    Guid ProjectId,
+    string SourceAccountId,
+    string DisplayName,
+    string? Email,
+    int IssueCount,
+    string InvitationStatus);
 
