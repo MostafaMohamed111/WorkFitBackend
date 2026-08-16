@@ -25,12 +25,13 @@ internal sealed class GetAssessmentsForTeamLeadQueryHandler : IRequestHandler<Ge
 
         var assessments = await _context.Assessments.AsNoTracking()
             .Include(a => a.SkillChanges)
-            .Where(a => a.TeamLeadId == teamLeadId && a.Type == AssessmentType.TeamLeadAssessment && a.Status == AssessmentStatus.Pending)
+            .Where(a => a.TeamLeadId == teamLeadId && a.Type == AssessmentType.TeamLeadAssessment)
             .ToListAsync(cancellationToken);
 
         return assessments.Select(a => new AssessmentDto(
             a.Id, a.EmployeeProfileId, a.TaskId,
-            a.SkillChanges.Select(sc => new SkillChangeDto(sc.SkillId, sc.SkillName, sc.OldScore, sc.ProposedScore, sc.EvidenceDescription)).ToList()
+            a.SkillChanges.Select(sc => new SkillChangeDto(sc.Id, sc.SkillId, sc.SkillName, sc.OldScore, sc.ProposedScore, sc.EvidenceDescription)).ToList(),
+            a.Status
             )).ToList();
     }
 }
