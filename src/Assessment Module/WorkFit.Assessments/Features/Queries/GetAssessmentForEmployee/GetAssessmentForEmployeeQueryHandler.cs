@@ -6,14 +6,14 @@ using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.Queries.GetAssessmentByEmployeeProfileId;
+namespace WorkFit.Assessments.Features.Queries.GetAssessmentForEmployee;
 
-internal sealed class GetAssessmentByEmployeeProfileIdQueryHandler : IRequestHandler<GetAssessmentByEmployeeProfileIdQuery, AssessmentDto>
+internal sealed class GetAssessmentForEmployeeQueryHandler : IRequestHandler<GetAssessmentForEmployeeQuery, AssessmentDto>
 {
     private readonly AssessmentDbContext _context;
     private readonly ICurrentUserContext _currentUserContext;
 
-    public GetAssessmentByEmployeeProfileIdQueryHandler(
+    public GetAssessmentForEmployeeQueryHandler(
             AssessmentDbContext context,
             ICurrentUserContext currentUserContext
         )
@@ -22,15 +22,16 @@ internal sealed class GetAssessmentByEmployeeProfileIdQueryHandler : IRequestHan
         _currentUserContext = currentUserContext;
     }
 
-    public async Task<AssessmentDto> Handle(GetAssessmentByEmployeeProfileIdQuery query, CancellationToken cancellationToken = default)
+    public async Task<AssessmentDto> Handle(GetAssessmentForEmployeeQuery query, CancellationToken cancellationToken = default)
     {
+        var employeeUserId = _currentUserContext.GetUserId(cancellationToken);
+
         var assessment = await _context.Assessments.AsNoTracking()
-            .FirstOrDefaultAsync(a => a.EmployeeProfileId == query.EmployeeProfileId 
+            .FirstOrDefaultAsync(a => a.EmployeeUserId == employeeUserId
+            && a.Type == Domain.Enums.AssessmentType.EmployeeProfileSelfAssessment
             && a.Status == Domain.Enums.AssessmentStatus.Pending
             , cancellationToken)
-            ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), query.EmployeeProfileId);
-
-        assessment.ValidateAuthority(_currentUserContext.GetUserId());
+            ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), employeeUserId);
 
         return new AssessmentDto(
             assessment.Id,

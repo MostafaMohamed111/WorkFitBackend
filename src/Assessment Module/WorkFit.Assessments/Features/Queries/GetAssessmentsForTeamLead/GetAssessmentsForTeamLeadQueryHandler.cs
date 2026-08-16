@@ -1,32 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using WorkFit.Assessments.Domain.Enums;
 using WorkFit.Assessments.Features.Queries.Dtos;
 using WorkFit.Assessments.Infrastructure.Data;
 using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 
-namespace WorkFit.Assessments.Features.Queries.GetAssessmentsByTeamLeadId;
+namespace WorkFit.Assessments.Features.Queries.GetAssessmentsForTeamLead;
 
-internal sealed class GetAssessmentsByTeamLeadIdQueryHandler : IRequestHandler<GetAssessmentsByTeamLeadIdQuery, List<AssessmentDto>>
+internal sealed class GetAssessmentsForTeamLeadQueryHandler : IRequestHandler<GetAssessmentsForTeamLeadQuery, List<AssessmentDto>>
 {
     private readonly AssessmentDbContext _context;
     private readonly ICurrentUserContext _currentUserContext;
 
-    public GetAssessmentsByTeamLeadIdQueryHandler(AssessmentDbContext context,
+    public GetAssessmentsForTeamLeadQueryHandler(AssessmentDbContext context,
             ICurrentUserContext currentUserContext
         )
     {
         _context = context;
         _currentUserContext = currentUserContext;
     }
-    public async Task<List<AssessmentDto>> Handle(GetAssessmentsByTeamLeadIdQuery query, CancellationToken cancellationToken = default)
+    public async Task<List<AssessmentDto>> Handle(GetAssessmentsForTeamLeadQuery query, CancellationToken cancellationToken = default)
     {
-        var assessments = await _context.Assessments.AsNoTracking()
-            .Where(a => a.TeamLeadId == query.TeamLeadId && a.Type == AssessmentType.TeamLeadAssessment)
-            .ToListAsync(cancellationToken);
+        var teamLeadId = _currentUserContext.GetUserId(cancellationToken);
 
-        foreach (var assessment in assessments)
-            assessment.ValidateAuthority(_currentUserContext.GetUserId());
+        var assessments = await _context.Assessments.AsNoTracking()
+            .Where(a => a.TeamLeadId == teamLeadId && a.Type == AssessmentType.TeamLeadAssessment && a.Status == AssessmentStatus.Pending)
+            .ToListAsync(cancellationToken);
 
         return assessments.Select(a => new AssessmentDto(
             a.Id, a.EmployeeProfileId, a.TaskId,
