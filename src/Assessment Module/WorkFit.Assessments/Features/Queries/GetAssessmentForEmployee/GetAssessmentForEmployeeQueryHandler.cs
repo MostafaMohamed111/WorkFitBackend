@@ -29,9 +29,7 @@ internal sealed class GetAssessmentForEmployeeQueryHandler : IRequestHandler<Get
         var assessment = await _context.Assessments.AsNoTracking()
             .Include(a => a.SkillChanges)
             .FirstOrDefaultAsync(a => a.EmployeeUserId == employeeUserId
-            && a.Type == Domain.Enums.AssessmentType.EmployeeProfileSelfAssessment
-            && a.Status == Domain.Enums.AssessmentStatus.Pending
-            , cancellationToken)
+            && a.Type == Domain.Enums.AssessmentType.EmployeeProfileSelfAssessment, cancellationToken)
 
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), employeeUserId);
 
@@ -39,7 +37,7 @@ internal sealed class GetAssessmentForEmployeeQueryHandler : IRequestHandler<Get
             assessment.Id,
             assessment.EmployeeProfileId,
             assessment.TaskId,
-            assessment.SkillChanges.Select(sc => new SkillChangeDto(sc.SkillId, sc.SkillName, sc.OldScore, sc.ProposedScore, sc.EvidenceDescription)).ToList()
-            );
+            assessment.SkillChanges.Select(sc => new SkillChangeDto(sc.Id, sc.SkillId, sc.SkillName, sc.OldScore, sc.ProposedScore, sc.EvidenceDescription)).ToList(),
+            assessment.Status);
     }
 }

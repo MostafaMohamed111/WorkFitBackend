@@ -46,13 +46,16 @@ internal sealed class GetAssessmentByIdQueryHandler : IRequestHandler<GetAssessm
             assessment.TaskId,
             assessment.SkillChanges
                 .Select(sc => new SkillChangeDto(
-                    sc.SkillId,
+                    sc.Id,
+                    sc.SkillId, 
                     sc.SkillName,
                     sc.OldScore,
                     sc.ProposedScore,
                     sc.EvidenceDescription
-                ))
-                .ToList()
+                    )
+                )
+                .ToList(),
+            assessment.Status
         );
     }
 }
