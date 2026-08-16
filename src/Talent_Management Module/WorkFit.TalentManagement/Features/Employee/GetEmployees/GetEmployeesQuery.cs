@@ -2,4 +2,4 @@
 
 namespace WorkFit.TalentManagement.Features.Employee.GetEmployees;
 
-public sealed record GetEmployeesQuery(Guid OrgId) : IRequest<List<EmployeeListItemDto>>;
+public sealed record GetEmployeesQuery() : IRequest<List<EmployeeListItemDto>>;

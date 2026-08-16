@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using WorkFit.Organizations.Contracts.OrganizationServices;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Infrastructure.Data;
 
@@ -9,18 +11,26 @@ public sealed class GetEmployeesHandler
 {
     private readonly TalentDbContext _context;
 
-    public GetEmployeesHandler(TalentDbContext context) => _context = context;
+    private readonly IGetOrganizationIdService _getOrganizationIdService;
+    private readonly ICurrentUserContext _currentUserContext;
+
+    public GetEmployeesHandler(TalentDbContext context,
+        IGetOrganizationIdService getOrganizationIdService,
+        ICurrentUserContext currentUserContext)
+    {
+        _context = context;
+        _getOrganizationIdService = getOrganizationIdService;
+        _currentUserContext = currentUserContext;
+    }
 
     public async Task<List<EmployeeListItemDto>> Handle(GetEmployeesQuery query, CancellationToken ct)
     {
+        var userId = _currentUserContext.GetUserId();
+        var orgId = await _getOrganizationIdService.GetOrganizationIdAsync(userId, ct);
         var dbQuery = _context.EmployeeProfiles
             .AsNoTracking()
-            .Where(e => !e.IsDeleted);
+            .Where(e => !e.IsDeleted && e.OrganizationId == orgId);
 
-        if (query.OrgId != Guid.Empty)
-        {
-            dbQuery = dbQuery.Where(e => e.OrganizationId == query.OrgId);
-        }
 
         return await dbQuery
             .Select(e => new EmployeeListItemDto(
