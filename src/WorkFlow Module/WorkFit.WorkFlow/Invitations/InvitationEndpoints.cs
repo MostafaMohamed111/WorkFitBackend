@@ -30,7 +30,7 @@ public sealed class ReviewInvitationEndpoint : Endpoint<ReviewInvitationRequest,
 {
     private readonly InvitationService _service; private readonly ICurrentUserContext _current;
     public ReviewInvitationEndpoint(InvitationService service, ICurrentUserContext current) { _service = service; _current = current; }
-    public override void Configure() { Post("/api/developer-invitations/{invitationId:guid}/review"); Roles("OrganizationOwner"); }
+    public override void Configure() { Post("/api/developer-invitations/{invitationId:guid}/review"); Roles("TeamLeader", "OrganizationOwner", "Admin", "SuperAdmin"); }
     public override async Task HandleAsync(ReviewInvitationRequest req, CancellationToken ct) => await Send.OkAsync(await _service.ReviewAsync(_current.GetUserId(ct), Route<Guid>("invitationId"), req.Approve, ct), ct);
 }
 

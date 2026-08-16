@@ -1,11 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using WorkFit.Integration.Contracts.IntegrationSyncService;
 using WorkFit.Integration.Contracts.ProjectManagementProvider;
 using WorkFit.Integration.Features.Shared;
 using WorkFit.Integration.Infrastructure.Data;
-using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
 using WorkFit.SharedKernel.MediatorContract;
-using WorkFit.Integration.Domain.Entities;
 
 namespace WorkFit.Integration.Features.Queries.GetJiraSettings;
 
@@ -24,7 +21,17 @@ internal sealed class GetJiraSettingsQueryHandler : IRequestHandler<GetJiraSetti
 
         if (setting is null)
         {
-            throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(OrganizationIntegrationSetting).Name, request.OrganizationId);
+            // Return 200 OK with empty settings response if Jira is not yet configured for this organization
+            return new JiraSettingsResponse(
+                Guid.Empty,
+                request.OrganizationId,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                100,
+                DateTime.UtcNow,
+                null);
         }
 
         return new JiraSettingsResponse(
@@ -46,4 +53,3 @@ internal sealed class GetJiraSettingsQueryHandler : IRequestHandler<GetJiraSetti
         return new string('*', token.Length - 4) + token[^4..];
     }
 }
-
