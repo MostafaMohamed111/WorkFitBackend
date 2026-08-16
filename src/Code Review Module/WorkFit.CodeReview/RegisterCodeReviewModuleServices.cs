@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WorkFit.CodeReview.Contracts.GitHubCodeReview;
+using WorkFit.CodeReview.Features.GitHubCodeReview;
 using WorkFit.CodeReview.Infrastructure.Data;
 using WorkFit.CodeReview.Infrastructure.Repositories;
 using WorkFit.CodeReview.Infrastructure.Services;
@@ -37,6 +39,7 @@ public sealed class RegisterCodeReviewModuleServices : IRegisterModuleServices
         services.AddScoped<ICodeReviewAgentService, CodeReviewAgentService>();
         services.AddScoped<ICodeReviewReviewerService, CodeReviewReviewerService>();
         services.AddScoped<ICodeReviewWorkflowService, CodeReviewWorkflowService>();
+        services.AddScoped<IReviewTaskGitHub, ReviewTaskGitHubService>();
         services.AddHostedService<CodeReviewDatabaseInitializer>();
 
         services.AddMediatorHandlers<ModuleMarker>();

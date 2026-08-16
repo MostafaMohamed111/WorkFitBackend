@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using WorkFit.CodeReview.Features.GitHubCodeReview;
+using WorkFit.CodeReview.Contracts.GitHubCodeReview;
 using WorkFit.Organizations.Features.OrganizationsMe;
 using WorkFit.ProjectManagement.Contracts.IntegrationEvents;
 using WorkFit.ProjectManagement.CrossCutting;
@@ -15,15 +15,18 @@ public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCom
     private readonly WorkFitProjectDbContext _context;
     private readonly IMediator _mediator;
     private readonly ILogger<CompleteTaskCommandHandler> _logger;
+    private readonly IReviewTaskGitHub _reviewTaskGitHub;
 
     public CompleteTaskCommandHandler(
         WorkFitProjectDbContext context,
         IMediator mediator,
-        ILogger<CompleteTaskCommandHandler> logger)
+        ILogger<CompleteTaskCommandHandler> logger,
+        IReviewTaskGitHub reviewTaskGitHub)
     {
         _context = context;
         _mediator = mediator;
         _logger = logger;
+        _reviewTaskGitHub = reviewTaskGitHub;
     }
 
     public async Task<Guid> Handle(CompleteTaskCommand command, CancellationToken ct)
@@ -66,15 +69,14 @@ public sealed class CompleteTaskCommandHandler : IRequestHandler<CompleteTaskCom
             {
                 try
                 {
-                    await _mediator.Send(
-                        new ReviewTaskGitHubChangesCommand(
-                            task.Id,
-                            task.AssignedEmployeeId,
-                            organizationGitHub.GitHubOrganizationLogin,
-                            taskGitHub.GitHubRepositoryName,
-                            taskGitHub.GitHubBranchName,
-                            taskGitHub.GitHubPullRequestNumber,
-                            null),
+                    await _reviewTaskGitHub.ReviewTaskAsync(
+                        task.Id,
+                        task.AssignedEmployeeId,
+                        organizationGitHub.GitHubOrganizationLogin,
+                        taskGitHub.GitHubRepositoryName,
+                        taskGitHub.GitHubBranchName,
+                        taskGitHub.GitHubPullRequestNumber,
+                        null,
                         ct);
                 }
                 catch (Exception ex)

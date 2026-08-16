@@ -1,3 +1,4 @@
+using WorkFit.CodeReview.Contracts.GitHubCodeReview;
 using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.CodeReview.Features.GitHubCodeReview;

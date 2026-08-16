@@ -1,7 +1,4 @@
-using WorkFit.CodeReview.Contracts.GitHubCodeReview;
-using WorkFit.CodeReview.Infrastructure.Services.Models;
-
-namespace WorkFit.CodeReview.Features.GitHubCodeReview;
+namespace WorkFit.CodeReview.Contracts.GitHubCodeReview;
 
 public sealed record CodeReviewWorkflowExecutionResult(
     string ExecutionId,
