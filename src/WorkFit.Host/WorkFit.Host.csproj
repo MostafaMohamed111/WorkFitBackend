@@ -28,6 +28,7 @@
     <ProjectReference Include="..\Assessment Module\WorkFit.Assessments\WorkFit.Assessments.csproj" />
     <ProjectReference Include="..\Code Review Module\WorkFit.CodeReview\WorkFit.CodeReview.csproj" />
     <ProjectReference Include="..\Document Module\WorkFit.Documents\WorkFit.Documents.csproj" />
+    <ProjectReference Include="..\Email Module\WorkFit.Email\WorkFit.Email.csproj" />
     <ProjectReference Include="..\Identity Module\WorkFit.Identity\WorkFit.Identity.csproj" />
     <ProjectReference Include="..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
     <ProjectReference Include="..\Project_Management Module\WorkFit.ProjectManagement\WorkFit.ProjectManagement.csproj" />
