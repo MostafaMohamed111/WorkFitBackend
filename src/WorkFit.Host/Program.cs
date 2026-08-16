@@ -92,6 +92,8 @@ namespace WorkFit.Host
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseMiddleware<WorkFit.Host.Compatibility.CompatibilityMiddleware>();
+
             app.MapControllers();
             app.UseFastEndpoints()
                .UseSwaggerGen();

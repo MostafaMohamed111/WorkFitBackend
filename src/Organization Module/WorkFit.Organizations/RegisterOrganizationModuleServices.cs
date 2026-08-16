@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,5 +26,6 @@ public sealed class RegisterOrganizationModuleServices : IRegisterModuleServices
         services.AddScoped<IGitHubOrganizationInstallationLookupService, OrganizationGitHubInstallationLookupService>();
         services.AddScoped<IGitHubOrganizationLoginLookupService, GitHubOrganizationLoginLookupService>();
         services.AddScoped<IGetOrganizationIdService, GetOrganizationIdService>();
+        services.AddScoped<Compatibility.IGetOrganizationIdCompatService, Compatibility.GetOrganizationIdCompatService>();
     }
 }
