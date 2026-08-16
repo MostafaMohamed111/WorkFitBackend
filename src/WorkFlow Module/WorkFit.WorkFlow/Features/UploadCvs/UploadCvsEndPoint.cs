@@ -24,7 +24,6 @@ public sealed class UploadCvsEndPoint : Endpoint<UploadCvsRequest, UploadCvsResp
     public override async Task HandleAsync(UploadCvsRequest req, CancellationToken ct)
     {
         var command = new UploadCvsCommand(
-            req.OrganizationId,
             req.Files ?? new List<Microsoft.AspNetCore.Http.IFormFile>());
 
         var result = await _mediator.Send(command, ct);
