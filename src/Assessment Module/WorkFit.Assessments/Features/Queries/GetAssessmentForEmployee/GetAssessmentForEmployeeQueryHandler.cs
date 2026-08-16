@@ -27,10 +27,12 @@ internal sealed class GetAssessmentForEmployeeQueryHandler : IRequestHandler<Get
         var employeeUserId = _currentUserContext.GetUserId(cancellationToken);
 
         var assessment = await _context.Assessments.AsNoTracking()
+            .Include(a => a.SkillChanges)
             .FirstOrDefaultAsync(a => a.EmployeeUserId == employeeUserId
             && a.Type == Domain.Enums.AssessmentType.EmployeeProfileSelfAssessment
             && a.Status == Domain.Enums.AssessmentStatus.Pending
             , cancellationToken)
+
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), employeeUserId);
 
         return new AssessmentDto(

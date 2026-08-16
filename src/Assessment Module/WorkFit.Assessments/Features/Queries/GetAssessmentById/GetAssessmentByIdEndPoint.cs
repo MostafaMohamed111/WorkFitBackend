@@ -17,13 +17,13 @@ internal class GetAssessmentByIdEndPoint : EndpointWithoutRequest<AssessmentDto>
     }
     public override void Configure()
     {
-        Get("/api/assessment/{Id:guid}");
+        Get("/api/assessment/{id:guid}");
         Roles("TeamLeader", "TeamLead", "Employee", "OrganizationOwner", "Admin", "SuperAdmin");
         Options(x => x.WithTags("Assessment"));
     }
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var assessmentId = Route<Guid>("Id");
+        var assessmentId = Route<Guid>("id");
         var query = new GetAssessmentByIdQuery(assessmentId);
 
         var assessmentDto =await _mediator.Send(query, ct);

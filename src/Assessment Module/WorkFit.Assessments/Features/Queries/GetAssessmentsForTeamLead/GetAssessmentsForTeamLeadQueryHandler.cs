@@ -24,6 +24,7 @@ internal sealed class GetAssessmentsForTeamLeadQueryHandler : IRequestHandler<Ge
         var teamLeadId = _currentUserContext.GetUserId(cancellationToken);
 
         var assessments = await _context.Assessments.AsNoTracking()
+            .Include(a => a.SkillChanges)
             .Where(a => a.TeamLeadId == teamLeadId && a.Type == AssessmentType.TeamLeadAssessment && a.Status == AssessmentStatus.Pending)
             .ToListAsync(cancellationToken);
 
