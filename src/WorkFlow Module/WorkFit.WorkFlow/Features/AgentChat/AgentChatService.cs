@@ -51,32 +51,33 @@ public sealed class AgentChatService : IAgentChatService
 
         if (request.TaskId.HasValue && request.TaskId.Value != Guid.Empty)
         {
-            var recommendation = await _mediator.Send(
-                new GenerateEmployeeRecommendationCommand(
-                    request.TaskId.Value,
-                    request.Prompt.Trim(),
-                    request.ResultLimit),
-                cancellationToken);
+                var recommendation = await _mediator.Send(
+                    new GenerateEmployeeRecommendationCommand(
+                        request.TaskId.Value,
+                        request.Prompt.Trim(),
+                        request.ResultLimit),
+                    cancellationToken);
 
-            var candidates = recommendation.Candidates
-                .Select(candidate => new AgentChatCandidateDto(
-                    candidate.EmployeeId,
-                    candidate.EmployeeName,
-                    candidate.Rank,
-                    candidate.Score,
-                    candidate.AvailableAllocation,
-                    candidate.MatchedSkills,
-                    candidate.MissingSkills,
-                    candidate.Reasoning))
-                .ToArray();
+                var candidates = recommendation.Candidates
+                    .Select(candidate => new AgentChatCandidateDto(
+                        candidate.EmployeeId,
+                        candidate.EmployeeName,
+                        candidate.Rank,
+                        candidate.Score,
+                        candidate.AvailableAllocation,
+                        candidate.MatchedSkills,
+                        candidate.MissingSkills,
+                        candidate.Reasoning))
+                    .ToArray();
 
-            return new AgentChatResponse(
-                candidates.Length == 0
-                    ? "I could not find an eligible person for this task using the current WorkFit data."
-                    : $"I analyzed the selected task against indexed employee profiles and task history. The best match is {candidates[0].EmployeeName} with a score of {candidates[0].Score:0.##}%. {candidates[0].Reasoning}",
-                recommendation.RecommendationId,
-                recommendation.TaskId,
-                candidates);
+                return new AgentChatResponse(
+                    candidates.Length == 0
+                        ? "I could not find an eligible person for this task using the current WorkFit data."
+                        : $"I analyzed the selected task against indexed employee profiles and task history. The best match is {candidates[0].EmployeeName} with a score of {candidates[0].Score:0.##}%. {candidates[0].Reasoning}",
+                    recommendation.RecommendationId,
+                    recommendation.TaskId,
+                    candidates);
+            
         }
 
         var projects = await _projects.GetVisibleProjectsAsync(request.ProjectId, cancellationToken);
@@ -117,4 +118,9 @@ public sealed class AgentChatService : IAgentChatService
 
         return new AgentChatResponse(response.Content, null, null, []);
     }
+
+    private static bool IsRecommendationStateException(FeatureException ex) =>
+        ex.Code.EndsWith("NO_ELIGIBLE_EMPLOYEE_RECOMMENDATIONS", StringComparison.OrdinalIgnoreCase) ||
+        ex.Code.EndsWith("TASK_NOT_ELIGIBLE_FOR_RECOMMENDATION", StringComparison.OrdinalIgnoreCase) ||
+        ex.Code.EndsWith("PROJECT_NOT_ELIGIBLE_FOR_RECOMMENDATION", StringComparison.OrdinalIgnoreCase);
 }
