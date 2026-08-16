@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using WorkFit.Assessments.Contracts.IntegrationEvents;
 using WorkFit.Assessments.Domain.Entities;
 using WorkFit.Assessments.Infrastructure.Data;
@@ -26,7 +27,9 @@ internal sealed class AlterAssessmentCommandHandler : IRequestHandler<AlterAsses
 
     public async Task<Guid> Handle(AlterAssessmentCommand command, CancellationToken cancellationToken = default)
     {
-        var assessment = await _dbContext.Assessments.FindAsync(new object[] { command.AssessmentId }, cancellationToken)
+        var assessment = await _dbContext.Assessments
+            .Include(a => a.SkillChanges)
+            .FirstOrDefaultAsync(a => a.Id == command.AssessmentId, cancellationToken)
             ?? throw new EntityNotFoundException(ModuleMarker.ModuleName, typeof(Assessment).ToString(), command.AssessmentId);
 
         var updates = command.SkillChanges

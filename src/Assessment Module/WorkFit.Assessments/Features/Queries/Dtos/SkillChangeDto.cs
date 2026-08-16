@@ -1,7 +1,7 @@
 ﻿namespace WorkFit.Assessments.Features.Queries.Dtos;
 
 internal sealed record SkillChangeDto(
-        Guid Id,
+        Guid SkillChangeId,
         Guid skillId,
         string skillName,
         int OldScore,
