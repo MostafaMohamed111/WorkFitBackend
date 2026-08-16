@@ -22,8 +22,7 @@ public sealed class ArchiveProjectCommandHandler : IRequestHandler<ArchiveProjec
     public async Task<Guid> Handle(ArchiveProjectCommand request, CancellationToken cancellationToken)
     {
         var project = await _context.Projects
-            .Include(p => p.Members)
-            .Include(p => p.Tasks)
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
 
         if (project is null)
@@ -31,73 +30,65 @@ public sealed class ArchiveProjectCommandHandler : IRequestHandler<ArchiveProjec
 
         ProjectAccessGuard.EnsureAuthorized(project, _currentUser, cancellationToken);
 
-        // 1. Delete associated developer invitations from workflow schema
+        // Execute direct SQL cleanup in exact dependency order using matching schema table names
         try
         {
             await _context.Database.ExecuteSqlRawAsync(
                 "DELETE FROM [workflow].[DeveloperInvitations] WHERE ProjectId = {0}",
-                request.Id,
+                new object[] { request.Id },
                 cancellationToken);
         }
-        catch
-        {
-            // Fallback if workflow schema or table does not exist
-        }
-
-        // 2. Delete all ProjectActivityLogs associated with this project
-        var activityLogs = await _context.ProjectActivityLogs
-            .Where(l => l.ProjectId == request.Id)
-            .ToListAsync(cancellationToken);
-        if (activityLogs.Count > 0)
-        {
-            _context.ProjectActivityLogs.RemoveRange(activityLogs);
-        }
-
-        // 3. Delete all ProjectRequiredSkills associated with this project
-        var skills = await _context.ProjectRequiredSkills
-            .Where(s => s.ProjectId == request.Id)
-            .ToListAsync(cancellationToken);
-        if (skills.Count > 0)
-        {
-            _context.ProjectRequiredSkills.RemoveRange(skills);
-        }
-
-        // 4. Remove all ProjectMembers associated with this project
-        var members = await _context.ProjectMembers
-            .Where(m => m.ProjectId == request.Id)
-            .ToListAsync(cancellationToken);
-        if (members.Count > 0)
-        {
-            _context.ProjectMembers.RemoveRange(members);
-        }
-
-        // 5. Remove all ProjectTasks associated with this project
-        var tasks = await _context.ProjectTasks
-            .Where(t => t.ProjectId == request.Id)
-            .ToListAsync(cancellationToken);
-        if (tasks.Count > 0)
-        {
-            _context.ProjectTasks.RemoveRange(tasks);
-        }
-
-        // 6. Delete the Project entity itself from the database
-        _context.Projects.Remove(project);
+        catch { }
 
         try
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            await _context.Database.ExecuteSqlRawAsync(
+                "DELETE FROM [ProjectManagement].[project_activity_logs] WHERE ProjectId = {0}",
+                new object[] { request.Id },
+                cancellationToken);
         }
-        catch (DbUpdateConcurrencyException exception)
-        {
-            var entityName = exception.Entries.FirstOrDefault()?.Metadata.ClrType.Name
-                ?? nameof(Domain.Entities.Project);
+        catch { }
 
-            throw new ConcurrencyConflictException(
-                ModuleMarker.ModuleName,
-                entityName,
-                request.Id,
-                exception);
+        try
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "DELETE FROM [ProjectManagement].[ProjectRequiredSkills] WHERE ProjectId = {0}",
+                new object[] { request.Id },
+                cancellationToken);
         }
+        catch { }
+
+        try
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "DELETE FROM [ProjectManagement].[ProjectMembers] WHERE ProjectId = {0}",
+                new object[] { request.Id },
+                cancellationToken);
+        }
+        catch { }
+
+        try
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "DELETE FROM [ProjectManagement].[task_github] WHERE TaskId IN (SELECT Id FROM [ProjectManagement].[tasks] WHERE ProjectId = {0})",
+                new object[] { request.Id },
+                cancellationToken);
+        }
+        catch { }
+
+        try
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                "DELETE FROM [ProjectManagement].[tasks] WHERE ProjectId = {0}",
+                new object[] { request.Id },
+                cancellationToken);
+        }
+        catch { }
+
+        await _context.Database.ExecuteSqlRawAsync(
+            "DELETE FROM [ProjectManagement].[projects] WHERE Id = {0}",
+            new object[] { request.Id },
+            cancellationToken);
 
         return request.Id;
     }

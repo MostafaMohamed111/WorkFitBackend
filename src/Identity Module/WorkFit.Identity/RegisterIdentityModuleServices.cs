@@ -8,6 +8,7 @@ using WorkFit.Identity.CrossModule.RegisterEmployee;
 using WorkFit.Identity.CrossModule.RegisterOrganization;
 using WorkFit.Identity.Domain.Entities;
 using WorkFit.Identity.Infrastructure.Data;
+using WorkFit.Identity.Infrastructure.Email;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 using WorkFit.Identity.CrossModule;
@@ -31,6 +32,13 @@ public sealed class RegisterIdentityModuleServices : IRegisterModuleServices
 
         services.AddMediatorHandlers<ModuleMarker>();
         services.AddScoped<JwtTokenGenerator>();
+
+        services.AddOptions<IdentityEmailOptions>()
+            .Bind(configuration.GetSection(IdentityEmailOptions.SectionName))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.FrontendBaseUrl),
+                "Identity frontend base URL is required.")
+            .ValidateOnStart();
+
         services.AddScoped<ICreateOrganizationUserService, RegisterOrganizationCommandHandler>();
         services.AddScoped<IEmployeeAccountProvisioningService, EmployeeAccountProvisioningService>();
         services.AddScoped<ICreateEmployeeUserService, RegisterEmployeeUserService>();

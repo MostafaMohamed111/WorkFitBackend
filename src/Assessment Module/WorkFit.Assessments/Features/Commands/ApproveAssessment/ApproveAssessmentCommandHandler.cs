@@ -40,6 +40,7 @@ internal sealed class ApproveAssessmentCommandHandler : IRequestHandler<ApproveA
             assessment.SkillChanges.Select(
                 sc => new Change(
                     sc.SkillId,
+                    sc.SkillName,
                     sc.NewScore,
                     sc.EvidenceDescription
                     )

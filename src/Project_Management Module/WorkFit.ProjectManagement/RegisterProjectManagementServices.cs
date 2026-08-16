@@ -7,6 +7,7 @@ using WorkFit.ProjectManagement.Infrastructure;
 using WorkFit.ProjectManagement.Infrastructure.Data.Repositories;
 using WorkFit.ProjectManagement.Contracts.CreateProjectService;
 using WorkFit.ProjectManagement.Contracts.CreateProjectTaskService;
+using WorkFit.ProjectManagement.Contracts.CompleteTaskService;
 using WorkFit.SharedKernel.DependencyInjection;
 using WorkFit.SharedKernel.RegisterModuleServices;
 using WorkFit.CodeReview.Infrastructure.Services;
@@ -36,6 +37,7 @@ internal class RegisterProjectManagementServices : IRegisterModuleServices
         services.AddScoped<IProjectMembershipService, ProjectMembershipService>();
         services.AddScoped<IAgentProjectContextService, AgentProjectContextService>();
         services.AddScoped<IGitHubProjectProvisioningService, GitHubProjectProvisioningService>();
+        services.AddScoped<ICompleteProjectTaskService, CompleteProjectTaskService>();
         services.AddHostedService<ProjectManagementDatabaseInitializer>();
     }
 }

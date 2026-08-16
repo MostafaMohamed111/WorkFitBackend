@@ -1,16 +1,22 @@
 using Microsoft.AspNetCore.Identity;
+using WorkFit.Identity.Contracts.Events;
 using WorkFit.Identity.Contracts.IdentityServices;
 using WorkFit.Identity.Domain.Entities;
+using WorkFit.SharedKernel.MediatorContract;
 
 namespace WorkFit.Identity.CrossModule.RegisterEmployee;
 
 public sealed class RegisterEmployeeUserService : ICreateEmployeeUserService
 {
     private readonly UserManager<WorkFitUser> _userManager;
+    private readonly IMediator _mediator;
 
-    public RegisterEmployeeUserService(UserManager<WorkFitUser> userManager)
+    public RegisterEmployeeUserService(UserManager<WorkFitUser> userManager,
+            IMediator mediator
+        )
     {
         _userManager = userManager;
+        _mediator = mediator;
     }
 
     public async Task<EmployeeUserRegistrationResult> GetOrCreateAsync(
@@ -57,6 +63,10 @@ public sealed class RegisterEmployeeUserService : ICreateEmployeeUserService
             var roleErrors = string.Join(", ", addRoleResult.Errors.Select(e => e.Description));
             throw new InvalidOperationException($"Failed to assign Employee role: {roleErrors}");
         }
+
+        await _mediator.Publish(
+            new EmployeeRegisteredIntegrationEvent(user.Email ?? email, password),
+            cancellationToken);
 
         return new EmployeeUserRegistrationResult(
             user.Id,

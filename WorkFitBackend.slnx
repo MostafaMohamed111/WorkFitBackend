@@ -59,6 +59,10 @@
     <Project Path="src/Document Module/WorkFit.Documents.Contracts/WorkFit.Documents.Contracts.csproj" />
     <Project Path="src/Document Module/WorkFit.Documents/WorkFit.Documents.csproj" />
   </Folder>
+  <Folder Name="/src/Email Module/">
+    <Project Path="src/Email Module/WorkFit.Email.Contracts/WorkFit.Email.Contracts.csproj" Id="31fac0b0-8f1c-4b91-b506-b8a13cd1c496" />
+    <Project Path="src/Email Module/WorkFit.Email/WorkFit.Email.csproj" Id="a7442505-ef41-4123-9eaf-85235970ea47" />
+  </Folder>
   <Folder Name="/src/Engine Module/">
     <Project Path="src/Engine Module/WorkFit.Engine.Contracts/WorkFit.Engine.Contracts.csproj" />
     <Project Path="src/Engine Module/WorkFit.Engine/WorkFit.Engine.csproj" />

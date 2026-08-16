@@ -1,3 +1,4 @@
+using WorkFit.CodeReview.Contracts.GitHubCodeReview;
 using WorkFit.CodeReview.Features.GitHubCodeReview;
 
 namespace WorkFit.CodeReview.Infrastructure.Services;

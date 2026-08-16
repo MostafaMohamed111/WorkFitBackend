@@ -5,6 +5,6 @@ public interface ICreateEmployeeUserService
     Task<EmployeeUserRegistrationResult> GetOrCreateAsync(
         string email,
         string displayName,
-    string password,
+        string password,
         CancellationToken cancellationToken = default);
 }

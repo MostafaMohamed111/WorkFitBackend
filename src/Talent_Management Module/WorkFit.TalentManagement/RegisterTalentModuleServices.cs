@@ -31,6 +31,8 @@ public sealed class RegisterTalentModuleServices : IRegisterModuleServices
         services.AddScoped<IGetOrCreateExternalEmployeeService, GetOrCreateExternalEmployeeService>();
         services.AddScoped<IDeveloperInvitationTalentService, DeveloperInvitationTalentService>();
         services.AddScoped<ICreateOrUpdateEmployeeSkillsAfterAssessmentService, CreateOrUpdateEmployeeSkillsAfterAssessmentService>();
+        services.AddScoped<Compatibility.IGetEmployeesCompatService, Compatibility.GetEmployeesCompatService>();
+        services.AddScoped<Compatibility.IGetEmployeeUserCompatService, Compatibility.GetEmployeeUserCompatService>();
         services.AddHostedService<TalentDatabaseInitializer>();
     }
 }

@@ -34,10 +34,10 @@ public sealed class DeveloperInvitation
             ProjectId = projectId,
             EmployeeProfileId = employeeProfileId,
             RequestedByUserId = requesterId,
-            Email = email.Trim(),
-            DisplayName = displayName.Trim(),
+            Email = (email ?? string.Empty).Trim(),
+            DisplayName = string.IsNullOrWhiteSpace(displayName) ? "Developer" : displayName.Trim(),
             SourceSystem = "Jira",
-            SourceAccountId = sourceAccountId.Trim()
+            SourceAccountId = (sourceAccountId ?? string.Empty).Trim()
         };
 
     public void Reject(Guid reviewerId)

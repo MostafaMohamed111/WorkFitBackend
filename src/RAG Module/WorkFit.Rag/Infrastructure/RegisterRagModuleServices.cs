@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WorkFit.Rag.Contracts.Indexing;
 using WorkFit.Rag.Contracts.Recommendations;
+using WorkFit.Rag.Contracts.SkillGainAnalysis;
 using WorkFit.Rag.Features.RecommendEmployees;
+using WorkFit.Rag.Features.SkillGainAnalysis;
 using WorkFit.Rag.Infrastructure.Indexing;
 using WorkFit.Rag.Infrastructure.Options;
 using WorkFit.Rag.Infrastructure.Qdrant;
@@ -49,6 +51,7 @@ public sealed class RegisterRagModuleServices : IRegisterModuleServices
         services.AddScoped<IEmployeeProfileIndexingService, EmployeeProfileIndexingService>();
         services.AddScoped<IProjectTaskIndexingService, ProjectTaskIndexingService>();
         services.AddScoped<ITaskEmployeeRecommendationService, TaskEmployeeRecommendationService>();
+        services.AddScoped<ISkillGainAnalysisService, SkillGainAnalysisService>();
         services.AddMediatorHandlers<ModuleMarker>();
     }
 }

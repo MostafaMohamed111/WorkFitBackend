@@ -6,7 +6,9 @@ using WorkFit.Documents.Contracts.DocumentContentService;
 using WorkFit.Documents.Contracts.TemporaryUploadService;
 using WorkFit.Engine.Contracts.CVParsing;
 using WorkFit.Identity.Contracts.IdentityServices;
+using WorkFit.Organizations.Contracts.OrganizationServices;
 using WorkFit.SharedKernel.Exceptions.FeatureExceptions;
+using WorkFit.SharedKernel.ICurrentUser;
 using WorkFit.SharedKernel.MediatorContract;
 using WorkFit.TalentManagement.Contracts.WriteServices.CreateEmployee;
 
@@ -26,6 +28,8 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
     private readonly ICreateEmployeeUserService _createEmployeeUserService;
     private readonly ICreateEmployeeService _createEmployeeService;
     private readonly ICreateAssessmentService _createAssessmentService;
+    private readonly IGetOrganizationIdService _getOrganizationIdService;
+    private readonly ICurrentUserContext _currentUserContext;
 
     public UploadCvsCommandHandler(
         ICreateTemporaryDocumentService createTemporaryDocumentService,
@@ -33,7 +37,10 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
         IParseCVDocumentsService parseCVDocumentsService,
         ICreateEmployeeUserService createEmployeeUserService,
         ICreateEmployeeService createEmployeeService,
-        ICreateAssessmentService createAssessmentService)
+        ICreateAssessmentService createAssessmentService,
+        IGetOrganizationIdService getOrganizationIdService,
+        ICurrentUserContext currentUserContext
+        )
     {
         _createTemporaryDocumentService = createTemporaryDocumentService;
         _documentContentService = documentContentService;
@@ -41,10 +48,14 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
         _createEmployeeUserService = createEmployeeUserService;
         _createEmployeeService = createEmployeeService;
         _createAssessmentService = createAssessmentService;
+        _getOrganizationIdService = getOrganizationIdService;
+        _currentUserContext = currentUserContext;
     }
 
     public async Task<UploadCvsResponse> Handle(UploadCvsCommand request, CancellationToken ct = default)
     {
+        var orgId = await GetOrganizationId(ct);
+
         var items = new List<UploadCvsItemResult>();
 
         // Both direct files and a ZIP archive can be uploaded together; every entry
@@ -128,7 +139,7 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
 
                 var employeeProfileId = await _createEmployeeService.CreateEmployeeAsync(
                     new EmployeeDetails(
-                        organizationId: request.OrganizationId,
+                        organizationId: orgId,
                         userId: identity.UserId,
                         email: parsed.Email,
                         name: displayName,
@@ -242,6 +253,7 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
         List<UploadCvsItemResult> items,
         CancellationToken ct)
     {
+        var orgId = await GetOrganizationId(ct);
         var uploadedDocuments = new List<(Guid documentId, string fileName)>();
 
         foreach (var candidate in candidates)
@@ -256,7 +268,7 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
                     candidate.FileName,
                     candidate.ContentType,
                     candidate.Size,
-                    request.OrganizationId,
+                    orgId,
                     ct);
 
                 uploadedDocuments.Add((created.Id, created.FileName));
@@ -318,5 +330,11 @@ public sealed partial class UploadCvsCommandHandler : IRequestHandler<UploadCvsC
         }
 
         return new string(password);
+    }
+
+    private async Task<Guid> GetOrganizationId(CancellationToken ct)
+    {
+        var userId = _currentUserContext.GetUserId();
+        return await _getOrganizationIdService.GetOrganizationIdAsync(userId, ct);
     }
 }

@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\WorkFit.SharedKernel\WorkFit.SharedKernel.csproj" />
     <ProjectReference Include="..\WorkFit.ProjectManagement.Contracts\WorkFit.ProjectManagement.Contracts.csproj" />
     <ProjectReference Include="..\..\Code Review Module\WorkFit.CodeReview\WorkFit.CodeReview.csproj" />
+    <ProjectReference Include="..\..\Code Review Module\WorkFit.CodeReview.Contracts\WorkFit.CodeReview.Contracts.csproj" />
     <ProjectReference Include="..\..\Organization Module\WorkFit.Organizations\WorkFit.Organizations.csproj" />
   </ItemGroup>
 

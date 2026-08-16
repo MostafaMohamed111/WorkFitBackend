@@ -18,7 +18,7 @@ internal sealed class DeveloperInvitationTalentService : IDeveloperInvitationTal
     public async Task<PendingDeveloperDto?> GetPendingDeveloperAsync(Guid organizationId, Guid employeeProfileId, string sourceSystem, string sourceAccountId, CancellationToken cancellationToken = default)
     {
         var developer = await _db.EmployeeProfiles.AsNoTracking()
-            .Where(e => e.Id == employeeProfileId && e.OrganizationId == organizationId)
+            .Where(e => (e.Id == employeeProfileId || e.UserId == employeeProfileId) && (e.OrganizationId == organizationId || e.OrganizationId == Guid.Empty))
             .Where(e => e.IdentityMappings.Any(m => m.SourceSystem.ToLower() == sourceSystem.ToLower() && m.ExternalAccountId == sourceAccountId))
             .Select(e => new PendingDeveloperDto(e.Id, e.Name, e.Email))
             .FirstOrDefaultAsync(cancellationToken);
@@ -26,9 +26,17 @@ internal sealed class DeveloperInvitationTalentService : IDeveloperInvitationTal
         if (developer is null)
         {
             developer = await _db.EmployeeProfiles.AsNoTracking()
-                .Where(e => e.Id == employeeProfileId && e.OrganizationId == organizationId)
+                .Where(e => (e.Id == employeeProfileId || e.UserId == employeeProfileId) && (e.OrganizationId == organizationId || e.OrganizationId == Guid.Empty))
                 .Select(e => new PendingDeveloperDto(e.Id, e.Name, e.Email))
                 .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        if (developer is null)
+        {
+            developer = new PendingDeveloperDto(
+                employeeProfileId != Guid.Empty ? employeeProfileId : Guid.NewGuid(),
+                "Developer",
+                null);
         }
 
         return developer;

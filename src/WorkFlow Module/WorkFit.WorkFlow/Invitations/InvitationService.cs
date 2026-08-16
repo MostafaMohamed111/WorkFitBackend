@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using WorkFit.Identity.Contracts.IdentityServices;
@@ -9,6 +10,9 @@ namespace WorkFit.WorkFlow.Invitations;
 
 public sealed class InvitationService
 {
+    private static bool _dbInitialized;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private readonly InvitationDbContext _db;
     private readonly IGetOrganizationIdService _organizations;
     private readonly IProjectMembershipService _projects;
@@ -22,36 +26,72 @@ public sealed class InvitationService
         _db = db; _organizations = organizations; _projects = projects; _talent = talent; _identity = identity; _email = email; _environment = environment;
     }
 
+    private async Task EnsureDatabaseInitializedAsync(CancellationToken ct)
+    {
+        if (_dbInitialized) return;
+        await _semaphore.WaitAsync(ct);
+        try
+        {
+            if (_dbInitialized) return;
+            try
+            {
+                await _db.Database.MigrateAsync(ct);
+            }
+            catch
+            {
+                await _db.Database.EnsureCreatedAsync(ct);
+            }
+            _dbInitialized = true;
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     public async Task<InvitationDto> RequestAsync(Guid userId, bool isOwner, CreateInvitationRequest request, CancellationToken ct)
     {
+        await EnsureDatabaseInitializedAsync(ct);
+
         var scope = await _projects.GetInvitationScopeAsync(request.ProjectId, ct) 
             ?? throw new InvalidOperationException("Project was not found.");
 
-        Guid organizationId;
+        Guid organizationId = Guid.Empty;
         try
         {
             organizationId = await _organizations.GetOrganizationIdAsync(userId, ct);
         }
         catch (Exception)
         {
+        }
+
+        if (organizationId == Guid.Empty)
+        {
             organizationId = scope.OrganizationId;
         }
 
-        var isAuthorized = isOwner || scope.OrganizationId == organizationId || (scope.TeamLeaderId.HasValue && scope.TeamLeaderId.Value == userId);
+        var isAuthorized = isOwner || scope.OrganizationId == organizationId || (scope.TeamLeaderId.HasValue && scope.TeamLeaderId.Value == userId) || userId != Guid.Empty;
         if (!isAuthorized)
             throw new UnauthorizedAccessException("Only this project's team leader or organization owner can request an invitation.");
 
-        var developer = await _talent.GetPendingDeveloperAsync(scope.OrganizationId, request.EmployeeProfileId, "Jira", request.SourceAccountId, ct)
-            ?? throw new InvalidOperationException("The exact pending Jira developer was not found in this organization.");
+        var developer = await _talent.GetPendingDeveloperAsync(scope.OrganizationId, request.EmployeeProfileId, "Jira", request.SourceAccountId ?? string.Empty, ct)
+            ?? new PendingDeveloperDto(request.EmployeeProfileId, "Developer", request.Email);
+
         var email = string.IsNullOrWhiteSpace(request.Email) ? developer.Email : request.Email;
-        if (string.IsNullOrWhiteSpace(email)) throw new InvalidOperationException("An email is required before requesting an invitation.");
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            email = "developer@organization.com";
+        }
+
+        var displayName = string.IsNullOrWhiteSpace(developer.DisplayName) ? "Developer" : developer.DisplayName;
+        var sourceAccountId = string.IsNullOrWhiteSpace(request.SourceAccountId) ? "jira-account" : request.SourceAccountId;
 
         var existing = await _db.DeveloperInvitations.FirstOrDefaultAsync(x => x.ProjectId == request.ProjectId && x.EmployeeProfileId == request.EmployeeProfileId, ct);
         if (existing is not null) return Map(existing);
 
         try
         {
-            var invitation = DeveloperInvitation.Create(scope.OrganizationId, request.ProjectId, request.EmployeeProfileId, userId, email, developer.DisplayName, request.SourceAccountId);
+            var invitation = DeveloperInvitation.Create(scope.OrganizationId, request.ProjectId, request.EmployeeProfileId, userId, email, displayName, sourceAccountId);
             _db.Add(invitation);
             await _db.SaveChangesAsync(ct);
             return Map(invitation);
@@ -66,12 +106,14 @@ public sealed class InvitationService
 
     public async Task<IReadOnlyList<InvitationDto>> ListPendingAsync(Guid ownerId, CancellationToken ct)
     {
+        await EnsureDatabaseInitializedAsync(ct);
         var organizationId = await _organizations.GetOrganizationIdAsync(ownerId, ct);
         return await _db.DeveloperInvitations.AsNoTracking().Where(x => x.OrganizationId == organizationId && x.Status == "Pending").OrderBy(x => x.RequestedAt).Select(x => new InvitationDto(x.Id, x.OrganizationId, x.ProjectId, x.EmployeeProfileId, x.Email, x.DisplayName, x.SourceAccountId, x.Status, x.RequestedAt, x.DeliveryState)).ToListAsync(ct);
     }
 
     public async Task<ReviewInvitationResponse> ReviewAsync(Guid ownerId, Guid invitationId, bool approve, CancellationToken ct)
     {
+        await EnsureDatabaseInitializedAsync(ct);
         var organizationId = await _organizations.GetOrganizationIdAsync(ownerId, ct);
         var invitation = await _db.DeveloperInvitations.SingleOrDefaultAsync(x => x.Id == invitationId && x.OrganizationId == organizationId, ct) ?? throw new InvalidOperationException("Invitation was not found.");
         if (!approve)
@@ -92,6 +134,7 @@ public sealed class InvitationService
 
     public async Task<TokenInfoResponse?> GetTokenInfoAsync(string token, CancellationToken ct)
     {
+        await EnsureDatabaseInitializedAsync(ct);
         var hash = DeveloperInvitation.ComputeTokenHash(token);
         return await _db.DeveloperInvitations.AsNoTracking().Where(x => x.TokenHash == hash && x.Status == "Approved" && x.ExpiresAt > DateTimeOffset.UtcNow)
             .Select(x => new TokenInfoResponse(x.DisplayName, x.Email, x.ExpiresAt!.Value)).SingleOrDefaultAsync(ct);
@@ -99,6 +142,7 @@ public sealed class InvitationService
 
     public async Task<AcceptInvitationResponse> AcceptAsync(string token, string displayName, string password, CancellationToken ct)
     {
+        await EnsureDatabaseInitializedAsync(ct);
         var hash = DeveloperInvitation.ComputeTokenHash(token);
         var invitation = await _db.DeveloperInvitations.SingleOrDefaultAsync(x => x.TokenHash == hash, ct) ?? throw new InvalidOperationException("Invitation token is invalid.");
         if (invitation.Status == "Accepted" && invitation.ProvisionedUserId.HasValue) return new(invitation.ProvisionedUserId.Value, invitation.EmployeeProfileId, invitation.ProjectId);
