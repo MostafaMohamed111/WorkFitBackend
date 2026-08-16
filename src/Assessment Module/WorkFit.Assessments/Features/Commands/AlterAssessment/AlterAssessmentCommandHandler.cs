@@ -44,6 +44,7 @@ internal sealed class AlterAssessmentCommandHandler : IRequestHandler<AlterAsses
             assessment.SkillChanges.Select(
                 sc => new Change(
                     sc.SkillId,
+                    sc.SkillName,
                     sc.NewScore,
                     sc.EvidenceDescription
                     )
